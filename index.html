@@ -356,7 +356,7 @@
 
 <div class="footer-bar">
   <div class="fb-status" id="fbStatus">Fill out all sections to submit</div>
-  <button class="pdf-btn" id="pdfBtn" onclick="sendPDF()">Print Report</button>
+  <button class="pdf-btn" id="pdfBtn" onclick="sendPDF()">Save & Send PDF</button>
   <button class="submit-btn" id="submitBtn" onclick="submitReport()">Submit Report</button>
 </div>
 
@@ -834,58 +834,67 @@ function showToast(msg){
 
 async function submitReport(){
   const cfg = POSITIONS[state.position];
-  const payload = {
-    prospect: document.getElementById('fProspect').value,
-    position: state.position,
-    positionLabel: cfg.label,
-    archetype: state.archetype,
-    classYear: document.getElementById('fClass').value,
-    school: document.getElementById('fSchool').value,
-    height: document.getElementById('fHeight').value,
-    weight: document.getElementById('fWeight').value,
-    filmLink: document.getElementById('fFilm').value,
-    scoutName: document.getElementById('fScout').value,
-    evalCamp: document.getElementById('fCamp').value,
-    dateEvaluated: document.getElementById('fDate').value,
-    footballIQ: state.iq,
-    narrative: document.getElementById('fNarrative').value,
-    recommendationTier: state.tier,
-    inhomeScore: document.getElementById('scoreBig').textContent,
-    translationIndex: document.getElementById('tiVal').textContent,
-    raw: {
-      traitGrades: state.film,
-      athleticGrades: state.athletic,
-      athleticRaw: state.athleticRaw,
-      productionGrades: state.production,
-      productionRaw: state.productionRaw,
-      gates: state.gates,
-      interview: {
-        learnStyle: state.learnStyle,
-        impression: state.interviewGrade,
-        answers: state.interview
-      }
-    }
-  };
-
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('submitBtn').textContent = 'Submitting...';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
 
   try{
-    const res = await fetch('/.netlify/functions/submit-report', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
+    const sql = `
+      INSERT INTO reports (
+        prospect_name, position, camp, class_year, school, height, weight,
+        film_link, archetype, film_grades, athletic_grades, athletic_raw,
+        production_grades, production_raw, gates, football_iq, interview_data,
+        scout_name, scout_notes, recommendation_tier, inhome_score
+      ) VALUES (
+        '${(document.getElementById('fProspect').value || '').replace(/'/g, "''")}',
+        '${state.position}',
+        '${(document.getElementById('fCamp').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fClass').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fSchool').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fHeight').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fWeight').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fFilm').value || '').replace(/'/g, "''")}',
+        '${state.archetype || ''}',
+        '${JSON.stringify(state.film || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.athletic || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.athleticRaw || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.production || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.productionRaw || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.gates || {}).replace(/'/g, "''")}',
+        ${state.iq || 0},
+        '${JSON.stringify({learnStyle: state.learnStyle, impression: state.interviewGrade, answers: state.interview} || {}).replace(/'/g, "''")}',
+        '${(document.getElementById('fScout').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fNarrative').value || '').replace(/'/g, "''")}',
+        '${state.tier || ''}',
+        ${parseFloat(document.getElementById('scoreBig').textContent) || 0}
+      );
+    `;
+
+    const res = await fetch(
+      'https://ep-late-bar-at3i9vj0.apirest.c-9.us-east-1.aws.neon.tech/neondb/rest/v1/query',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer napi_ogs7bfm73pw5zdryjiy69dvyqxm29aicx37z0w6d7cyj6gz92vo8xax0wlx2qh7p'
+        },
+        body: JSON.stringify({ query: sql })
+      }
+    );
+
+    const data = await res.json();
+    
     if(res.ok){
-      showToast('Report submitted ✓');
-      document.getElementById('submitBtn').textContent = 'Submitted';
+      showToast('✓ Report submitted to database');
+      btn.textContent = 'Submitted';
     } else {
-      throw new Error('Server error');
+      throw new Error(data.error || 'Server error');
     }
   } catch(err){
-    showToast('Could not submit — check connection');
-    document.getElementById('submitBtn').textContent = 'Submit Report';
-    document.getElementById('submitBtn').disabled = false;
+    console.error('Submit error:', err);
+    showToast('Error: ' + err.message);
+    btn.textContent = 'Submit Report';
+    btn.disabled = false;
   }
 }
 
@@ -1018,11 +1027,76 @@ function buildPrintView(){
 }
 
 async function sendPDF(){
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  await new Promise(r=>setTimeout(r, 100));
+  
   buildPrintView();
+  const prospect = gv('fProspect') || 'prospect';
+  const fname = `InHome_${state.position}_${prospect.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  const btn = document.getElementById('pdfBtn');
   const el = document.getElementById('printView');
-  el.style.display = 'block';
-  window.print();
-  el.style.display = 'none';
+  const overlay = document.getElementById('buildOverlay');
+  
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  
+  try{
+    if(typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
+
+    overlay.classList.add('show');
+    // Make element visible for capture
+    el.style.display = 'block';
+    el.style.position = 'static';
+    el.style.width = '794px';
+    
+    // Critical: wait for fonts and full layout
+    if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+    el.getBoundingClientRect();
+    await new Promise(r=>setTimeout(r, 400));
+
+    const opt = {
+      filename: fname,
+      image: {type:'jpeg', quality:0.95},
+      html2canvas: {scale:2},
+      jsPDF: {unit:'mm', format:'a4', orientation:'portrait'}
+    };
+    
+    const blob = await html2pdf().set(opt).from(el).outputPdf('blob');
+    
+    el.style.display = 'none';
+    overlay.classList.remove('show');
+
+    if(!blob || blob.size < 8000) throw new Error('PDF generation failed');
+
+    const file = new File([blob], fname, {type:'application/pdf'});
+
+    // Try native share first (iOS/Android)
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:'InHome Scouting Report',
+        text:`${prospect} (${state.position})`
+      });
+      showToast('Shared ✓');
+    } else {
+      // Fallback: download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('PDF downloaded ✓');
+    }
+  } catch(err){
+    el.style.display = 'none';
+    overlay.classList.remove('show');
+    console.error('PDF error:', err);
+    showToast('Error generating PDF');
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Save & Send PDF';
 }
 
 /* ---------------- BOOT ---------------- */

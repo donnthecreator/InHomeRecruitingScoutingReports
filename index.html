@@ -842,66 +842,60 @@ function showToast(msg){
 }
 
 async function submitReport(){
-  const cfg = POSITIONS[state.position];
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
-  try{
-    const sql = `
-      INSERT INTO reports (
-        prospect_name, position, camp, class_year, school, height, weight,
-        film_link, archetype, film_grades, athletic_grades, athletic_raw,
-        production_grades, production_raw, gates, football_iq, interview_data,
-        scout_name, scout_notes, recommendation_tier, inhome_score
-      ) VALUES (
-        '${(document.getElementById('fProspect').value || '').replace(/'/g, "''")}',
-        '${state.position}',
-        '${(document.getElementById('fCamp').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fClass').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fSchool').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fHeight').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fWeight').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fFilm').value || '').replace(/'/g, "''")}',
-        '${state.archetype || ''}',
-        '${JSON.stringify(state.film || {}).replace(/'/g, "''")}',
-        '${JSON.stringify(state.athletic || {}).replace(/'/g, "''")}',
-        '${JSON.stringify(state.athleticRaw || {}).replace(/'/g, "''")}',
-        '${JSON.stringify(state.production || {}).replace(/'/g, "''")}',
-        '${JSON.stringify(state.productionRaw || {}).replace(/'/g, "''")}',
-        '${JSON.stringify(state.gates || {}).replace(/'/g, "''")}',
-        ${state.iq || 0},
-        '${JSON.stringify({learnStyle: state.learnStyle, impression: state.interviewGrade, answers: state.interview} || {}).replace(/'/g, "''")}',
-        '${(document.getElementById('fScout').value || '').replace(/'/g, "''")}',
-        '${(document.getElementById('fNarrative').value || '').replace(/'/g, "''")}',
-        '${state.tier || ''}',
-        ${parseFloat(document.getElementById('scoreBig').textContent) || 0}
-      );
-    `;
-
-    const res = await fetch(
-      'https://ep-late-bar-at3i9vj0.apirest.c-9.us-east-1.aws.neon.tech/neondb/rest/v1/query',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer napi_ogs7bfm73pw5zdryjiy69dvyqxm29aicx37z0w6d7cyj6gz92vo8xax0wlx2qh7p'
-        },
-        body: JSON.stringify({ query: sql })
+  const payload = {
+    prospect: gv('fProspect'),
+    position: state.position,
+    positionLabel: POSITIONS[state.position].label,
+    archetype: state.archetype,
+    classYear: gv('fClass'),
+    school: gv('fSchool'),
+    height: gv('fHeight'),
+    weight: gv('fWeight'),
+    filmLink: gv('fFilm'),
+    evalCamp: gv('fCamp'),
+    scoutName: gv('fScout'),
+    dateEvaluated: gv('fDate'),
+    footballIQ: state.iq,
+    narrative: gv('fNarrative'),
+    recommendationTier: state.tier,
+    inhomeScore: document.getElementById('scoreBig').textContent,
+    raw: {
+      traitGrades: state.film,
+      athleticGrades: state.athletic,
+      athleticRaw: state.athleticRaw,
+      productionGrades: state.production,
+      productionRaw: state.productionRaw,
+      gates: state.gates,
+      interview: {
+        learnStyle: state.learnStyle,
+        impression: state.interviewGrade,
+        answers: state.interview
       }
-    );
+    }
+  };
+
+  try{
+    const res = await fetch('/.netlify/functions/submit-report', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
 
     const data = await res.json();
-    
-    if(res.ok){
-      showToast('✓ Report submitted to database');
-      btn.textContent = 'Submitted';
+
+    if(res.ok && data.success){
+      showToast('Saved to database \u2014 report #' + data.reportId);
+      btn.textContent = 'Submitted \u2713';
     } else {
-      throw new Error(data.error || 'Server error');
+      throw new Error(data.error || ('HTTP ' + res.status));
     }
   } catch(err){
     console.error('Submit error:', err);
-    showToast('Error: ' + err.message);
+    showToast('Failed: ' + err.message);
     btn.textContent = 'Submit Report';
     btn.disabled = false;
   }

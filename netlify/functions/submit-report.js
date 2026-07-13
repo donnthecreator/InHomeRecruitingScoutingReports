@@ -12,8 +12,7 @@ exports.handler = async (event) => {
     const data = JSON.parse(event.body);
 
     const client = new Client({
-      connectionString: process.env.DATABASE_URL
-    });
+      connectionString: process.env.INHOMESCOUTREPORTSDatabase_URL    });
 
     await client.connect();
 

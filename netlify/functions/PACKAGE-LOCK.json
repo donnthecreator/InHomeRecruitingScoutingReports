@@ -1,0 +1,19 @@
+{
+  "name": "scout-report-form",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "scout-report-form",
+      "version": "1.0.0",
+      "dependencies": {
+        "pg": "8.11.3"
+      }
+    },
+    "node_modules/pg": {
+      "version": "8.11.3",
+      "resolved": "https://registry.npmjs.org/pg/-/pg-8.11.3.tgz",
+      "integrity": "sha512-+9iuvG0fUWKzB8uK0PE0i/NFnSowoJNWQKJee92f1N7g0CA51DyePQtyB3NFcKuwrqZXuNpwoYQXOtCRzwYXVQ=="
+    }
+  }
+}

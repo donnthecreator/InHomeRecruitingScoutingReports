@@ -700,6 +700,7 @@ function pickArche(k){
   const desc = document.getElementById('archeDesc');
   desc.textContent = a.d;
   desc.classList.add('show');
+  updateStatus();
 }
 
 function setGrade(group, id, val){
@@ -816,11 +817,19 @@ function computeScores(){
 
 function updateStatus(){
   const cfg = POSITIONS[state.position];
-  const filmDone = Object.keys(state.film).length === cfg.film.length;
-  const gatesDone = Object.keys(state.gates).length === cfg.gates.length;
-  const ready = state.archetype && filmDone && gatesDone && document.getElementById('fProspect').value.trim();
+  const filmLeft = cfg.film.length - Object.keys(state.film).length;
+  const gatesLeft = cfg.gates.length - Object.keys(state.gates).length;
+  const missing = [];
+  if(!document.getElementById('fProspect').value.trim()) missing.push('prospect name');
+  if(!state.archetype) missing.push('archetype');
+  if(filmLeft > 0) missing.push(filmLeft + ' film grade' + (filmLeft>1?'s':''));
+  if(gatesLeft > 0) missing.push(gatesLeft + ' gate' + (gatesLeft>1?'s':''));
+  const ready = missing.length === 0;
   document.getElementById('submitBtn').disabled = !ready;
-  document.getElementById('fbStatus').textContent = ready ? 'Ready to submit' : 'Fill out prospect info, archetype, film grades & gates';
+  const st = document.getElementById('fbStatus');
+  st.textContent = ready ? 'Ready to submit' : 'Missing: ' + missing.join(', ');
+  st.style.color = ready ? '#1FA35C' : '#E0A419';
+  st.style.fontWeight = '600';
 }
 document.getElementById('fProspect').addEventListener('input', updateStatus);
 

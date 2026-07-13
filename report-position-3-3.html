@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>InHome | EIS Scouting Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root{
+    --navy:#060D2E;
+    --navy2:#0A1440;
+    --blue:#1A3AFF;
+    --blue-dim:#1A3AFF33;
+    --paper:#F5F6FA;
+    --line:#E3E6F0;
+    --ink:#0B0F1E;
+    --mute:#6B7290;
+    --good:#1FA35C;
+    --warn:#E0A419;
+    --bad:#D93B3B;
+    --card:#FFFFFF;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Barlow',sans-serif; padding-bottom:120px;}
+  h1,h2,h3,.disp{font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.01em;}
+  .topbar{background:var(--navy); color:#fff; padding:18px 18px 22px;}
+  .topbar-row{display:flex; align-items:center; justify-content:space-between;}
+  .logo{display:flex; align-items:center; gap:8px;}
+  .logo svg{width:26px; height:26px;}
+  .logo-text{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:19px; letter-spacing:.03em;}
+  .logo-text b{color:var(--blue);}
+  .badge{background:var(--blue); color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:600; font-size:12px; letter-spacing:.08em; text-transform:uppercase; padding:5px 10px; border-radius:20px;}
+  .eis-tag{color:#8C9AE0; font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin-top:10px; font-weight:600;}
+  .pos-title{font-size:34px; line-height:1; margin-top:4px;}
+  .pos-select-wrap{margin-top:14px;}
+  select.pos-select{width:100%; background:var(--navy2); color:#fff; border:1px solid #29346B; border-radius:10px; padding:11px 12px; font-family:'Barlow',sans-serif; font-size:15px; font-weight:600;}
+
+  .wrap{max-width:640px; margin:0 auto; padding:0 14px;}
+  .section{background:var(--card); border:1px solid var(--line); border-radius:14px; margin-top:14px; overflow:hidden;}
+  .section-head{display:flex; align-items:center; justify-content:space-between; padding:15px 16px; cursor:pointer; user-select:none;}
+  .section-head-left{display:flex; align-items:center; gap:10px;}
+  .step-num{width:24px; height:24px; border-radius:7px; background:var(--navy); color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .section-head h2{margin:0; font-size:18px;}
+  .section-sub{font-size:12px; color:var(--mute); margin-top:1px; font-weight:500;}
+  .chev{transition:transform .2s; color:var(--mute);}
+  .section.open .chev{transform:rotate(180deg);}
+  .section-body{max-height:0; overflow:hidden; transition:max-height .25s ease;}
+  .section.open .section-body{max-height:4000px;}
+  .section-body-inner{padding:2px 16px 18px;}
+
+  label.field-label{display:block; font-size:12px; font-weight:600; color:var(--mute); text-transform:uppercase; letter-spacing:.06em; margin:12px 0 6px;}
+  input[type=text], input[type=number], textarea{width:100%; border:1.5px solid var(--line); border-radius:9px; padding:11px 12px; font-family:'Barlow',sans-serif; font-size:15px; background:#fff; color:var(--ink);}
+  textarea{min-height:100px; resize:vertical;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .arche-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+  .arche-btn{flex:1; min-width:90px; border:1.5px solid var(--line); background:#fff; border-radius:10px; padding:10px 8px; text-align:center; cursor:pointer;}
+  .arche-btn b{display:block; font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:700;}
+  .arche-btn span{font-size:10.5px; color:var(--mute); font-weight:500;}
+  .arche-btn.sel{border-color:var(--blue); background:var(--blue-dim);}
+  .arche-btn.sel b{color:var(--blue);}
+  .arche-desc{font-size:12.5px; color:var(--mute); margin-top:8px; line-height:1.45; background:var(--paper); border-radius:8px; padding:9px 10px; display:none;}
+  .arche-desc.show{display:block;}
+
+  .trait-card{border:1.5px solid var(--line); border-radius:11px; padding:12px; margin-top:10px;}
+  .trait-card .t-name{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:16px;}
+  .trait-card .t-prompt{font-size:12.5px; color:var(--mute); margin-top:2px; line-height:1.4;}
+  .grade-row{display:flex; gap:6px; margin-top:10px;}
+  .grade-btn{flex:1; border:1.5px solid var(--line); background:#fff; border-radius:8px; padding:9px 0; text-align:center; cursor:pointer; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px; color:var(--mute);}
+  .grade-btn small{display:block; font-family:'Barlow',sans-serif; font-weight:600; font-size:8.5px; letter-spacing:.03em; text-transform:uppercase; margin-top:2px;}
+  .grade-btn.g1.sel{background:var(--bad); border-color:var(--bad); color:#fff;}
+  .grade-btn.g2.sel{background:#E88A3B; border-color:#E88A3B; color:#fff;}
+  .grade-btn.g3.sel{background:var(--warn); border-color:var(--warn); color:#fff;}
+  .grade-btn.g4.sel{background:#6FBF6F; border-color:#6FBF6F; color:#fff;}
+  .grade-btn.g5.sel{background:var(--good); border-color:var(--good); color:#fff;}
+  .raw-metric{margin-top:9px;}
+  .raw-metric input{max-width:140px; display:inline-block;}
+  .raw-metric-label{font-size:11.5px; color:var(--mute); font-weight:600; margin-right:8px;}
+
+  .gate-row{display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; margin-top:9px;}
+  .gate-label{font-size:14px; font-weight:600; max-width:56%; line-height:1.3;}
+  .gate-btns{display:flex; gap:5px;}
+  .gate-btn{border:1.5px solid var(--line); background:#fff; border-radius:7px; padding:7px 10px; font-size:11.5px; font-weight:700; font-family:'Barlow Condensed',sans-serif; letter-spacing:.03em; text-transform:uppercase; cursor:pointer; color:var(--mute);}
+  .gate-btn.pass.sel{background:var(--good); border-color:var(--good); color:#fff;}
+  .gate-btn.concern.sel{background:var(--warn); border-color:var(--warn); color:#fff;}
+  .gate-btn.fail.sel{background:var(--bad); border-color:var(--bad); color:#fff;}
+
+  .iq-wrap{padding:6px 4px 2px;}
+  .iq-value{font-family:'Barlow Condensed',sans-serif; font-size:44px; font-weight:700; color:var(--blue); text-align:center;}
+  .iq-value span{font-size:18px; color:var(--mute); font-weight:600;}
+  input[type=range]{width:100%; accent-color:var(--blue); margin-top:4px;}
+  .iq-scale{display:flex; justify-content:space-between; font-size:10.5px; color:var(--mute); font-weight:600;}
+  .iq-note{font-size:11.5px; color:var(--mute); text-align:center; margin-top:8px; line-height:1.4;}
+
+  .score-card{background:var(--navy); border-radius:14px; margin-top:14px; padding:18px; color:#fff;}
+  .score-top{display:flex; justify-content:space-between; align-items:flex-end;}
+  .score-top .lbl{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8C9AE0; font-weight:600;}
+  .score-big{font-family:'Barlow Condensed',sans-serif; font-size:56px; font-weight:700; line-height:1;}
+  .score-bars{margin-top:14px;}
+  .sb-row{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  .sb-label{width:82px; font-size:11.5px; font-weight:600; color:#B8C0EE;}
+  .sb-track{flex:1; height:7px; background:#1B255C; border-radius:5px; overflow:hidden;}
+  .sb-fill{height:100%; background:var(--blue); border-radius:5px;}
+  .sb-val{width:34px; text-align:right; font-size:12px; font-weight:700; font-family:'Barlow Condensed',sans-serif;}
+  .ti-row{display:flex; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid #1B255C; font-size:12px; color:#8C9AE0;}
+  .ti-row b{color:#fff; font-family:'Barlow Condensed',sans-serif; font-size:14px;}
+
+  .tier-row{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .tier-btn{border:1.5px solid var(--line); background:#fff; border-radius:10px; padding:11px 12px; text-align:left; cursor:pointer;}
+  .tier-btn b{display:block; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700;}
+  .tier-btn span{font-size:11.5px; color:var(--mute);}
+  .tier-btn.sel{border-color:var(--blue); background:var(--blue-dim);}
+
+  .footer-bar{position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line); padding:12px 14px; display:flex; gap:10px; align-items:center; z-index:50;}
+  .footer-bar .fb-status{flex:1; font-size:12px; color:var(--mute); font-weight:600;}
+  .submit-btn{background:var(--blue); color:#fff; border:none; border-radius:10px; padding:13px 22px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15.5px; letter-spacing:.02em; cursor:pointer;}
+  .submit-btn:disabled{opacity:.5;}
+  .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; padding:11px 18px; border-radius:9px; font-size:13.5px; font-weight:600; z-index:100; opacity:0; transition:opacity .25s; pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  .pdf-btn{background:#fff; color:var(--navy); border:1.5px solid var(--navy); border-radius:10px; padding:12px 16px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15.5px; letter-spacing:.02em; cursor:pointer;}
+  .pdf-btn:disabled{opacity:.5;}
+
+  /* ---------- PRINT / PDF VIEW ---------- */
+  /* ---------- PRINT / PDF VIEW ---------- */
+  /* Initially hidden, shown during PDF capture, then hidden again. */
+  #printView{width:794px; background:#fff; color:#0B0F1E; font-family:'Barlow',sans-serif; margin:0 auto; display:none;}
+  .pv-page{padding:22px 42px 28px;}
+  .pv-head{background:var(--navy); color:#fff; padding:22px 42px 18px; display:flex; justify-content:space-between; align-items:flex-start;}
+  .pv-logo{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:24px; letter-spacing:.03em;}
+  .pv-logo b{color:var(--blue);}
+  .pv-head-tag{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#8C9AE0; font-weight:600; margin-top:3px;}
+  .pv-score-chip{text-align:right;}
+  .pv-score-chip .n{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:42px; line-height:1;}
+  .pv-score-chip .l{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#8C9AE0; font-weight:600;}
+  .pv-name{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:30px; line-height:1.05;}
+  .pv-meta{font-size:12.5px; color:#555C78; margin-top:4px; font-weight:500;}
+  .pv-sec{margin-top:15px;}
+  .pv-sec h3{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--navy); border-bottom:2px solid var(--blue); padding-bottom:4px; margin:0 0 8px;}
+  .pv-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px 24px;}
+  .pv-item{display:flex; justify-content:space-between; font-size:13px; padding:5px 0; border-bottom:1px solid #EEF0F6;}
+  .pv-item .k{color:#555C78; font-weight:500;}
+  .pv-item .v{font-weight:700; font-family:'Barlow Condensed',sans-serif; font-size:14px;}
+  .pv-item .v.pass{color:var(--good);} .pv-item .v.concern{color:var(--warn);} .pv-item .v.fail{color:var(--bad);}
+  .pv-scores{display:flex; gap:10px; margin-top:4px;}
+  .pv-score-box{flex:1; border:1.5px solid #E3E6F0; border-radius:9px; padding:10px 12px; text-align:center;}
+  .pv-score-box .n{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:22px;}
+  .pv-score-box .l{font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:#555C78; font-weight:600; margin-top:2px;}
+  .pv-narrative{font-size:13px; line-height:1.55; white-space:pre-wrap; color:#20263F;}
+  .pv-tier{display:inline-block; background:var(--blue-dim); color:var(--blue); border:1.5px solid var(--blue); border-radius:8px; padding:7px 14px; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:15px;}
+  .pv-foot{margin-top:16px; padding-top:10px; border-top:1px solid #E3E6F0; font-size:10.5px; color:#8A90A8; display:flex; justify-content:space-between;}
+
+  @media print{
+    body > *:not(#printView){display:none !important;}
+    #printView{display:block !important; width:auto;}
+    body{padding:0; background:#fff;}
+  }
+
+  #buildOverlay{position:fixed; inset:0; background:var(--navy); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:14px;}
+  #buildOverlay.show{display:flex;}
+  #buildOverlay .msg{color:#fff; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:20px; letter-spacing:.04em;}
+  .spinner{width:34px; height:34px; border:3.5px solid #29346B; border-top-color:var(--blue); border-radius:50%; animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M3 12L12 4L21 12" stroke="#1A3AFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11.5V20H18V11.5" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="logo-text">IN<b>HOME</b></div>
+    </div>
+    <div class="badge">Scout Report</div>
+  </div>
+  <div class="eis-tag">EIS ALL-22 &middot; Position Evaluation</div>
+  <div class="pos-title" id="posTitle">Quarterback</div>
+  <div class="pos-select-wrap">
+    <select class="pos-select" id="posSelect"></select>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 1. Prospect & Scout Info -->
+  <div class="section open" data-sec="1">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">1</div><div><h2>Prospect &amp; Scout</h2><div class="section-sub">Who's being evaluated, who's grading</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner">
+      <label class="field-label">Prospect Name</label>
+      <input type="text" id="fProspect" placeholder="First Last">
+      <div class="grid2">
+        <div><label class="field-label">Class / Grad Yr</label><input type="text" id="fClass" placeholder="2027"></div>
+        <div><label class="field-label">High School</label><input type="text" id="fSchool" placeholder="School name"></div>
+      </div>
+      <div class="grid2">
+        <div><label class="field-label">Height</label><input type="text" id="fHeight" placeholder="6'1&quot;"></div>
+        <div><label class="field-label">Weight</label><input type="text" id="fWeight" placeholder="185 lbs"></div>
+      </div>
+      <label class="field-label">Film Link (Hudl/YouTube)</label>
+      <input type="text" id="fFilm" placeholder="https://">
+      <label class="field-label">Evaluation Camp / Location</label>
+      <input type="text" id="fCamp" placeholder="e.g. U of West Alabama Camp">
+      <div class="grid2">
+        <div><label class="field-label">Scout Name</label><input type="text" id="fScout" placeholder="Your name"></div>
+        <div><label class="field-label">Date Evaluated</label><input type="text" id="fDate" placeholder="MM/DD/YYYY"></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 2. Archetype -->
+  <div class="section" data-sec="2">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">2</div><div><h2>Role / Archetype</h2><div class="section-sub" id="archSub">Tag how this player projects</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner">
+      <div class="arche-row" id="archeRow"></div>
+      <div class="arche-desc" id="archeDesc"></div>
+    </div></div>
+  </div>
+
+  <!-- 3. Film Grading -->
+  <div class="section" data-sec="3">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">3</div><div><h2>Film Grade (EIS)</h2><div class="section-sub">Poor &rarr; Elite, per trait</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner" id="filmTraits"></div></div>
+  </div>
+
+  <!-- 4. Athletic Testing -->
+  <div class="section" data-sec="4">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">4</div><div><h2>Athletic Testing</h2><div class="section-sub">Grade the trait, log the number if you have it</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner" id="athleticTraits"></div></div>
+  </div>
+
+  <!-- 5. Production -->
+  <div class="section" data-sec="5">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">5</div><div><h2>Production</h2><div class="section-sub">On-field output vs. level of competition</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner" id="productionTraits"></div></div>
+  </div>
+
+  <!-- 6. Gates -->
+  <div class="section" data-sec="6">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">6</div><div><h2>The Gates</h2><div class="section-sub">Character &amp; competitive traits — gate, don't score</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner" id="gatesList"></div></div>
+  </div>
+
+  <!-- 7. Football IQ -->
+  <div class="section" data-sec="7">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">7</div><div><h2>Football IQ</h2><div class="section-sub">Standalone gauge — not part of composite score</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner">
+      <div class="iq-wrap">
+        <div class="iq-value" id="iqVal">5<span>/10</span></div>
+        <input type="range" min="1" max="10" value="5" id="iqSlider" oninput="onIQ(this.value)">
+        <div class="iq-scale"><span>Reactive / late</span><span>Instinctive / anticipatory</span></div>
+        <div class="iq-note" id="iqNote">Processing speed, recognition, and adjustment relative to the assignment.</div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 8. InHome Score -->
+  <div class="score-card">
+    <div class="score-top">
+      <div><div class="lbl">InHome Score</div><div class="score-big" id="scoreBig">0.0</div></div>
+      <div style="text-align:right"><div class="lbl">Football IQ</div><div class="score-big" id="iqBig" style="font-size:32px;">5.0</div></div>
+    </div>
+    <div class="score-bars">
+      <div class="sb-row"><div class="sb-label">Film 50%</div><div class="sb-track"><div class="sb-fill" id="barFilm" style="width:0%"></div></div><div class="sb-val" id="valFilm">0</div></div>
+      <div class="sb-row"><div class="sb-label">Athletic 25%</div><div class="sb-track"><div class="sb-fill" id="barAth" style="width:0%"></div></div><div class="sb-val" id="valAth">0</div></div>
+      <div class="sb-row"><div class="sb-label">Character 15%</div><div class="sb-track"><div class="sb-fill" id="barChar" style="width:0%"></div></div><div class="sb-val" id="valChar">0</div></div>
+      <div class="sb-row"><div class="sb-label">Production 10%</div><div class="sb-track"><div class="sb-fill" id="barProd" style="width:0%"></div></div><div class="sb-val" id="valProd">0</div></div>
+    </div>
+    <div class="ti-row"><span>Translation Index (IQ &times; Film &divide; Athletic)</span><b id="tiVal">&mdash;</b></div>
+  </div>
+
+  <!-- 9. Narrative -->
+  <div class="section" data-sec="9">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">8</div><div><h2>Scout's Notes</h2><div class="section-sub">Narrative — what the numbers don't say</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner">
+      <textarea id="fNarrative" placeholder="Comparable player, projection, standout plays, concerns..."></textarea>
+    </div></div>
+  </div>
+
+  <!-- 10. Recommendation -->
+  <div class="section" data-sec="10">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">9</div><div><h2>Recommendation</h2><div class="section-sub">Projection tier</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner">
+      <div class="tier-row" id="tierRow">
+        <div class="tier-btn" data-tier="P4 Impact">Autonomy / P4 Impact <span>Immediate contributor at the highest level</span></div>
+        <div class="tier-btn" data-tier="Power 4 Starter">Power 4 Starter <span>Multi-year starter projection, P4 level</span></div>
+        <div class="tier-btn" data-tier="G5/FCS Starter">Group of 5 / FCS Starter <span>Solid starter projection outside P4</span></div>
+        <div class="tier-btn" data-tier="Depth/Camp">Depth / Camp Player <span>Roster contributor, developmental role</span></div>
+        <div class="tier-btn" data-tier="Preferred Walk-On">Preferred Walk-On <span>Program fit without scholarship value yet</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 11. Player Interview -->
+  <div class="section" data-sec="11">
+    <div class="section-head" onclick="toggleSec(this)">
+      <div class="section-head-left"><div class="step-num">10</div><div><h2>Player Interview</h2><div class="section-sub">Pre-draft style — character, learning style, motivation</div></div></div>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="section-body"><div class="section-body-inner" id="interviewList">
+
+      <label class="field-label" style="margin-top:14px;">How does he learn best? (ask him, then verify)</label>
+      <div class="arche-row" id="learnRow">
+        <div class="arche-btn" data-l="Film" onclick="pickLearn('Film')"><b>Film</b><span>watch it</span></div>
+        <div class="arche-btn" data-l="Walkthrough" onclick="pickLearn('Walkthrough')"><b>Walkthrough</b><span>rep it</span></div>
+        <div class="arche-btn" data-l="Board/Verbal" onclick="pickLearn('Board/Verbal')"><b>Board</b><span>draw/talk it</span></div>
+        <div class="arche-btn" data-l="Playbook" onclick="pickLearn('Playbook')"><b>Playbook</b><span>read it</span></div>
+      </div>
+
+      <div id="interviewQs"></div>
+
+      <label class="field-label" style="margin-top:16px;">Interview Impression</label>
+      <div class="grade-row" id="row-interview-impression">
+        <div class="grade-btn g1" onclick="setIntGrade(1)">1<small>Red Flag</small></div>
+        <div class="grade-btn g2" onclick="setIntGrade(2)">2<small>Guarded</small></div>
+        <div class="grade-btn g3" onclick="setIntGrade(3)">3<small>Solid</small></div>
+        <div class="grade-btn g4" onclick="setIntGrade(4)">4<small>Impressive</small></div>
+        <div class="grade-btn g5" onclick="setIntGrade(5)">5<small>Elite Makeup</small></div>
+      </div>
+
+    </div></div>
+  </div>
+
+</div>
+
+<div class="footer-bar">
+  <div class="fb-status" id="fbStatus">Fill out all sections to submit</div>
+  <button class="pdf-btn" id="pdfBtn" onclick="sendPDF()">Save & Send PDF</button>
+  <button class="submit-btn" id="submitBtn" onclick="submitReport()">Submit Report</button>
+</div>
+
+<div id="printView"></div>
+<div id="buildOverlay"><div class="spinner"></div><div class="msg">BUILDING PDF...</div></div>
+
+<script>
+/* ---------------- POSITION CONFIG ---------------- */
+const POSITIONS = {
+  QB: {
+    label: "Quarterback",
+    archetypes: [
+      {k:"Pro-Style", d:"Under-center heavy, full-field progression reads, timing-based passing game."},
+      {k:"Spread/RPO", d:"Shotgun-based, run-pass option reads, tempo, half-field simplified reads."},
+      {k:"Dual-Threat", d:"Run-first playmaker whose legs are a primary weapon, arm talent secondary but present."}
+    ],
+    film: [
+      {id:"accuracy", name:"Accuracy & Ball Placement", p:"Puts the ball where only the receiver can make a play — leverage, timing, and location relative to coverage."},
+      {id:"arm", name:"Arm Talent", p:"Velocity, ability to drive the ball outside the numbers and push it vertically."},
+      {id:"processing", name:"Processing / Progression", p:"Reads coverage post-snap, works through progressions, identifies the hot route under pressure."},
+      {id:"pocket", name:"Pocket Management", p:"Feels rush without seeing it, resets feet, extends plays without abandoning structure."}
+    ],
+    athletic: [
+      {id:"mobility", name:"Mobility / Escapability", metric:"40 time / short shuttle"},
+      {id:"release", name:"Release Quickness", metric:"Time to throw (film est.)"},
+      {id:"velocity", name:"Arm Strength", metric:"Ball velocity (mph, if tested)"}
+    ],
+    production: [
+      {id:"efficiency", name:"Completion % / YPA", metric:"Season comp% / YPA"},
+      {id:"tdint", name:"TD:INT Ratio", metric:"Season TD-INT"}
+    ],
+    gates: ["Poise under pressure","Huddle leadership / command","Ball security discipline","Competitiveness / late-game demeanor","Coachability"]
+  },
+  RB: {
+    label: "Running Back",
+    archetypes: [
+      {k:"Power/Downhill", d:"Between-the-tackles runner, contact balance and finish over creativity."},
+      {k:"Zone/Vision", d:"Patience, one-cut decisiveness, sets up blocks and presses the crease."},
+      {k:"Scat/Receiving", d:"Space player — pass-game weapon first, home-run explosiveness in open field."}
+    ],
+    film: [
+      {id:"vision", name:"Vision & Patience", p:"Sets up blocks, reads the hole develop, doesn't rush the crease."},
+      {id:"contact", name:"Contact Balance", p:"Runs through arm tackles, keeps pads low, finishes runs forward."},
+      {id:"burst", name:"Burst / Acceleration", p:"Gets from zero to top speed through the hole, separation vs. angle defenders."},
+      {id:"passpro", name:"Pass Protection", p:"Recognizes blitz, squares up, willing and effective in protection."}
+    ],
+    athletic: [
+      {id:"speed", name:"Top-End Speed", metric:"40 time"},
+      {id:"agility", name:"Lateral Agility", metric:"Short shuttle / 3-cone"},
+      {id:"power", name:"Play Strength", metric:"Broken tackle rate (film est.)"}
+    ],
+    production: [
+      {id:"ypc", name:"Yards / Carry", metric:"Season YPC"},
+      {id:"explosive", name:"Explosive Run Rate", metric:"Runs 15+ yds / season"}
+    ],
+    gates: ["Ball security","Competitive/finishing toughness","Effort in pass protection","Coachability"]
+  },
+  WR: {
+    label: "Wide Receiver",
+    archetypes: [
+      {k:"X", d:"Boundary/split-end. Press-beater, contested-catch, plays through leverage on an island."},
+      {k:"H", d:"Slot/movement piece. Quick separation, YAC creator, works the middle of the field."},
+      {k:"Z", d:"Flanker/field. Vertical stress, motion versatility, big-play explosiveness."}
+    ],
+    film: [
+      {id:"hands", name:"Hands / Ball Skills", p:"Catches away from body, high-pointing, contested-catch reliability."},
+      {id:"yac", name:"YAC / Foot Speed", p:"What happens after the catch — burst, tackle-breaking, top gear."},
+      {id:"breaks", name:"Breakpoints / COD", p:"Route sharpness, ability to separate at the top of the stem."},
+      {id:"vital", name:"Vital Qualities", p:"Release package, competitive catch radius, blocking effort downfield."}
+    ],
+    athletic: [
+      {id:"speed", name:"Top-End Speed", metric:"40 time"},
+      {id:"release", name:"Release Quickness", metric:"Press-release win rate (film est.)"},
+      {id:"radius", name:"Catch Radius", metric:"Vertical / wingspan if known"}
+    ],
+    production: [
+      {id:"ypr", name:"Yards / Reception", metric:"Season YPR"},
+      {id:"contested", name:"Contested Catch Rate", metric:"Season contested catches"}
+    ],
+    gates: ["Competitive toughness","Route discipline / effort on non-target plays","Blocking effort","Ball security","Coachability"]
+  },
+  TE: {
+    label: "Tight End",
+    archetypes: [
+      {k:"In-line/Y", d:"Primary blocker who threatens as a receiver — attached to the formation most snaps."},
+      {k:"Move/F", d:"Detached, motion-heavy, matchup piece against LBs and slot DBs."},
+      {k:"Big Slot", d:"Basketball-frame vertical/seam threat, minimal in-line blocking asked of him."}
+    ],
+    film: [
+      {id:"blocking", name:"In-Line Blocking", p:"Hand placement, leverage, and finish as a run and pass blocker."},
+      {id:"routes", name:"Route Running / Separation", p:"Sells routes, creates natural separation vs. LBs and DBs."},
+      {id:"hands", name:"Hands / Contested Catch", p:"Reliable hands in traffic, wins 50/50 balls in the seam and red zone."},
+      {id:"yac", name:"YAC / Run After Catch", p:"Runs through/away from contact after the catch."}
+    ],
+    athletic: [
+      {id:"speed", name:"Speed / Vertical Threat", metric:"40 time"},
+      {id:"flex", name:"Flexibility / COD", metric:"Short shuttle"},
+      {id:"release", name:"Release Quickness", metric:"Film est."}
+    ],
+    production: [
+      {id:"ypt", name:"Yards / Target", metric:"Season YPT"},
+      {id:"redzone", name:"Red Zone Production", metric:"Red zone TDs"}
+    ],
+    gates: ["Willingness to block","Competitive toughness","Coachability","Ball security"]
+  },
+  OL: {
+    label: "Offensive Line",
+    archetypes: [
+      {k:"LT", d:"Blindside protector — length, foot quickness in pass sets vs. speed rushers."},
+      {k:"IOL (G/C)", d:"Interior — power at point of attack, combo blocks, calls/communication."},
+      {k:"RT", d:"Strongside — power in the run game, handles length and bull rush."}
+    ],
+    film: [
+      {id:"passset", name:"Pass Set / Kick Slide", p:"Footwork, depth, and mirror ability in pass protection."},
+      {id:"hands", name:"Hand Placement / Punch", p:"Hand accuracy and timing at the point of attack."},
+      {id:"anchor", name:"Anchor / Power at POA", p:"Holds ground vs. bull rush, generates movement in the run game."},
+      {id:"iq", name:"Football IQ (Protection ID)", p:"Sees stunts and blitzes, communicates calls, picks up twists."},
+      {id:"finish", name:"Finish / Competitiveness", p:"Plays through the whistle, second-level effort, physicality."}
+    ],
+    athletic: [
+      {id:"quickness", name:"Short-Area Quickness", metric:"10-yd split"},
+      {id:"length", name:"Length / Reach", metric:"Arm length if known"},
+      {id:"strength", name:"Core Strength / Anchor", metric:"Film est."}
+    ],
+    production: [
+      {id:"pressures", name:"Pressures Allowed", metric:"Per game (film est.)"},
+      {id:"knockdowns", name:"Knockdown / Pancake Rate", metric:"Film est."}
+    ],
+    gates: ["Communication / calls","Toughness","Competitiveness","Coachability"]
+  },
+  DL: {
+    label: "Defensive Line",
+    archetypes: [
+      {k:"Edge", d:"Off the ball or with hand down — first step and bend to win the corner."},
+      {k:"3-Tech", d:"Interior penetrator — quickness and hands to disrupt gaps and collapse the pocket."},
+      {k:"Nose/1-Tech", d:"Two-gap anchor — length, power, and discipline to control the point of attack."}
+    ],
+    film: [
+      {id:"getoff", name:"Get-Off / First Step", p:"Snap anticipation and initial quickness off the ball."},
+      {id:"hands", name:"Hand Usage / Pass Rush Moves", p:"Counter moves, hand-fighting, ability to disengage blockers."},
+      {id:"gap", name:"Gap Discipline / Run Defense", p:"Stays in assignment, sets edge, controls gap in the run game."},
+      {id:"motor", name:"Motor / Finish", p:"Effort to the whistle, pursuit from backside, doesn't quit on reps."}
+    ],
+    athletic: [
+      {id:"explosive", name:"Explosiveness", metric:"10-yd split / vertical"},
+      {id:"bend", name:"Bend / Flexibility", metric:"Film est. corner-turning ability"},
+      {id:"length", name:"Length", metric:"Arm length if known"}
+    ],
+    production: [
+      {id:"pressure", name:"Sacks / Pressures", metric:"Season total"},
+      {id:"tfl", name:"TFLs", metric:"Season total"}
+    ],
+    gates: ["Motor / effort","Competitiveness","Discipline (assignment soundness)","Coachability"]
+  },
+  LB: {
+    label: "Linebacker",
+    archetypes: [
+      {k:"MIKE", d:"Downhill run defender and defensive communicator — reads and fills fast."},
+      {k:"WILL", d:"Sideline-to-sideline range, best athlete of the group, coverage-capable."},
+      {k:"SAM", d:"Handles TE/H-back in space, sets the edge, hybrid box/coverage skillset."}
+    ],
+    film: [
+      {id:"diagnose", name:"Read & Diagnose", p:"Keys and triggers quickly, doesn't get held up by misdirection."},
+      {id:"range", name:"Range / Pursuit", p:"Sideline-to-sideline speed, angles taken to the ball."},
+      {id:"coverage", name:"Coverage (Man/Zone)", p:"Drops to zone landmarks, carries routes in man, closes on the ball."},
+      {id:"deconstruct", name:"Block Deconstruction", p:"Takes on and defeats blocks from lineman and fullbacks without losing gap."},
+      {id:"tackling", name:"Tackling", p:"Wraps up, form, doesn't miss in space."}
+    ],
+    athletic: [
+      {id:"speed", name:"Speed / Range", metric:"40 time"},
+      {id:"cod", name:"Change of Direction", metric:"Short shuttle"},
+      {id:"explosive", name:"Explosiveness", metric:"Vertical / broad jump"}
+    ],
+    production: [
+      {id:"tackles", name:"Tackles", metric:"Season total"},
+      {id:"coverage", name:"Coverage Production", metric:"INTs / PBUs"}
+    ],
+    gates: ["Communication / leadership","Competitiveness","Tackling discipline (form over highlight)","Coachability"]
+  },
+  DB: {
+    label: "Defensive Back",
+    archetypes: [
+      {k:"CB", d:"Man-coverage skillset, press-and-carry, isolated on an island vs. WR1s."},
+      {k:"FS", d:"Deep-middle range player, ball skills, last line of defense over the top."},
+      {k:"SS", d:"Box safety — run support, tackling, matches up on TEs and slot receivers."}
+    ],
+    film: [
+      {id:"transition", name:"Backpedal / Transition", p:"Smoothness and speed flipping hips out of the backpedal."},
+      {id:"ballskills", name:"Ball Skills", p:"Plays through the hands of the receiver, tracks the ball in the air."},
+      {id:"man", name:"Man Coverage / Press", p:"Jams at the line, mirrors release, stays in phase down the field."},
+      {id:"zone", name:"Zone Awareness / Range", p:"Reads QB eyes, drives on the ball from depth, closes throwing lanes."},
+      {id:"tackling", name:"Tackling", p:"Willing and reliable in run support and open field."}
+    ],
+    athletic: [
+      {id:"speed", name:"Top-End Speed", metric:"40 time"},
+      {id:"hips", name:"Hip Fluidity", metric:"Film est."},
+      {id:"length", name:"Length", metric:"Arm length if known"}
+    ],
+    production: [
+      {id:"pbu", name:"PBUs / INTs", metric:"Season total"},
+      {id:"tackles", name:"Tackles", metric:"Season total"}
+    ],
+    gates: ["Competitiveness / ball-hawk mentality","Tackling willingness","Discipline (eye control)","Coachability"]
+  },
+  ATH: {
+    label: "Athlete (Flex)",
+    archetypes: [
+      {k:"Offense Flex", d:"Position-undecided offensive weapon — touches, matchups, and space are the priority."},
+      {k:"Defense Flex", d:"Position-undecided defensive playmaker — instincts and range project across spots."},
+      {k:"Special Teams", d:"Returner / core special teams impact player with developmental upside elsewhere."}
+    ],
+    film: [
+      {id:"explosive", name:"Explosiveness", p:"Ability to create a big play from a standstill or in the open field."},
+      {id:"ballskills", name:"Ball Skills / Playmaking", p:"Instinctive production with the ball in the air or in the hands."},
+      {id:"instincts", name:"Football Instincts", p:"Plays fast without overthinking — translates regardless of scheme."},
+      {id:"versatility", name:"Versatility", p:"Shows he can line up in multiple spots and produce."}
+    ],
+    athletic: [
+      {id:"speed", name:"Speed", metric:"40 time"},
+      {id:"cod", name:"Change of Direction", metric:"Short shuttle"},
+      {id:"explosive", name:"Explosiveness", metric:"Vertical / broad jump"}
+    ],
+    production: [
+      {id:"allpurpose", name:"Yards / Touch (All-Purpose)", metric:"Season total"},
+      {id:"bigplay", name:"Big Play Rate", metric:"Plays 20+ yds / season"}
+    ],
+    gates: ["Competitiveness","Coachability","Versatility / willingness to move around","Effort on special teams"]
+  }
+};
+
+const GRADE_LABELS = ["Poor","Below Avg","Average","Above Avg","Elite"];
+
+/* Pre-draft style interview questions — same for every position */
+const INTERVIEW_QS = [
+  {id:"influence", cat:"Character", q:"Tell me about your family. Who's had the biggest influence on you and why?"},
+  {id:"adversity", cat:"Character", q:"Describe a time you faced adversity — an injury, getting benched, a big loss. How did you respond?"},
+  {id:"reputation", cat:"Character", q:"What would your coaches and teachers say about you when you're not in the room?"},
+  {id:"favplay", cat:"Learning Style", q:"Walk me through your favorite play — and tell me what everyone ELSE is doing on it, not just you."},
+  {id:"install", cat:"Learning Style", q:"When your coach installs something new, what do you do that week to have it down by Friday?"},
+  {id:"why", cat:"Motivation", q:"Why do you play? What does football mean to you?"},
+  {id:"goals", cat:"Motivation", q:"Where do you see yourself in 10 years if football ends tomorrow?"}
+];
+
+/* ---------------- STATE ---------------- */
+let state = {
+  position: null,
+  archetype: null,
+  film: {}, athletic: {}, production: {},
+  athleticRaw: {}, productionRaw: {},
+  gates: {}, iq: 5, tier: null,
+  learnStyle: null, interview: {}, interviewGrade: null
+};
+
+/* ---------------- INIT ---------------- */
+function getPositionFromURL(){
+  const p = new URLSearchParams(window.location.search).get('position');
+  return (p && POSITIONS[p.toUpperCase()]) ? p.toUpperCase() : 'QB';
+}
+
+function initPosSelect(){
+  const sel = document.getElementById('posSelect');
+  sel.innerHTML = Object.keys(POSITIONS).map(k=>`<option value="${k}">${POSITIONS[k].label}</option>`).join('');
+  sel.value = state.position;
+  sel.onchange = ()=> loadPosition(sel.value);
+}
+
+function loadPosition(posKey){
+  state.position = posKey;
+  state.archetype = null;
+  state.film = {}; state.athletic = {}; state.production = {};
+  state.athleticRaw = {}; state.productionRaw = {};
+  state.gates = {};
+  state.learnStyle = null; state.interview = {}; state.interviewGrade = null;
+  document.querySelectorAll('#learnRow .arche-btn').forEach(b=>b.classList.remove('sel'));
+  document.querySelectorAll('#row-interview-impression .grade-btn').forEach(b=>b.classList.remove('sel'));
+  renderInterview();
+  const cfg = POSITIONS[posKey];
+  document.getElementById('posTitle').textContent = cfg.label;
+  document.getElementById('posSelect').value = posKey;
+  document.getElementById('archSub').textContent = `Tag how this ${cfg.label.toLowerCase()} projects`;
+
+  // Archetypes
+  const archeRow = document.getElementById('archeRow');
+  archeRow.innerHTML = cfg.archetypes.map(a=>`<div class="arche-btn" data-k="${a.k}" onclick="pickArche('${a.k}')"><b>${a.k}</b><span>role</span></div>`).join('');
+  document.getElementById('archeDesc').classList.remove('show');
+
+  // Film traits
+  document.getElementById('filmTraits').innerHTML = cfg.film.map(t=>traitCardHTML(t,'film')).join('');
+
+  // Athletic
+  document.getElementById('athleticTraits').innerHTML = cfg.athletic.map(t=>traitCardHTML(t,'athletic',true)).join('');
+
+  // Production
+  document.getElementById('productionTraits').innerHTML = cfg.production.map(t=>traitCardHTML(t,'production',true)).join('');
+
+  // Gates
+  document.getElementById('gatesList').innerHTML = cfg.gates.map(g=>gateHTML(g)).join('');
+
+  computeScores();
+}
+
+function traitCardHTML(t, group, withMetric){
+  let metricHTML = '';
+  if(withMetric){
+    metricHTML = `<div class="raw-metric"><span class="raw-metric-label">${t.metric}</span><input type="text" oninput="setRaw('${group}','${t.id}',this.value)" placeholder="optional"></div>`;
+  }
+  return `
+  <div class="trait-card">
+    <div class="t-name">${t.name}</div>
+    <div class="t-prompt">${t.p || ''}</div>
+    <div class="grade-row" id="row-${group}-${t.id}">
+      ${[1,2,3,4,5].map(g=>`<div class="grade-btn g${g}" onclick="setGrade('${group}','${t.id}',${g})">${g}<small>${GRADE_LABELS[g-1]}</small></div>`).join('')}
+    </div>
+    ${metricHTML}
+  </div>`;
+}
+
+function gateHTML(label){
+  const id = label.replace(/[^a-zA-Z0-9]/g,'');
+  return `
+  <div class="gate-row">
+    <div class="gate-label">${label}</div>
+    <div class="gate-btns" id="gate-${id}">
+      <div class="gate-btn pass" onclick="setGate('${id}','pass')">Pass</div>
+      <div class="gate-btn concern" onclick="setGate('${id}','concern')">Concern</div>
+      <div class="gate-btn fail" onclick="setGate('${id}','fail')">Fail</div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- INTERACTIONS ---------------- */
+function toggleSec(headEl){
+  headEl.closest('.section').classList.toggle('open');
+}
+
+function pickArche(k){
+  state.archetype = k;
+  document.querySelectorAll('.arche-btn').forEach(b=>b.classList.toggle('sel', b.dataset.k===k));
+  const cfg = POSITIONS[state.position];
+  const a = cfg.archetypes.find(x=>x.k===k);
+  const desc = document.getElementById('archeDesc');
+  desc.textContent = a.d;
+  desc.classList.add('show');
+}
+
+function setGrade(group, id, val){
+  state[group][id] = val;
+  const row = document.getElementById(`row-${group}-${id}`);
+  row.querySelectorAll('.grade-btn').forEach((b,i)=>b.classList.toggle('sel', i+1===val));
+  computeScores();
+}
+
+function setRaw(group, id, val){
+  const store = group==='athletic' ? state.athleticRaw : state.productionRaw;
+  store[id] = val;
+}
+
+function setGate(id, val){
+  state.gates[id] = val;
+  const wrap = document.getElementById(`gate-${id}`);
+  wrap.querySelectorAll('.gate-btn').forEach(b=>b.classList.toggle('sel', b.classList.contains(val)));
+  computeScores();
+}
+
+function onIQ(v){
+  state.iq = parseInt(v);
+  document.getElementById('iqVal').innerHTML = `${v}<span>/10</span>`;
+  document.getElementById('iqBig').textContent = parseFloat(v).toFixed(1);
+  computeScores();
+}
+
+/* ---------------- INTERVIEW ---------------- */
+function renderInterview(){
+  let html = '';
+  let lastCat = '';
+  INTERVIEW_QS.forEach(item=>{
+    if(item.cat !== lastCat){
+      html += `<label class="field-label" style="margin-top:16px;">${item.cat}</label>`;
+      lastCat = item.cat;
+    }
+    html += `
+    <div class="trait-card">
+      <div class="t-prompt" style="font-size:13.5px; color:#20263F; font-weight:600;">"${item.q}"</div>
+      <textarea style="min-height:64px; margin-top:8px; font-size:14px;" placeholder="His answer / your read..." oninput="setInterview('${item.id}', this.value)"></textarea>
+    </div>`;
+  });
+  document.getElementById('interviewQs').innerHTML = html;
+}
+
+function setInterview(id, val){
+  if(val.trim()) state.interview[id] = val.trim();
+  else delete state.interview[id];
+}
+
+function pickLearn(k){
+  state.learnStyle = k;
+  document.querySelectorAll('#learnRow .arche-btn').forEach(b=>b.classList.toggle('sel', b.dataset.l===k));
+}
+
+function setIntGrade(val){
+  state.interviewGrade = val;
+  const row = document.getElementById('row-interview-impression');
+  row.querySelectorAll('.grade-btn').forEach((b,i)=>b.classList.toggle('sel', i+1===val));
+}
+
+document.getElementById('tierRow').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tier-btn');
+  if(!btn) return;
+  state.tier = btn.dataset.tier;
+  document.querySelectorAll('.tier-btn').forEach(b=>b.classList.toggle('sel', b===btn));
+});
+
+/* ---------------- SCORING ---------------- */
+function avg(obj){
+  const vals = Object.values(obj);
+  if(!vals.length) return null;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function computeScores(){
+  const filmAvg = avg(state.film);
+  const athAvg = avg(state.athletic);
+  const prodAvg = avg(state.production);
+
+  const gateVals = Object.values(state.gates);
+  let charScore = null;
+  if(gateVals.length){
+    const pts = gateVals.map(g=> g==='pass'?100 : g==='concern'?60 : 0);
+    charScore = pts.reduce((a,b)=>a+b,0)/pts.length;
+  }
+
+  const filmScore = filmAvg!==null ? filmAvg*20 : 0;
+  const athScore = athAvg!==null ? athAvg*20 : 0;
+  const prodScore = prodAvg!==null ? prodAvg*20 : 0;
+  const cScore = charScore!==null ? charScore : 0;
+
+  const composite = (filmScore*0.50) + (athScore*0.25) + (cScore*0.15) + (prodScore*0.10);
+
+  document.getElementById('scoreBig').textContent = composite.toFixed(1);
+  document.getElementById('barFilm').style.width = filmScore+'%';
+  document.getElementById('barAth').style.width = athScore+'%';
+  document.getElementById('barChar').style.width = cScore+'%';
+  document.getElementById('barProd').style.width = prodScore+'%';
+  document.getElementById('valFilm').textContent = filmScore.toFixed(0);
+  document.getElementById('valAth').textContent = athScore.toFixed(0);
+  document.getElementById('valChar').textContent = cScore.toFixed(0);
+  document.getElementById('valProd').textContent = prodScore.toFixed(0);
+
+  let ti = '—';
+  if(filmAvg!==null && athAvg!==null && athScore>0){
+    ti = ((state.iq * filmScore) / athScore).toFixed(2);
+  }
+  document.getElementById('tiVal').textContent = ti;
+
+  updateStatus();
+}
+
+function updateStatus(){
+  const cfg = POSITIONS[state.position];
+  const filmDone = Object.keys(state.film).length === cfg.film.length;
+  const gatesDone = Object.keys(state.gates).length === cfg.gates.length;
+  const ready = state.archetype && filmDone && gatesDone && document.getElementById('fProspect').value.trim();
+  document.getElementById('submitBtn').disabled = !ready;
+  document.getElementById('fbStatus').textContent = ready ? 'Ready to submit' : 'Fill out prospect info, archetype, film grades & gates';
+}
+document.getElementById('fProspect').addEventListener('input', updateStatus);
+
+/* ---------------- SUBMIT ---------------- */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+async function submitReport(){
+  const cfg = POSITIONS[state.position];
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try{
+    const sql = `
+      INSERT INTO reports (
+        prospect_name, position, camp, class_year, school, height, weight,
+        film_link, archetype, film_grades, athletic_grades, athletic_raw,
+        production_grades, production_raw, gates, football_iq, interview_data,
+        scout_name, scout_notes, recommendation_tier, inhome_score
+      ) VALUES (
+        '${(document.getElementById('fProspect').value || '').replace(/'/g, "''")}',
+        '${state.position}',
+        '${(document.getElementById('fCamp').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fClass').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fSchool').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fHeight').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fWeight').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fFilm').value || '').replace(/'/g, "''")}',
+        '${state.archetype || ''}',
+        '${JSON.stringify(state.film || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.athletic || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.athleticRaw || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.production || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.productionRaw || {}).replace(/'/g, "''")}',
+        '${JSON.stringify(state.gates || {}).replace(/'/g, "''")}',
+        ${state.iq || 0},
+        '${JSON.stringify({learnStyle: state.learnStyle, impression: state.interviewGrade, answers: state.interview} || {}).replace(/'/g, "''")}',
+        '${(document.getElementById('fScout').value || '').replace(/'/g, "''")}',
+        '${(document.getElementById('fNarrative').value || '').replace(/'/g, "''")}',
+        '${state.tier || ''}',
+        ${parseFloat(document.getElementById('scoreBig').textContent) || 0}
+      );
+    `;
+
+    const res = await fetch(
+      'https://ep-late-bar-at3i9vj0.apirest.c-9.us-east-1.aws.neon.tech/neondb/rest/v1/query',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer napi_ogs7bfm73pw5zdryjiy69dvyqxm29aicx37z0w6d7cyj6gz92vo8xax0wlx2qh7p'
+        },
+        body: JSON.stringify({ query: sql })
+      }
+    );
+
+    const data = await res.json();
+    
+    if(res.ok){
+      showToast('✓ Report submitted to database');
+      btn.textContent = 'Submitted';
+    } else {
+      throw new Error(data.error || 'Server error');
+    }
+  } catch(err){
+    console.error('Submit error:', err);
+    showToast('Error: ' + err.message);
+    btn.textContent = 'Submit Report';
+    btn.disabled = false;
+  }
+}
+
+/* ---------------- PDF EXPORT ---------------- */
+/* Set this to your email to prefill the share/email flow (optional) */
+const REPORT_EMAIL = "";
+
+function gv(id){ return document.getElementById(id).value.trim(); }
+function gradeWord(n){ return n ? `${n} — ${GRADE_LABELS[n-1]}` : "Not graded"; }
+
+const IMPRESSION_LABELS = ["Red Flag","Guarded","Solid","Impressive","Elite Makeup"];
+
+function buildInterviewPV(){
+  const answered = INTERVIEW_QS.filter(q=>state.interview[q.id]);
+  const hasAny = answered.length || state.learnStyle || state.interviewGrade;
+  if(!hasAny) return '';
+
+  let inner = '';
+  if(state.learnStyle || state.interviewGrade){
+    inner += `<div class="pv-grid" style="margin-bottom:10px;">
+      ${state.learnStyle ? `<div class="pv-item"><span class="k">Learns best by</span><span class="v">${state.learnStyle}</span></div>` : ''}
+      ${state.interviewGrade ? `<div class="pv-item"><span class="k">Interview Impression</span><span class="v">${state.interviewGrade} — ${IMPRESSION_LABELS[state.interviewGrade-1]}</span></div>` : ''}
+    </div>`;
+  }
+  inner += answered.map(q=>`
+    <div style="margin-top:9px;">
+      <div style="font-size:11.5px; font-weight:700; color:#555C78;">${q.q}</div>
+      <div class="pv-narrative" style="margin-top:2px;">${state.interview[q.id].replace(/</g,'&lt;')}</div>
+    </div>`).join('');
+
+  return `<div class="pv-sec"><h3>Player Interview</h3>${inner}</div>`;
+}
+
+function buildPrintView(){
+  const cfg = POSITIONS[state.position];
+  const prospect = gv('fProspect') || 'Unnamed Prospect';
+  const today = new Date().toLocaleDateString('en-US');
+
+  const metaBits = [cfg.label, state.archetype ? `${state.archetype} role` : null,
+    gv('fClass') ? `Class of ${gv('fClass')}` : null, gv('fSchool') || null,
+    [gv('fHeight'), gv('fWeight')].filter(Boolean).join(' / ') || null].filter(Boolean).join(' &middot; ');
+
+  const filmRows = cfg.film.map(t=>`<div class="pv-item"><span class="k">${t.name}</span><span class="v">${gradeWord(state.film[t.id])}</span></div>`).join('');
+
+  const athRows = cfg.athletic.map(t=>{
+    const raw = state.athleticRaw[t.id] ? ` (${state.athleticRaw[t.id]})` : '';
+    return `<div class="pv-item"><span class="k">${t.name}</span><span class="v">${gradeWord(state.athletic[t.id])}${raw}</span></div>`;
+  }).join('');
+
+  const prodRows = cfg.production.map(t=>{
+    const raw = state.productionRaw[t.id] ? ` (${state.productionRaw[t.id]})` : '';
+    return `<div class="pv-item"><span class="k">${t.name}</span><span class="v">${gradeWord(state.production[t.id])}${raw}</span></div>`;
+  }).join('');
+
+  const gateRows = cfg.gates.map(g=>{
+    const id = g.replace(/[^a-zA-Z0-9]/g,'');
+    const val = state.gates[id];
+    const word = val==='pass'?'PASS': val==='concern'?'CONCERN': val==='fail'?'FAIL':'—';
+    return `<div class="pv-item"><span class="k">${g}</span><span class="v ${val||''}">${word}</span></div>`;
+  }).join('');
+
+  const narrative = gv('fNarrative') || 'No notes provided.';
+  const scoreBig = document.getElementById('scoreBig').textContent;
+  const ti = document.getElementById('tiVal').textContent;
+  const vals = ['valFilm','valAth','valChar','valProd'].map(i=>document.getElementById(i).textContent);
+
+  document.getElementById('printView').innerHTML = `
+  <div class="pv-head">
+    <div>
+      <div class="pv-logo">IN<b>HOME</b></div>
+      <div class="pv-head-tag">EIS ALL-22 &middot; OFFICIAL SCOUTING REPORT</div>
+    </div>
+    <div class="pv-score-chip"><div class="n">${scoreBig}</div><div class="l">InHome Score</div></div>
+  </div>
+  <div class="pv-page">
+    <div class="pv-name">${prospect}</div>
+    <div class="pv-meta">${metaBits}</div>
+    ${gv('fCamp') ? `<div class="pv-meta"><b>Evaluated at:</b> ${gv('fCamp')}</div>` : ''}
+    ${gv('fFilm') ? `<div class="pv-meta">Film: ${gv('fFilm')}</div>` : ''}
+
+    <div class="pv-sec">
+      <h3>Score Breakdown</h3>
+      <div class="pv-scores">
+        <div class="pv-score-box"><div class="n">${vals[0]}</div><div class="l">Film 50%</div></div>
+        <div class="pv-score-box"><div class="n">${vals[1]}</div><div class="l">Athletic 25%</div></div>
+        <div class="pv-score-box"><div class="n">${vals[2]}</div><div class="l">Character 15%</div></div>
+        <div class="pv-score-box"><div class="n">${vals[3]}</div><div class="l">Production 10%</div></div>
+        <div class="pv-score-box"><div class="n">${state.iq}.0</div><div class="l">Football IQ /10</div></div>
+        <div class="pv-score-box"><div class="n">${ti}</div><div class="l">Translation Index</div></div>
+      </div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>Film Grade (EIS) &mdash; ${state.archetype || cfg.label}</h3>
+      <div class="pv-grid">${filmRows}</div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>Athletic Testing</h3>
+      <div class="pv-grid">${athRows}</div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>Production</h3>
+      <div class="pv-grid">${prodRows}</div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>The Gates &mdash; Character &amp; Competitive</h3>
+      <div class="pv-grid">${gateRows}</div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>Scout's Notes</h3>
+      <div class="pv-narrative">${narrative.replace(/</g,'&lt;')}</div>
+    </div>
+
+    <div class="pv-sec">
+      <h3>Recommendation</h3>
+      <span class="pv-tier">${state.tier || 'Not selected'}</span>
+    </div>
+
+    ${buildInterviewPV()}
+
+    <div class="pv-foot">
+      <span>Scout: ${gv('fScout') || '—'} &nbsp;&middot;&nbsp; ${gv('fCamp') ? gv('fCamp') + ' &nbsp;&middot;&nbsp; ' : ''}Evaluated: ${gv('fDate') || today}</span>
+      <span>InHome Recruiting Intelligence &middot; Confidential</span>
+    </div>
+  </div>`;
+}
+
+async function sendPDF(){
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  await new Promise(r=>setTimeout(r, 100));
+  
+  buildPrintView();
+  const prospect = gv('fProspect') || 'prospect';
+  const fname = `InHome_${state.position}_${prospect.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  const btn = document.getElementById('pdfBtn');
+  const el = document.getElementById('printView');
+  const overlay = document.getElementById('buildOverlay');
+  
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  
+  try{
+    if(typeof html2pdf === 'undefined') throw new Error('PDF library not loaded');
+
+    overlay.classList.add('show');
+    // Make element visible for capture
+    el.style.display = 'block';
+    el.style.position = 'static';
+    el.style.width = '794px';
+    
+    // Critical: wait for fonts and full layout
+    if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+    el.getBoundingClientRect();
+    await new Promise(r=>setTimeout(r, 400));
+
+    const opt = {
+      filename: fname,
+      image: {type:'jpeg', quality:0.95},
+      html2canvas: {scale:2},
+      jsPDF: {unit:'mm', format:'a4', orientation:'portrait'}
+    };
+    
+    const blob = await html2pdf().set(opt).from(el).outputPdf('blob');
+    
+    el.style.display = 'none';
+    overlay.classList.remove('show');
+
+    if(!blob || blob.size < 8000) throw new Error('PDF generation failed');
+
+    const file = new File([blob], fname, {type:'application/pdf'});
+
+    // Try native share first (iOS/Android)
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:'InHome Scouting Report',
+        text:`${prospect} (${state.position})`
+      });
+      showToast('Shared ✓');
+    } else {
+      // Fallback: download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fname;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('PDF downloaded ✓');
+    }
+  } catch(err){
+    el.style.display = 'none';
+    overlay.classList.remove('show');
+    console.error('PDF error:', err);
+    showToast('Error generating PDF');
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Save & Send PDF';
+}
+
+/* ---------------- BOOT ---------------- */
+state.position = getPositionFromURL();
+initPosSelect();
+loadPosition(state.position);
+</script>
+</body>
+</html>

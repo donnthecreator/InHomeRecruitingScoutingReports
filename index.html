@@ -80,6 +80,21 @@
   .raw-metric input{max-width:140px; display:inline-block;}
   .raw-metric-label{font-size:11.5px; color:var(--mute); font-weight:600; margin-right:8px;}
 
+  .trk-head{margin-top:20px; padding-top:16px; border-top:1.5px dashed var(--line);}
+  .trk-title{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:17px;}
+  .trk-sub{font-size:11.5px; color:var(--mute); margin-top:2px; line-height:1.4;}
+  .trk-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; margin-top:11px;}
+  .trk-hidden{display:none;}
+  .trk-row{display:flex; flex-direction:column; gap:4px;}
+  .trk-name{font-size:12px; font-weight:600; color:var(--mute); display:flex; align-items:center; gap:6px;}
+  .trk-key{background:var(--blue-dim); color:var(--blue); font-size:9px; font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; padding:2px 5px; border-radius:4px;}
+  .trk-row input{padding:9px 10px; font-size:14px;}
+  .trk-more-wrap{margin-top:10px;}
+  .trk-more{background:none; border:none; color:var(--blue); font-size:12.5px; font-weight:700; padding:2px 0; cursor:pointer;}
+  .trk-meta{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media (max-width:480px){ .trk-grid, .trk-meta{grid-template-columns:1fr;} }
+
   .gate-row{display:flex; align-items:center; justify-content:space-between; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px; margin-top:9px;}
   .gate-label{font-size:14px; font-weight:600; max-width:56%; line-height:1.3;}
   .gate-btns{display:flex; gap:5px;}
@@ -242,7 +257,7 @@
       <div class="section-head-left"><div class="step-num">4</div><div><h2>Athletic Testing</h2><div class="section-sub">Grade the trait, log the number if you have it</div></div></div>
       <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7290" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div class="section-body"><div class="section-body-inner" id="athleticTraits"></div></div>
+    <div class="section-body"><div class="section-body-inner"><div id="athleticTraits"></div><div id="trackBlock"></div></div></div>
   </div>
 
   <!-- 5. Production -->
@@ -589,6 +604,24 @@ const POSITIONS = {
 
 const GRADE_LABELS = ["Poor","Below Avg","Average","Above Avg","Elite"];
 
+/* ---------------- TRACK & FIELD (reference data, NOT scored) ----------------
+   Verified third-party athletic data. Stored in raw.track, which is part of the
+   existing JSONB column, so no database schema change is required.
+   "key" lists the positions where the event is most predictive. ---------------- */
+const TRACK_EVENTS = [
+  {id:"e100",    name:"100m",             unit:"sec",   key:["WR","DB","RB","ATH","LB"]},
+  {id:"e200",    name:"200m",             unit:"sec",   key:["WR","DB","RB","ATH"]},
+  {id:"e400",    name:"400m",             unit:"sec",   key:["DB","LB","ATH"]},
+  {id:"e60",     name:"60m (indoor)",     unit:"sec",   key:["WR","DB","RB","ATH"]},
+  {id:"relay",   name:"4x100 relay split",unit:"sec",   key:["WR","DB","RB","ATH"]},
+  {id:"hurdles", name:"110m hurdles",     unit:"sec",   key:["DB","LB","DL","ATH"]},
+  {id:"lj",      name:"Long jump",        unit:"ft-in", key:["WR","DB","RB","ATH","LB"]},
+  {id:"tj",      name:"Triple jump",      unit:"ft-in", key:["WR","DB","ATH"]},
+  {id:"hj",      name:"High jump",        unit:"ft-in", key:["WR","DB","TE","ATH"]},
+  {id:"shot",    name:"Shot put",         unit:"ft-in", key:["OL","DL","TE","LB"]},
+  {id:"disc",    name:"Discus",           unit:"ft-in", key:["OL","DL","TE"]}
+];
+
 /* Pre-draft style interview questions — same for every position */
 const INTERVIEW_QS = [
   {id:"influence", cat:"Character", q:"Tell me about your family. Who's had the biggest influence on you and why?"},
@@ -607,6 +640,7 @@ let state = {
   film: {}, athletic: {}, production: {},
   athleticRaw: {}, productionRaw: {},
   gates: {}, iq: 5, tier: null,
+  track: {}, trackSource: null, trackSeason: null,
   learnStyle: null, interview: {}, interviewGrade: null
 };
 
@@ -629,6 +663,7 @@ function loadPosition(posKey){
   state.film = {}; state.athletic = {}; state.production = {};
   state.athleticRaw = {}; state.productionRaw = {};
   state.gates = {};
+  state.track = {}; state.trackSource = null; state.trackSeason = null;
   state.learnStyle = null; state.interview = {}; state.interviewGrade = null;
   document.querySelectorAll('#learnRow .arche-btn').forEach(b=>b.classList.remove('sel'));
   document.querySelectorAll('#row-interview-impression .grade-btn').forEach(b=>b.classList.remove('sel'));
@@ -648,6 +683,9 @@ function loadPosition(posKey){
 
   // Athletic
   document.getElementById('athleticTraits').innerHTML = cfg.athletic.map(t=>traitCardHTML(t,'athletic',true)).join('');
+
+  // Track & Field (reference only, appended under Athletic Testing)
+  renderTrack(posKey);
 
   // Production
   document.getElementById('productionTraits').innerHTML = cfg.production.map(t=>traitCardHTML(t,'production',true)).join('');
@@ -672,6 +710,43 @@ function traitCardHTML(t, group, withMetric){
     </div>
     ${metricHTML}
   </div>`;
+}
+
+function renderTrack(posKey){
+  const host = document.getElementById('trackBlock');
+  if(!host) return;
+  const keyEvents = TRACK_EVENTS.filter(e=>e.key.includes(posKey));
+  const other     = TRACK_EVENTS.filter(e=>!e.key.includes(posKey));
+  const row = e => `<div class="trk-row">
+      <div class="trk-name">${e.name}${e.key.includes(posKey)?'<span class="trk-key">key</span>':''}</div>
+      <input type="text" id="trk-${e.id}" placeholder="${e.unit}" autocomplete="off"
+             oninput="setTrack('${e.id}', this.value)">
+    </div>`;
+  host.innerHTML = `
+    <div class="trk-head">
+      <div class="trk-title">Verified Track &amp; Field</div>
+      <div class="trk-sub">Third-party verified marks. Reference data, not part of the InHome Score.</div>
+    </div>
+    <div class="trk-grid">${keyEvents.map(row).join('')}</div>
+    <div class="trk-more-wrap"><button type="button" class="trk-more" onclick="toggleTrackMore(this)">Show other events</button></div>
+    <div class="trk-grid trk-hidden" id="trkOther">${other.map(row).join('')}</div>
+    <div class="trk-meta">
+      <div><label class="field-label" style="margin-top:10px;">Verified source</label>
+        <input type="text" id="trkSource" placeholder="Athletic.net / MileSplit / meet name" oninput="setTrackSource(this.value)"></div>
+      <div><label class="field-label" style="margin-top:10px;">Season</label>
+        <input type="text" id="trkSeason" placeholder="e.g. Spring 2026" oninput="setTrackSeason(this.value)"></div>
+    </div>`;
+}
+function setTrack(id, val){
+  const v = (val||'').trim();
+  if(v) state.track[id] = v; else delete state.track[id];
+}
+function setTrackSource(v){ state.trackSource = (v||'').trim() || null; }
+function setTrackSeason(v){ state.trackSeason = (v||'').trim() || null; }
+function toggleTrackMore(btn){
+  const el = document.getElementById('trkOther');
+  const hidden = el.classList.toggle('trk-hidden');
+  btn.textContent = hidden ? 'Show other events' : 'Hide other events';
 }
 
 function gateHTML(label){
@@ -870,6 +945,11 @@ async function submitReport(){
       productionGrades: state.production,
       productionRaw: state.productionRaw,
       gates: state.gates,
+      track: {
+        events: state.track,
+        source: state.trackSource,
+        season: state.trackSeason
+      },
       interview: {
         learnStyle: state.learnStyle,
         impression: state.interviewGrade,
@@ -929,6 +1009,17 @@ function buildInterviewPV(){
     </div>`).join('');
 
   return `<div class="pv-sec"><h3>Player Interview</h3>${inner}</div>`;
+}
+
+function buildTrackPV(){
+  const ev = Object.keys(state.track||{});
+  if(!ev.length) return '';
+  const rows = TRACK_EVENTS.filter(e=>state.track[e.id]).map(e=>
+    `<div class="pv-item"><span class="k">${e.name}</span><span class="v">${state.track[e.id]}</span></div>`).join('');
+  const meta = [state.trackSource, state.trackSeason].filter(Boolean).join(' &middot; ');
+  return `<div class="pv-sec"><h3>Verified Track &amp; Field</h3>
+    <div class="pv-grid">${rows}</div>
+    ${meta?`<div class="pv-meta" style="margin-top:6px;">Source: ${meta}</div>`:''}</div>`;
 }
 
 function buildPrintView(){
@@ -999,6 +1090,8 @@ function buildPrintView(){
       <h3>Athletic Testing</h3>
       <div class="pv-grid">${athRows}</div>
     </div>
+
+    ${buildTrackPV()}
 
     <div class="pv-sec">
       <h3>Production</h3>

@@ -1,5 +1,4 @@
 const { Client } = require('pg');
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
@@ -7,27 +6,22 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
-
   try {
     const data = JSON.parse(event.body);
-
     const client = new Client({
       connectionString: process.env.DATABASE_URL    });
-
     await client.connect();
-
     const query = `
       INSERT INTO reports (
         prospect_name, position, camp, class_year, school, height, weight,
         film_link, archetype, film_grades, athletic_grades, athletic_raw,
         production_grades, production_raw, gates, football_iq, interview_data,
-        scout_name, scout_notes, recommendation_tier, inhome_score
+        scout_name, scout_notes, recommendation_tier, inhome_score, track
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
       )
       RETURNING id;
     `;
-
     const result = await client.query(query, [
       data.prospect || null,
       data.position || null,
@@ -49,11 +43,10 @@ exports.handler = async (event) => {
       data.scoutName || null,
       data.narrative || null,
       data.recommendationTier || null,
-      parseFloat(data.inhomeScore) || 0
+      parseFloat(data.inhomeScore) || 0,
+      JSON.stringify(data.raw?.track || {})
     ]);
-
     await client.end();
-
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -62,7 +55,6 @@ exports.handler = async (event) => {
         message: 'Report submitted successfully'
       })
     };
-
   } catch (error) {
     console.error('Error:', error);
     return {

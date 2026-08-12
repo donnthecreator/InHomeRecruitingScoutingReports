@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InHome | Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#FF0000; --red-deep:#170000;
+    --paper:#0A0A0A; --card:#141414; --card-2:#1B1B1B;
+    --ink:#F5F5F5; --line:#2A2A2A; --mute:#9A9A9A; --dim:#6A6A6A;
+    --good:#35C759; --warn:#E0A419; --bad:#C62828;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;}
+  h1,h2,h3{font-family:'Anton',sans-serif; font-weight:400; letter-spacing:.02em; text-transform:uppercase;}
+  button{font-family:'Inter',sans-serif;}
+  input,select,textarea{font-family:'Inter',sans-serif; background:var(--card-2); color:var(--ink);
+    border:1.5px solid var(--line); border-radius:9px; padding:10px 12px; font-size:14px; width:100%;}
+  input:focus,select:focus,textarea:focus{outline:none; border-color:var(--red);}
+  input::placeholder,textarea::placeholder{color:var(--dim);}
+  textarea{min-height:64px; resize:vertical; line-height:1.5;}
+  label.fl{display:block; font-size:10.5px; font-weight:700; color:var(--mute); text-transform:uppercase;
+    letter-spacing:.1em; margin:12px 0 6px;}
+
+  /* ---------- GATE ---------- */
+  #gate{position:fixed; inset:0; background:#000; z-index:300; display:flex; align-items:center;
+    justify-content:center; padding:24px;}
+  #gate.hide{display:none;}
+  .gate-box{width:100%; max-width:420px; text-align:center;}
+  .gate-mark{margin:0 auto 18px; height:52px; width:auto; display:block;}
+  .gate-title{font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.02em; color:#fff;
+    text-transform:uppercase;}
+  .gate-s{font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--red);
+    font-weight:700; margin-top:9px;}
+  .gate-box input{margin-top:24px; text-align:center; font-family:'Anton',sans-serif; font-size:22px;
+    letter-spacing:.16em; text-transform:uppercase; padding:14px;}
+  .gate-btn{width:100%; margin-top:10px; background:var(--red); color:#fff; border:none; border-radius:10px;
+    padding:14px; font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.06em;
+    text-transform:uppercase; cursor:pointer;}
+  .gate-btn:disabled{opacity:.5; cursor:default;}
+  .gate-err{color:var(--bad); font-size:12.5px; font-weight:600; margin-top:12px; min-height:17px;}
+  .gate-by{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim);
+    font-weight:700; margin-top:22px; padding-top:16px; border-top:1px solid #1A1A1A;}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{background:#000; border-bottom:1px solid var(--line); padding:15px 18px; position:sticky; top:0; z-index:60;}
+  .topbar-row{max-width:1080px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo-mark{width:30px; height:36px; flex:0 0 auto;}
+  .logo-mark svg{width:100%; height:100%; display:block;}
+  .logo-text{font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.03em;}
+  .logo-text b{color:var(--red); font-weight:400;}
+  .admin-tag{background:var(--red); color:#fff; font-size:9.5px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; padding:4px 8px; border-radius:5px; margin-left:4px;}
+  .signout-btn{background:none; border:1px solid var(--line); color:var(--dim); border-radius:7px;
+    padding:6px 11px; font-size:10px; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:.06em;}
+  .signout-btn:hover{border-color:var(--bad); color:var(--bad);}
+
+  .wrap{max-width:1080px; margin:0 auto; padding:0 14px;}
+
+  /* ---------- STATS ---------- */
+  .stat-row{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:16px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 10px; text-align:center;}
+  .stat-card .n{font-family:'Anton',sans-serif; font-size:24px; line-height:1;}
+  .stat-card .l{font-size:9px; color:var(--mute); font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; margin-top:5px; line-height:1.3;}
+  .stat-card.accent .n{color:var(--red);}
+  @media (max-width:700px){ .stat-row{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex; gap:7px; margin-top:20px; flex-wrap:wrap;}
+  .tab-btn{flex:1; min-width:120px; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
+    border-radius:11px; padding:12px 8px; cursor:pointer; text-align:center; font-family:'Anton',sans-serif;
+    font-size:13px; letter-spacing:.03em; text-transform:uppercase;}
+  .tab-btn .cnt{display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:9.5px;
+    color:var(--dim); margin-top:2px; letter-spacing:0;}
+  .tab-btn.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
+  .tab-btn.on .cnt{color:var(--red);}
+  .pane{display:none;} .pane.on{display:block;}
+
+  /* ---------- PANELS ---------- */
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-top:14px;}
+  .panel h3{margin:0 0 3px; font-size:16px;}
+  .panel .sub{font-size:11.5px; color:var(--mute); margin-bottom:6px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  @media (max-width:620px){ .grid2,.grid3{grid-template-columns:1fr;} }
+  .btn{background:var(--red); color:#fff; border:none; border-radius:9px; padding:12px 16px;
+    font-family:'Anton',sans-serif; font-size:14px; letter-spacing:.04em; text-transform:uppercase;
+    cursor:pointer; width:100%; margin-top:14px;}
+  .btn:hover{background:#E60000;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .btn.sec{background:var(--card-2); color:var(--ink); border:1.5px solid var(--line);}
+  .btn.sec:hover{border-color:var(--red); background:var(--card-2);}
+
+  /* ---------- TOOLS ---------- */
+  .tools{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .tools input,.tools select{flex:1; min-width:150px;}
+  .chip-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px;}
+  .chip{background:#101010; border:1.5px solid var(--line); color:var(--mute); border-radius:15px;
+    padding:6px 12px; font-size:11px; font-weight:600; cursor:pointer;}
+  .chip.on{border-color:var(--red); color:var(--ink); background:var(--red-deep);}
+
+  /* ---------- CARDS ---------- */
+  .list{margin-top:14px; display:flex; flex-direction:column; gap:9px;}
+  .row-card{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:12px;}
+  .row-card:hover{border-color:#3D3D3D;}
+  .rc-top{display:flex; align-items:flex-start; gap:11px;}
+  .rc-avatar{width:44px; height:44px; border-radius:10px; flex:0 0 auto; background:var(--card-2);
+    border:1.5px solid var(--line); overflow:hidden; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:15px; color:var(--dim);}
+  .rc-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .rc-mid{flex:1; min-width:0;}
+  .rc-name{font-family:'Anton',sans-serif; font-size:16px; letter-spacing:.02em; line-height:1.15;}
+  .rc-meta{font-size:11px; color:var(--mute); font-weight:500; margin-top:2px;}
+  .rc-right{flex:0 0 auto; text-align:right;}
+  .rc-score{font-family:'Anton',sans-serif; font-size:19px; color:var(--red);}
+  .rc-sub{font-size:9.5px; color:var(--dim); margin-top:2px;}
+  .pill{display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    padding:3px 8px; border-radius:10px; margin-top:5px; margin-right:5px;}
+  .pill.high{background:var(--red-deep); color:var(--red);}
+  .pill.normal{background:var(--card-2); color:var(--mute);}
+  .pill.juco{background:#0F2418; color:var(--good);}
+  .pill.hs{background:#241A00; color:var(--warn);}
+  .pill.open{background:#241A00; color:var(--warn);}
+  .pill.done{background:#0F2418; color:var(--good);}
+
+  /* ---------- LINK RAIL ---------- */
+  .rail{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; padding-top:10px; border-top:1px solid var(--line);}
+  .rail-lbl{font-size:9px; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:.1em;
+    width:100%; margin-bottom:2px;}
+  .rail a{background:var(--card-2); border:1px solid var(--line); color:var(--mute); border-radius:7px;
+    padding:6px 10px; font-size:10.5px; font-weight:700; text-decoration:none; letter-spacing:.03em;}
+  .rail a:hover{border-color:var(--red); color:var(--ink);}
+  .rail a.src{border-color:var(--red); color:var(--red);}
+
+  .rc-actions{display:flex; gap:7px; margin-top:10px; flex-wrap:wrap;}
+  .mini-btn{background:var(--card-2); border:1.5px solid var(--line); color:var(--ink); border-radius:8px;
+    padding:7px 12px; font-size:10.5px; font-weight:700; cursor:pointer; text-transform:uppercase;
+    letter-spacing:.05em; text-decoration:none; display:inline-block;}
+  .mini-btn:hover{border-color:var(--red);}
+  .mini-btn.danger{color:#FF9B9B;} .mini-btn.danger:hover{border-color:var(--bad);}
+  .mini-btn.go{background:var(--red); border-color:var(--red); color:#fff;}
+
+  /* ---------- SCOUT LOAD ---------- */
+  .load-bar{height:6px; background:var(--card-2); border-radius:3px; overflow:hidden; margin-top:7px;}
+  .load-bar i{display:block; height:100%; background:var(--red); border-radius:3px;}
+
+  .empty{text-align:center; padding:44px 20px; color:var(--dim);}
+  .empty .t{font-family:'Anton',sans-serif; font-size:16px; color:var(--mute); text-transform:uppercase;}
+  .empty .s{font-size:12.5px; margin-top:6px; line-height:1.5;}
+  .loading{text-align:center; padding:36px 20px; color:var(--dim); font-size:13px;}
+  .banner{background:#241A00; border:1px solid #4A3600; color:#E0A419; font-size:11.5px; font-weight:600;
+    border-radius:9px; padding:10px 12px; margin-top:14px; line-height:1.5;}
+  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(80px); background:#fff;
+    color:#000; font-size:13px; font-weight:600; padding:11px 18px; border-radius:9px; z-index:400;
+    transition:transform .25s; max-width:90vw; text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  .code-result{background:var(--red-deep); border:1.5px solid var(--red); border-radius:11px;
+    padding:14px 16px; margin-top:14px;}
+  .code-result .cr-lbl{font-size:10px; color:var(--mute); font-weight:700; text-transform:uppercase; letter-spacing:.08em;}
+  .code-result .cr-code{font-family:'Anton',sans-serif; font-size:24px; color:#fff; letter-spacing:.06em; margin-top:4px;}
+  .code-result .cr-name{font-size:12.5px; color:var(--mute); margin-top:6px;}
+  .code-result .cr-copy{margin-top:10px; background:#fff; color:#000; border:none; border-radius:8px;
+    padding:8px 14px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase; letter-spacing:.05em;}
+  .scout-status{font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    padding:3px 8px; border-radius:10px; margin-top:5px; display:inline-block;}
+  .scout-status.active{background:#0F2418; color:var(--good);}
+  .scout-status.inactive{background:#241010; color:var(--bad);}
+
+  .board-progress{margin-top:12px;}
+  .bp-row{display:flex; gap:16px; font-size:11.5px; color:var(--mute); font-weight:600; margin-bottom:7px;}
+  .bp-row b{color:var(--ink); font-family:'Anton',sans-serif; font-size:15px; letter-spacing:.02em;}
+  .b-card{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:11px 12px;}
+  .b-card.done{opacity:.5;}
+  .b-card.done .b-name{text-decoration:line-through;}
+  .b-card.flag{border-color:var(--red);}
+  .b-top{display:flex; align-items:flex-start; gap:11px;}
+  .b-num{font-family:'Anton',sans-serif; font-size:12px; color:var(--dim); width:30px; flex:0 0 auto; padding-top:3px;}
+  .b-mid{flex:1; min-width:0;}
+  .b-name{font-family:'Anton',sans-serif; font-size:16px; letter-spacing:.02em; line-height:1.15;}
+  .b-meta{font-size:11px; color:var(--mute); font-weight:500; margin-top:2px;}
+  .b-pos{flex:0 0 auto; font-family:'Anton',sans-serif; font-size:15px; color:var(--red);
+    border:1.5px solid var(--line); border-radius:7px; padding:3px 9px;}
+  .b-empty{text-align:center; padding:44px 20px; color:var(--dim);}
+
+  .cov-head{display:flex; align-items:center; gap:10px; padding:10px 0 7px; margin-top:12px;
+    border-bottom:1px solid var(--line); font-size:9px; color:var(--dim); font-weight:700;
+    text-transform:uppercase; letter-spacing:.1em;}
+  .cov-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #1C1C1C;}
+  .cov-row.gap{background:linear-gradient(90deg, rgba(198,40,40,.10), transparent 60%);}
+  .cov-st{width:32px; flex:0 0 auto; font-family:'Anton',sans-serif; font-size:14px; letter-spacing:.03em;}
+  .cov-row.gap .cov-st{color:var(--red);}
+  .cov-mid{flex:1; min-width:0;}
+  .cov-bar{height:5px; background:var(--card-2); border-radius:3px; overflow:hidden;}
+  .cov-bar i{display:block; height:100%; background:var(--red); border-radius:3px;}
+  .cov-who{font-size:10.5px; color:var(--mute); font-weight:600; margin-top:4px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;}
+  .cov-none{color:var(--bad);}
+  .cov-nums{width:42px; flex:0 0 auto; text-align:center;}
+  .cov-n{font-family:'Anton',sans-serif; font-size:14px; line-height:1;}
+  .cov-l{font-size:8.5px; color:var(--dim); font-weight:700; text-transform:uppercase; margin-top:2px;}
+
+  .map-controls{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:14px;}
+  .mc-row{display:flex; gap:14px; flex-wrap:wrap;}
+  .mc-toggle{display:flex; align-items:center; gap:7px; cursor:pointer; font-size:12px; font-weight:600; color:var(--mute);}
+  .mc-toggle input{width:auto; margin:0; accent-color:var(--red);}
+  .mc-toggle span{user-select:none;}
+  .map-legend{display:flex; gap:13px; flex-wrap:wrap; margin-top:11px; padding-top:11px; border-top:1px solid var(--line);
+    font-size:10px; color:var(--mute); font-weight:600;}
+  .map-legend span{display:flex; align-items:center; gap:5px;}
+  .map-legend .lg{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  #mapWrap{position:relative; margin-top:12px; border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  #gmap-canvas{width:100%; height:520px; background:#0F0F0F;}
+  @media (max-width:640px){ #gmap-canvas{height:400px;} }
+  .map-status{position:absolute; left:10px; bottom:10px; background:rgba(0,0,0,.82); border:1px solid var(--line);
+    border-radius:8px; padding:7px 11px; font-size:10.5px; color:var(--mute); font-weight:600; pointer-events:none;}
+  .gm-pop{font-family:'Inter',sans-serif; color:#111; min-width:190px;}
+  .gm-pop h4{font-family:'Anton',sans-serif; font-weight:400; font-size:15px; margin:0 0 3px; letter-spacing:.02em;}
+  .gm-pop .gm-meta{font-size:11px; color:#555; margin-bottom:7px;}
+  .gm-pop a{color:#C4001A; font-size:10.5px; font-weight:700; text-decoration:none; margin-right:8px;}
+  .gm-pop button{background:#C4001A; color:#fff; border:none; border-radius:6px; padding:6px 10px;
+    font-size:10.5px; font-weight:700; cursor:pointer; margin-top:7px; font-family:'Inter',sans-serif;}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<div id="gate">
+  <div class="gate-box">
+    <svg class="gate-mark" viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg"><path fill="#FF0000" d="M25 2 L44 20 L38 20 L38 16.5 L25 6.5 L12 16.5 L12 20 L6 20 Z"/><rect fill="#FF0000" x="17" y="22" width="16" height="36" rx="2"/><rect fill="#0A0A0A" x="22.5" y="32" width="5" height="9" rx="2.5"/></svg>
+    <div class="gate-title">InHome Admin</div>
+    <div class="gate-s">Restricted</div>
+    <input type="password" id="gateCode" placeholder="ADMIN CODE" autocomplete="off">
+    <button type="button" class="gate-btn" id="gateBtn" onclick="tryGate()">Enter</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-by">Powered by Athlete&rsquo;s Inc+</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 50 60" xmlns="http://www.w3.org/2000/svg"><path fill="#FF0000" d="M25 2 L44 20 L38 20 L38 16.5 L25 6.5 L12 16.5 L12 20 L6 20 Z"/><rect fill="#FF0000" x="17" y="22" width="16" height="36" rx="2"/><rect fill="#0A0A0A" x="22.5" y="32" width="5" height="9" rx="2.5"/></svg>
+      </div>
+      <div class="logo-text">IN<b>HOME</b></div>
+      <span class="admin-tag">Admin</span>
+    </div>
+    <button type="button" class="signout-btn" onclick="signOut()">Sign Out</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="stat-row">
+    <div class="stat-card accent"><div class="n" id="stReports">&mdash;</div><div class="l">Reports Filed</div></div>
+    <div class="stat-card"><div class="n" id="stOpen">&mdash;</div><div class="l">Open Assignments</div></div>
+    <div class="stat-card"><div class="n" id="stScouts">&mdash;</div><div class="l">Active Scouts</div></div>
+    <div class="stat-card"><div class="n" id="stPerf">&mdash;</div><div class="l">Performance Logs</div></div>
+    <div class="stat-card"><div class="n" id="stWeek">&mdash;</div><div class="l">Filed This Week</div></div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn on" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbPerf" onclick="switchTab('perf')">Performance<span class="cnt" id="cntPerf">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbBoard" onclick="switchTab('board')">Board<span class="cnt" id="cntBoard">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbMap" onclick="switchTab('map')">Map<span class="cnt" id="cntMap">&mdash;</span></button>
+  </div>
+
+  <!-- ============ ASSIGN ============ -->
+  <div class="pane on" id="paneAssign">
+    <div class="panel">
+      <h3>Assign a Player</h3>
+      <div class="sub">Adds to the scout's Unscouted list. They see it next time they open Scout Home.</div>
+      <div class="grid2">
+        <div><label class="fl">Player Name</label><input type="text" id="aName" placeholder="First Last"></div>
+        <div><label class="fl">Assign To</label><select id="aScout"></select></div>
+      </div>
+      <div class="grid3">
+        <div><label class="fl">Position</label><select id="aPos"></select></div>
+        <div><label class="fl">Class / Grad Yr</label><input type="text" id="aClass" placeholder="2027"></div>
+        <div><label class="fl">Level</label><select id="aLevel"><option value="HS">High School</option><option value="JUCO">JUCO</option></select></div>
+      </div>
+      <div class="grid2">
+        <div><label class="fl">School</label><input type="text" id="aSchool" placeholder="School name"></div>
+        <div><label class="fl">Priority</label><select id="aPriority"><option value="normal">Normal</option><option value="high">High Priority</option></select></div>
+      </div>
+      <label class="fl">Source Link (optional)</label>
+      <input type="text" id="aLink" placeholder="Paste the 247 / On3 / Hudl / NJCAA link for this player">
+      <label class="fl">Note to Scout (optional)</label>
+      <textarea id="aNote" placeholder="What you want them looking at"></textarea>
+      <button type="button" class="btn" id="aBtn" onclick="createAssignment()">Assign Player</button>
+    </div>
+
+    <div class="tools">
+      <input type="text" id="asgSearch" placeholder="Search assignments..." oninput="renderAssignments()">
+      <select id="asgScoutFilter" onchange="renderAssignments()"><option value="All">All scouts</option></select>
+    </div>
+    <div class="chip-row" id="asgStatusChips"></div>
+    <div id="asgList" class="list"></div>
+  </div>
+
+  <!-- ============ SCOUT ROSTER ============ -->
+  <div class="pane" id="paneRoster">
+    <div class="panel">
+      <h3>Add a Scout</h3>
+      <div class="sub">Generates their access code and scout id. Give them the code — that's what they type into Scout Home and the report form gate.</div>
+      <div class="grid2">
+        <div><label class="fl">Full Name</label><input type="text" id="rName" placeholder="First Last"></div>
+        <div><label class="fl">Region</label><input type="text" id="rRegion" placeholder="e.g. Alabama, Texas, National"></div>
+      </div>
+      <label class="fl">Role</label>
+      <input type="text" id="rRole" placeholder="e.g. Regional Scout, WR" value="Regional Scout">
+      <button type="button" class="btn" id="rBtn" onclick="createScout()">Generate &amp; Add Scout</button>
+      <div id="rResult"></div>
+    </div>
+
+    <div id="rosterList" class="list"></div>
+  </div>
+
+  <!-- ============ SCOUT LOAD ============ -->
+  <div class="pane" id="paneScouts">
+    <div id="coverageBox"></div>
+    <div id="scoutsList" class="list"></div>
+  </div>
+
+  <!-- ============ ALL REPORTS ============ -->
+  <div class="pane" id="paneReports">
+    <div class="tools">
+      <input type="text" id="repSearch" placeholder="Search all reports..." oninput="renderReports()">
+      <select id="repScoutFilter" onchange="renderReports()"><option value="All">All scouts</option></select>
+    </div>
+    <div id="repList" class="list"></div>
+  </div>
+
+  <!-- ============ PERFORMANCE ============ -->
+  <div class="pane" id="panePerf">
+    <div class="panel">
+      <h3>Log a Performance</h3>
+      <div class="sub">JUCO stat lines and standout high school games. Paste the link so the numbers stay verifiable.</div>
+      <div class="grid2">
+        <div><label class="fl">Player Name</label><input type="text" id="pName" placeholder="First Last"></div>
+        <div><label class="fl">Level</label><select id="pLevel"><option value="JUCO">JUCO</option><option value="HS">High School</option></select></div>
+      </div>
+      <div class="grid3">
+        <div><label class="fl">Position</label><select id="pPos"></select></div>
+        <div><label class="fl">Class / Grad Yr</label><input type="text" id="pClass" placeholder="2027"></div>
+        <div><label class="fl">Date</label><input type="date" id="pDate"></div>
+      </div>
+      <label class="fl">School</label>
+      <input type="text" id="pSchool" placeholder="School name">
+      <label class="fl">Stat Line</label>
+      <textarea id="pStat" placeholder="e.g. 14 tackles, 3 TFL, 1 sack vs Northwest Mississippi"></textarea>
+      <label class="fl">Source Link</label>
+      <input type="text" id="pLink" placeholder="NJCAA box score, MaxPreps game, Hudl, film link">
+      <button type="button" class="btn" onclick="createPerformance()">Log Performance</button>
+    </div>
+
+    <div class="tools">
+      <input type="text" id="perfSearch" placeholder="Search performances..." oninput="renderPerf()">
+    </div>
+    <div class="chip-row" id="perfLevelChips"></div>
+    <div id="perfList" class="list"></div>
+  </div>
+
+  <!-- ============ RECRUITING BOARD ============ -->
+  <div class="pane" id="paneBoard">
+    <div class="panel">
+      <h3>Offense Recruiting Board</h3>
+      <div class="sub">284 receivers off the Samford board. These names run on most staffs' lists, so it's a working start. Check guys off as you get through them. Progress saves in this browser.</div>
+      <div class="board-progress">
+        <div class="bp-row">
+          <span><b id="bpDone">0</b> worked</span>
+          <span><b id="bpFlag">0</b> flagged</span>
+          <span><b id="bpLeft">0</b> left</span>
+        </div>
+        <div class="load-bar"><i id="bpBar" style="width:0%"></i></div>
+      </div>
+    </div>
+
+    <div class="tools">
+      <input type="text" id="boardSearch" placeholder="Search name or school..." oninput="renderBoard()">
+      <select id="boardState" onchange="renderBoard()"></select>
+    </div>
+    <div class="chip-row" id="boardPosChips"></div>
+    <div class="chip-row" id="boardStatusChips"></div>
+    <div id="boardList" class="list"></div>
+  </div>
+
+  <!-- ============ MAP ============ -->
+  <div class="pane" id="paneMap">
+    <div id="mapKeyWarn" class="banner" style="display:none;">
+      Google Maps key not set. Open admin.html and put your key in <b>MAPS_API_KEY</b> near the top of the script.
+    </div>
+
+    <div class="map-controls">
+      <div class="mc-row">
+        <label class="mc-toggle"><input type="checkbox" id="mLayerProspects" checked onchange="drawMap()"> <span>Prospects</span></label>
+        <label class="mc-toggle"><input type="checkbox" id="mLayerColleges" checked onchange="drawMap()"> <span>Colleges</span></label>
+        <label class="mc-toggle"><input type="checkbox" id="mLayerReports" checked onchange="drawMap()"> <span>Filed Reports</span></label>
+      </div>
+      <div class="tools" style="margin-top:9px;">
+        <select id="mState" onchange="drawMap()"></select>
+        <select id="mPos" onchange="drawMap()">
+          <option value="All">All positions</option>
+          <option value="X">X</option><option value="Z">Z</option><option value="H">H</option>
+        </select>
+        <select id="mStatus" onchange="drawMap()">
+          <option value="All">Any status</option>
+          <option value="open">Not worked</option>
+          <option value="done">Worked</option>
+          <option value="flag">Flagged</option>
+        </select>
+      </div>
+      <div class="chip-row" id="mLevelChips"></div>
+      <div class="map-legend">
+        <span><i class="lg" style="background:#FF0000"></i>Prospect</span>
+        <span><i class="lg" style="background:#35C759"></i>Filed report</span>
+        <span><i class="lg" style="background:#4A90D9"></i>FBS</span>
+        <span><i class="lg" style="background:#7E57C2"></i>FCS</span>
+        <span><i class="lg" style="background:#E0A419"></i>D2</span>
+        <span><i class="lg" style="background:#EC7000"></i>JUCO</span>
+      </div>
+    </div>
+
+    <div id="mapWrap">
+      <div id="gmap-canvas"></div>
+      <div id="mapStatus" class="map-status"></div>
+    </div>
+
+    <div class="panel" style="margin-top:12px;">
+      <div class="sub" style="margin:0;">
+        Pins start on their state center and sharpen to the real school as geocoding runs. Results cache in this browser, so it only costs lookups the first time. Tap a prospect for detail, the recruiting links, and one-tap assign.
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="mini-btn" onclick="geocodeQueue(true)">Resolve Locations</button>
+        <button type="button" class="mini-btn danger" onclick="clearGeoCache()">Clear Location Cache</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =====================================================================
+   ADMIN CONSOLE
+
+   AUTH: real lock. The code is never in this file. It is POSTed to
+   /.netlify/functions/verify-admin, checked against the ADMIN_CODE env
+   var, and exchanged for a short-lived signed token. Every data call
+   sends that token and admin-data.js re-verifies it server side.
+
+   REQUIRED NETLIFY ENV VARS (Site settings > Environment variables):
+     ADMIN_CODE     the code you type on this page
+     ADMIN_SECRET   any long random string, used to sign tokens
+     DATABASE_URL   your existing Neon connection string
+
+   REQUIRED FUNCTIONS (both included alongside this file):
+     verify-admin.js
+     admin-data.js
+
+   REQUIRED TABLES: see admin-schema.sql
+===================================================================== */
+
+const POSITIONS = ['QB','RB','WR','TE','OL','DL','EDGE','LB','CB','S','ATH','K','P'];
+
+/* Scout roster. Mirrors the SCOUTS map in the report form and Scout Home.
+   Keyed by scout id here since admin assigns to a scout, not via a code. */
+/* Scout roster now lives in Neon (scouts table). This starts empty and
+   is filled by loadAll() -> renders as { id, name, role, region } to
+   match every place below that used to read SCOUT_ROSTER. Demo mode
+   falls back to a small sample list so the page isn't blank pre-deploy. */
+let SCOUT_ROSTER = [];
+function demoScouts(){
+  return [
+    { id:'dcrowell', name:'Daniel Crowell', role:'National Director of Scouting', region:'Southeast', active:true },
+    { id:'tfoster',  name:'Tray Foster',    role:'Regional Scout, DB',            region:'Alabama',   active:true },
+    { id:'astewart', name:'ArDarius Stewart', role:'Regional Scout, WR',          region:'Texas',      active:true }
+  ];
+}
+
+/* Recruiting sites. Deep search URLs prefilled with the player name.
+   These are search links, not scrapes: nothing is pulled into this page.
+   If a site changes its search path, edit the url function here. */
+const RECRUIT_SITES = [
+  { id:'247',      name:'247Sports', url:n => `https://247sports.com/Search/?query=${encodeURIComponent(n)}` },
+  { id:'on3',      name:'On3',       url:n => `https://www.on3.com/search/?q=${encodeURIComponent(n)}` },
+  { id:'rivals',   name:'Rivals',    url:n => `https://www.rivals.com/search?q=${encodeURIComponent(n)}` },
+  { id:'maxpreps', name:'MaxPreps',  url:n => `https://www.maxpreps.com/search/?q=${encodeURIComponent(n)}` }
+];
+
+let TOKEN = null;
+let assignments = [], reports = [], performances = [];
+let demoMode = false;
+let asgStatusFilter = 'open';
+let perfLevelFilter = 'All';
+
+/* ---------------- TOAST ---------------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ---------------- AUTH ---------------- */
+async function tryGate(){
+  const el = document.getElementById('gateCode');
+  const btn = document.getElementById('gateBtn');
+  const code = (el.value||'').trim();
+  if(!code) return;
+  btn.disabled = true; btn.textContent = 'Checking...';
+  try{
+    const res = await fetch('/.netlify/functions/verify-admin', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json();
+    if(res.ok && data.token){
+      TOKEN = data.token;
+      sessionStorage.setItem('inhome_admin_token', TOKEN);
+      document.getElementById('gateErr').textContent = '';
+      document.getElementById('gate').classList.add('hide');
+      el.value = '';
+      boot();
+    } else {
+      document.getElementById('gateErr').textContent = data.error || 'Code not recognized.';
+      el.value = ''; el.focus();
+    }
+  }catch(err){
+    /* function not deployed yet: fall back to demo so the page is usable */
+    document.getElementById('gateErr').textContent = 'Auth function unreachable. Opening in demo mode.';
+    demoMode = true;
+    setTimeout(()=>{
+      document.getElementById('gate').classList.add('hide');
+      boot();
+    }, 1200);
+  }
+  btn.disabled = false; btn.textContent = 'Enter';
+}
+function signOut(){
+  TOKEN = null;
+  sessionStorage.removeItem('inhome_admin_token');
+  document.getElementById('gate').classList.remove('hide');
+}
+document.getElementById('gateCode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); tryGate(); }
+});
+(function resume(){
+  const t = sessionStorage.getItem('inhome_admin_token');
+  if(t){ TOKEN = t; document.getElementById('gate').classList.add('hide'); boot(); }
+})();
+
+/* ---------------- API ---------------- */
+async function api(action, payload){
+  const res = await fetch('/.netlify/functions/admin-data', {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+    body: JSON.stringify({ action, ...payload })
+  });
+  if(res.status === 401){ signOut(); throw new Error('Session expired. Sign in again.'); }
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+/* ---------------- BOOT ---------------- */
+function boot(){
+  document.getElementById('pDate').value = new Date().toISOString().slice(0,10);
+  loadAll();
+}
+function fillSelects(){
+  const scoutOpts = SCOUT_ROSTER.map(s=>`<option value="${s.id}">${s.name} — ${s.region}</option>`).join('');
+  document.getElementById('aScout').innerHTML = scoutOpts;
+  const posOpts = POSITIONS.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('aPos').innerHTML = posOpts;
+  document.getElementById('pPos').innerHTML = posOpts;
+  const filterOpts = '<option value="All">All scouts</option>' +
+    SCOUT_ROSTER.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  document.getElementById('asgScoutFilter').innerHTML = filterOpts;
+  document.getElementById('repScoutFilter').innerHTML = filterOpts;
+}
+function normalizeScouts(rows){
+  return (rows||[]).map(s=>({
+    pkId: s.pkId !== undefined ? s.pkId : s.id,
+    id: s.scout_id || s.id,
+    accessCode: s.access_code || s.accessCode || '',
+    name: s.name, role: s.role, region: s.region,
+    active: s.active !== undefined ? s.active : true
+  }));
+}
+
+async function loadAll(){
+  document.getElementById('asgList').innerHTML = '<div class="loading">Loading assignments...</div>';
+  document.getElementById('repList').innerHTML = '<div class="loading">Loading reports...</div>';
+  document.getElementById('perfList').innerHTML = '<div class="loading">Loading performances...</div>';
+
+  if(demoMode){ loadDemo(); return; }
+  try{
+    const data = await api('loadAll', {});
+    SCOUT_ROSTER = normalizeScouts(data.scouts);
+    assignments  = data.assignments  || [];
+    reports      = data.reports      || [];
+    performances = data.performances || [];
+    demoMode = false;
+  }catch(err){
+    console.error(err);
+    demoMode = true;
+    loadDemo();
+    return;
+  }
+  renderAll();
+}
+function loadDemo(){
+  const d = n => new Date(Date.now() - n*86400000).toISOString();
+  SCOUT_ROSTER = normalizeScouts(demoScouts());
+  assignments = [
+    { id:'a1', name:'Jaylen Marks', position:'QB', school:'Spain Park HS', class_year:'2027', level:'HS', priority:'high', status:'open', scout_id:'tfoster', note:'Wants to see him vs press coverage.', source_link:'', assigned_at:d(2) },
+    { id:'a2', name:'Corey Danielson', position:'OL', school:'Vestavia Hills HS', class_year:'2026', level:'HS', priority:'normal', status:'open', scout_id:'tfoster', note:'', source_link:'', assigned_at:d(5) },
+    { id:'a3', name:'Marcus Reeves', position:'EDGE', school:'Hutchinson CC', class_year:'2026', level:'JUCO', priority:'high', status:'open', scout_id:'dcrowell', note:'JUCO transfer window. Move fast.', source_link:'', assigned_at:d(1) },
+    { id:'a4', name:'Devin Prather', position:'CB', school:'Central HS', class_year:'2027', level:'HS', priority:'normal', status:'complete', scout_id:'astewart', note:'', source_link:'', assigned_at:d(14) }
+  ];
+  reports = [
+    { id:'r1', prospect:'Marcus Whitfield', position:'CB', position_label:'Cornerback', school:'Hoover HS', class_year:'2026', inhome_score:87, recommendation_tier:'Priority', scout_id:'tfoster', scout_name:'Tray Foster', date_evaluated:d(1), has_headshot:false },
+    { id:'r2', prospect:'Deja Coleman', position:'WR', position_label:'Wide Receiver', school:'Thompson HS', class_year:'2027', inhome_score:79, recommendation_tier:'Watch', scout_id:'astewart', scout_name:'ArDarius Stewart', date_evaluated:d(4), has_headshot:false },
+    { id:'r3', prospect:'Trey Boykins', position:'EDGE', position_label:'Edge Rusher', school:'Central HS', class_year:'2026', inhome_score:91, recommendation_tier:'Priority', scout_id:'dcrowell', scout_name:'Daniel Crowell', date_evaluated:d(9), has_headshot:false }
+  ];
+  performances = [
+    { id:'p1', name:'Marcus Reeves', position:'EDGE', school:'Hutchinson CC', class_year:'2026', level:'JUCO', stat_line:'9 tackles, 4 TFL, 2 sacks vs Garden City', source_link:'', performance_date:d(3) },
+    { id:'p2', name:'Jaylen Marks', position:'QB', school:'Spain Park HS', class_year:'2027', level:'HS', stat_line:'312 yds, 4 TD, 0 INT, 61 rush yds', source_link:'', performance_date:d(6) }
+  ];
+  renderAll();
+}
+
+function renderAll(){
+  fillSelects();
+  renderStats();
+  renderStatusChips();
+  renderPerfChips();
+  renderAssignments();
+  renderRoster();
+  renderScouts();
+  renderReports();
+  renderPerf();
+  initBoard();
+}
+function initBoard(){
+  loadBoardStatus();
+  buildBoardFilters();
+  renderBoardProgress();
+  renderBoard();
+  loadGeoCache();
+  loadMapsScript();
+}
+
+/* ---------------- STATS ---------------- */
+function renderStats(){
+  const open = assignments.filter(a=>a.status!=='complete').length;
+  const weekAgo = Date.now() - 7*86400000;
+  const week = reports.filter(r=>new Date(r.date_evaluated||r.created_at||0).getTime() >= weekAgo).length;
+  const active = new Set(reports.map(r=>r.scout_id).filter(Boolean)).size;
+  document.getElementById('stReports').textContent = reports.length;
+  document.getElementById('stOpen').textContent = open;
+  document.getElementById('stScouts').textContent = active;
+  document.getElementById('stPerf').textContent = performances.length;
+  document.getElementById('stWeek').textContent = week;
+  document.getElementById('cntAssign').textContent = open + ' open';
+  document.getElementById('cntRoster').textContent = SCOUT_ROSTER.filter(s=>s.active).length + ' active';
+  document.getElementById('cntScouts').textContent = SCOUT_ROSTER.length + ' scouts';
+  document.getElementById('cntReports').textContent = reports.length + ' filed';
+  document.getElementById('cntPerf').textContent = performances.length + ' logged';
+}
+
+/* ---------------- TABS ---------------- */
+function switchTab(t){
+  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+    document.getElementById('tb'+cap).classList.toggle('on', k===t);
+    document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
+  });
+  /* Google Maps renders at zero size if it initialized while hidden. */
+  if(t==='map' && window.gmap){
+    setTimeout(()=>{
+      google.maps.event.trigger(window.gmap,'resize');
+      if(window.gmapBounds && !window.gmapBounds.isEmpty()) window.gmap.fitBounds(window.gmapBounds);
+    }, 60);
+  }
+}
+
+/* ---------------- HELPERS ---------------- */
+function initials(n){ return (n||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase(); }
+function fmtDate(d){ if(!d) return ''; const x=new Date(d); return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function scoutName(id){ const s = SCOUT_ROSTER.find(s=>s.id===id); return s ? s.name : (id||'Unassigned'); }
+function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function tierColor(t){
+  const x=(t||'').toLowerCase();
+  if(x.includes('priority')||x.includes('elite')) return 'var(--good)';
+  if(x.includes('pass')||x.includes('no')) return 'var(--bad)';
+  return 'var(--warn)';
+}
+function railHTML(name, sourceLink){
+  if(!name) return '';
+  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(name)}" target="_blank" rel="noopener">${s.name}</a>`).join('');
+  const src = sourceLink ? `<a class="src" href="${esc(sourceLink)}" target="_blank" rel="noopener">Source Link</a>` : '';
+  return `<div class="rail"><span class="rail-lbl">Look up</span>${src}${links}</div>`;
+}
+
+/* ---------------- ASSIGN ---------------- */
+async function createAssignment(){
+  const name = document.getElementById('aName').value.trim();
+  if(!name){ toast('Player name required'); return; }
+  const rec = {
+    name,
+    scout_id:   document.getElementById('aScout').value,
+    position:   document.getElementById('aPos').value,
+    class_year: document.getElementById('aClass').value.trim(),
+    level:      document.getElementById('aLevel').value,
+    school:     document.getElementById('aSchool').value.trim(),
+    priority:   document.getElementById('aPriority').value,
+    source_link:document.getElementById('aLink').value.trim(),
+    note:       document.getElementById('aNote').value.trim()
+  };
+  const btn = document.getElementById('aBtn');
+  btn.disabled = true; btn.textContent = 'Assigning...';
+  try{
+    if(demoMode){
+      assignments.unshift({ id:'demo_'+Date.now(), status:'open', assigned_at:new Date().toISOString(), ...rec });
+    } else {
+      const out = await api('createAssignment', rec);
+      assignments.unshift(out.assignment);
+    }
+    ['aName','aClass','aSchool','aLink','aNote'].forEach(id=>document.getElementById(id).value='');
+    renderStats(); renderAssignments(); renderScouts();
+    toast(`Assigned to ${scoutName(rec.scout_id)}`);
+  }catch(err){ toast(err.message); }
+  btn.disabled = false; btn.textContent = 'Assign Player';
+}
+
+async function setAssignmentStatus(id, status){
+  try{
+    if(!demoMode) await api('updateAssignment', { id, status });
+    const a = assignments.find(a=>a.id===id); if(a) a.status = status;
+    renderStats(); renderAssignments(); renderScouts();
+    toast(status === 'complete' ? 'Marked complete' : 'Reopened');
+  }catch(err){ toast(err.message); }
+}
+async function reassign(id, scoutId){
+  try{
+    if(!demoMode) await api('updateAssignment', { id, scout_id:scoutId });
+    const a = assignments.find(a=>a.id===id); if(a) a.scout_id = scoutId;
+    renderAssignments(); renderScouts();
+    toast('Reassigned to ' + scoutName(scoutId));
+  }catch(err){ toast(err.message); }
+}
+async function deleteAssignment(id){
+  if(!confirm('Remove this assignment?')) return;
+  try{
+    if(!demoMode) await api('deleteAssignment', { id });
+    assignments = assignments.filter(a=>a.id!==id);
+    renderStats(); renderAssignments(); renderScouts();
+    toast('Assignment removed');
+  }catch(err){ toast(err.message); }
+}
+
+function renderStatusChips(){
+  const opts = [['open','Open'],['complete','Complete'],['All','All']];
+  document.getElementById('asgStatusChips').innerHTML = opts.map(([k,l])=>
+    `<button type="button" class="chip ${k===asgStatusFilter?'on':''}" onclick="setAsgStatus('${k}')">${l}</button>`).join('');
+}
+function setAsgStatus(s){ asgStatusFilter = s; renderStatusChips(); renderAssignments(); }
+
+function renderAssignments(){
+  const q = (document.getElementById('asgSearch').value||'').trim().toLowerCase();
+  const sf = document.getElementById('asgScoutFilter').value;
+  let list = assignments.filter(a=>{
+    if(asgStatusFilter==='open' && a.status==='complete') return false;
+    if(asgStatusFilter==='complete' && a.status!=='complete') return false;
+    if(sf!=='All' && a.scout_id!==sf) return false;
+    if(!q) return true;
+    return (a.name||'').toLowerCase().includes(q) || (a.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=>{
+    if(a.priority==='high' && b.priority!=='high') return -1;
+    if(b.priority==='high' && a.priority!=='high') return 1;
+    return new Date(b.assigned_at||0) - new Date(a.assigned_at||0);
+  });
+
+  const el = document.getElementById('asgList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty"><div class="t">Nothing here</div><div class="s">No assignments match this filter.</div></div>`;
+    return;
+  }
+  const scoutOpts = id => SCOUT_ROSTER.map(s=>`<option value="${s.id}" ${s.id===id?'selected':''}>${s.name}</option>`).join('');
+  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Deploy verify-admin.js and admin-data.js to go live.</div>` : '')
+    + list.map(a=>`
+    <div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(a.name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(a.name)}</div>
+          <div class="rc-meta">${esc(a.position||'')} &middot; ${esc(a.school||'—')} &middot; Class of ${esc(a.class_year||'—')}</div>
+          <span class="pill ${a.level==='JUCO'?'juco':'hs'}">${esc(a.level||'HS')}</span>
+          ${a.priority==='high'?'<span class="pill high">High Priority</span>':''}
+          <span class="pill ${a.status==='complete'?'done':'open'}">${a.status==='complete'?'Complete':'Open'}</span>
+        </div>
+        <div class="rc-right">
+          <div class="rc-sub">${esc(scoutName(a.scout_id))}</div>
+          <div class="rc-sub">${fmtDate(a.assigned_at)}</div>
+        </div>
+      </div>
+      ${a.note?`<div style="font-size:12px;color:#D6D6D6;line-height:1.5;margin-top:9px;background:var(--card-2);border-left:2px solid var(--red);border-radius:0 8px 8px 0;padding:9px 11px;">${esc(a.note)}</div>`:''}
+      ${railHTML(a.name, a.source_link)}
+      <div class="rc-actions">
+        <select onchange="reassign('${a.id}', this.value)" style="width:auto; padding:7px 10px; font-size:10.5px;">${scoutOpts(a.scout_id)}</select>
+        ${a.status==='complete'
+          ? `<button type="button" class="mini-btn" onclick="setAssignmentStatus('${a.id}','open')">Reopen</button>`
+          : `<button type="button" class="mini-btn" onclick="setAssignmentStatus('${a.id}','complete')">Mark Complete</button>`}
+        <button type="button" class="mini-btn danger" onclick="deleteAssignment('${a.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- RECRUITING BOARD ----------------
+   Static list off the Samford offense board (284 receivers, X/Z/H).
+   Not database-backed by design — it's a working checklist. Check
+   state persists in localStorage per browser, so it survives refresh
+   but doesn't sync across devices. If you want it shared across
+   scouts later, this moves to a table the same way scouts did.
+   Fields: [name, position, school, state, height, weight]
+------------------------------------------------------------------ */
+const BOARD_DATA = [
+["Trey Wimbley","X","Daniel HS","SC","6' 0\"","175"],
+["Jaylon Davis","X","Academy For Classical Education","GA","6' 2.75\"","200"],
+["Carter Castleberry","X","Winterboro HS","AL","5' 11\"","175"],
+["Jamarian Mingo","X","Valdosta HS","GA","6' 1\"","176"],
+["Zay Johnson","X","Ashford HS","AL","6' 3\"","196.5"],
+["Nasir Ray","X","Clay-Chalkville HS","AL","6' 1\"","205"],
+["Curt Ellis","X","Blountstown HS","FL","",""],
+["Ayden Shackleford","X","Shades Valley HS","AL","5' 10\"","187"],
+["Quintero Frierson Jr","X","Miami Killian HS","FL","5' 7\"","151"],
+["Marcus Arnold","X","Pelham HS","AL","6' 0\"","170"],
+["Elias Holtzclaw","X","Auburn HS","AL","5' 10\"","148"],
+["Kamar Chavez-Brown","X","Randle HS","TX","6' 0\"","165"],
+["Erick Reese","X","Guyer HS","TX","5' 7\"","158"],
+["Elijah Harvey","X","Titusville HS","FL","6' 0\"","185"],
+["Chase Craft","X","Heidelberg HS","MS","6' 1\"","180"],
+["Caleb Leonard","X","Niceville HS","FL","6' 1\"","165"],
+["Ja'Kayden Moore","X","Heidelberg HS","MS","6' 1\"","175"],
+["J'Kwan Williams","X","Palmetto HS","FL","5' 11\"","188"],
+["Ben Vanden Bos","X","Lanier HS","GA","5' 11\"","180"],
+["Jalen Hicks","X","Calvary Day","GA","5' 10\"","175"],
+["Mj Knight","X","Calvary Day","GA","6' 2\"","185"],
+["Jakenyon Allen","X","Mary G. Montgomery HS","AL","5' 8\"","160"],
+["Derrick McCullar II","X","Cypress Ranch HS","TX","5' 11\"","165"],
+["James Bethea","X","Vanguard HS","FL","0' 0 06/01\"","183"],
+["Jailyn Moore","X","West Forsyth HS","NC","6' 1\"","185"],
+["Jamari Ward","X","Boca Ciega HS","FL","6' 0\"","157"],
+["Deno Dalacas","X","Manatee HS","FL","6' 0\"","175"],
+["Braelan Lang","X","Rockdale County HS","GA","5' 11.5\"","173"],
+["Alex Fontenot","X","Alexandria HS","LA","6' 1\"","180"],
+["Rashaad Silver","X","Columbia HS","GA","6' 0\"","180"],
+["Travion Callaway","X","Kipp Collegiate","GA","5' 8.5\"","154"],
+["Mondarius Reese","X","Douglas County HS","GA","6' 0\"","173"],
+["Malik Ratliff","X","Northwestern HS","SC","6' 1\"","175"],
+["Ronald Cash","X","John F Kennedy HS","LA","6' 0\"","150"],
+["Jamarion Mingo","X","Valdosta HS","GA","6' 2\"","180"],
+["Cartier Barnes","X","Clay-Chalkville HS","AL","6' 1\"","170"],
+["Princeton Clark","X","Armwood HS","FL","5' 10.75\"","165"],
+["Pharaoh Tillman","X","Clearwater Central Catholic HS","FL","6' 2\"","190"],
+["Antonio Hill","X","Fort Pierce Central HS","FL","6' 2\"","190"],
+["Dominick Harvey","X","Hawthorne HS","FL","6' 0\"","183"],
+["Kelvin Davis","X","John Carroll Catholic HS","FL","6' 3\"","215"],
+["Camden Tietze","X","Bolles HS","FL","6' 0\"","178"],
+["Josh Douthard","X","Saint Clair County HS","AL","5' 11\"","170"],
+["Demetri Hall Jr.","X","Pell City HS","AL","6' 0\"","160"],
+["Ja'Quez Johnson","X","Auburn HS","AL","6' 0\"","165"],
+["Javian Francois","X","Coconut Creek HS","FL","5' 10\"","169"],
+["Ryan Ferdinand","X","Palm Beach Lakes HS","FL","6' 1\"","149"],
+["Kareem Brown","X","True North Classical Academy","FL","5' 11\"","177"],
+["James Klaiss Jr","X","Chaminade-Madonna Prep","FL","6' 1\"","166"],
+["Keyondre McClover","X","Coconut Creek HS","FL","6' 2\"","205"],
+["Ashaun Tubbs","X","Gautier HS","MS","6' 1\"","180"],
+["Dylan Medlock","X","Robinson HS","TX","5' 11\"","175"],
+["Zachery Laws","X","Enterprise HS","AL","",""],
+["Evan White","X","Alexandria HS","","6' 2\"","180"],
+["Cade Shubert","X","Cleburne County HS","","6' 3\"","170"],
+["Kenyan White","X","Olympic HS","NC","6' 2\"","185"],
+["Cairyn Roberts","X","Forest HS","FL","",""],
+["Grayson Yancey","X","Forest HS","FL","",""],
+["Ethan Singletary","X","Irmo HS","SC","6' 0\"","180"],
+["Manny Leyja","X","Cypress Ranch HS","TX","6' 1\"","180"],
+["Nelson Rodriguez","X","Houston Heights HS","TX","5' 11\"","170"],
+["Semaj Lyons","X","John F Kennedy HS","LA","6' 1\"","189"],
+["Jamar Williams","X","Calvary Christian","GA","5' 10\"","175"],
+["Davy Murphy","X","Windermere HS","FL","5' 11\"","180"],
+["Cortland Lee-Pugh","X","Davis-Aldine HS","TX","6' 2\"","165"],
+["Shrodderick Pritchett Jr","X","Lakewood HS","FL","5' 10\"","160"],
+["Damarco Green","X","South Lake HS","FL","6' 2\"","188"],
+["Kayden Knighten","X","Elkins HS","TX","5' 11\"","175"],
+["Zakhyri Hill","X","Sumner HS","FL","6' 2\"","170"],
+["Jayden Juniors","X","South Gwinnett HS","GA","6' 1\"","160"],
+["Donnelie Gulley","X","Pensacola Catholic HS","FL","6' 0\"","153"],
+["Carlos Avila-Lopez","X","Cypress Bay HS","FL","5' 10\"","170"],
+["Carlos Lemons","X","Tampa Bay Tech HS","FL","6' 1\"","153"],
+["Jermaine Walker","X","Westwood HS","FL","5' 11\"","176"],
+["Jacoby Paisley","X","Bradwell Institute","GA","5' 11\"","175"],
+["Isreal Henry","X","Brunswick HS","GA","6' 1\"","175"],
+["Jake Ivester","X","Central-Carrollton HS","GA","5' 11\"","180"],
+["Jaylen Tipton","X","Norcross HS","GA","5' 10\"","175"],
+["King Parrom","X","Columbia HS","GA","6' 1\"","196"],
+["Christian Scott","X","Evans HS","GA","5' 11\"","182"],
+["Jackson Thrasher","X","Fellowship Christian","GA","6' 0\"","175"],
+["Landon Jones","X","Jackson County HS","GA","6' 4\"","185"],
+["Collins Price","X","Lassiter HS","GA","5' 10\"","188"],
+["Oakleen Padgett","X","North Cobb Christian","GA","5' 11\"","155"],
+["Micah Billingsley","X","North Cobb HS","GA","5' 9.875\"","177"],
+["Ethan Cahill","X","North Forsyth HS","GA","6' 0.25\"","163"],
+["Cole Cable","X","North Hall HS","GA","5' 10\"","162"],
+["Elias Grant","X","Richmond Hill HS","GA","5' 10\"","160"],
+["Dai'Jon Hayes","X","Tift County HS","GA","5' 11\"","175"],
+["Jayden Joyner","X","Tucker HS","GA","5' 11\"","175"],
+["Avery Whitley","X","Westlake HS","GA","5' 10\"","170"],
+["Marco Stapleton","X","Northwest Rankin HS","MS","6' 2\"","182"],
+["Quentin Lewis","Z","Russell County HS","AL","6' 3\"","190"],
+["Kaiden James","Z","Callaway HS","GA","6' 2\"","185"],
+["Dearian Riley","Z","Sylacauga HS","AL","6' 0\"","192"],
+["Jeremy Tolliver","Z","Tampa Catholic HS","FL","6' 3\"","185"],
+["Sam Canale","Z","Briarwood Christian HS","AL","6' 1\"","160"],
+["Aedyn Meintzer","Z","Milton HS","GA","6' 2\"","200"],
+["Isaiah Rasheed","Z","Atascocita HS","TX","5' 11\"","161"],
+["Drew Rempel","Z","Lipscomb Academy","TN","6' 3\"","190"],
+["Mitchell Orr","Z","Ramsay HS","AL","6' 0\"","165"],
+["David Burgess","Z","Dougherty Comprehensive HS","GA","6' 2\"","190"],
+["Cavonte Green","Z","Florence HS","AL","6' 1\"","205"],
+["Zachary Laws","Z","Vestavia Hills HS","AL","5' 9\"","153"],
+["Daniel George","Z","Dothan HS","AL","5' 9\"","141"],
+["Travion Torrence","Z","Dothan HS","AL","6' 4\"","175"],
+["Tyrone Williams III","Z","Lasalle HS","FL","6' 0\"","181"],
+["Israel Cooper","Z","Buckhorn HS","AL","6' 0\"","170"],
+["Jaylen Price","Z","Booker T. Washington HS","AL","6' 1\"","168"],
+["Deshawn Hall","Z","Prattville HS","AL","6' 6\"","185"],
+["Dre'Shun Smith","Z","Christ","NC","6' 1.5\"","175"],
+["Jaylen Johnson","Z","Cedartown HS","GA","6' 3\"","185"],
+["Mike Bass","Z","Central Phenix City","","6' 2\"","180"],
+["Ja'Marian Clark","Z","The Villages","FL","6' 2\"","195"],
+["Jauriel Bray","Z","Dodge County HS","GA","6' 1\"","160"],
+["Brandon Stevens","Z","Toombs County HS","GA","5' 10\"","160"],
+["Jordan Carrasquillo","Z","Milton HS","GA","6' 1\"","185"],
+["Kelvin Sneed Jr.","Z","Bleckley County HS","GA","5' 10.5\"","147"],
+["Jerrion Brown","Z","Berrien HS","GA","6' 1\"","175"],
+["Saniiyn Black","Z","Zephyrhills HS","FL","6' 1\"","172"],
+["Dextavion Reese","Z","Hephzibah HS","GA","6' 2\"","180"],
+["Myles Cobb","Z","Wilkinson County HS","GA","6' 1\"","205"],
+["Grady Bonenberger","Z","Melbourne Central Catholic HS","FL","6' 2\"","166"],
+["Joshua Sylvain","Z","Miami Carol City HS","FL","6' 2\"","184"],
+["Zion Watson","Z","Northside Christian HS","FL","6' 3\"","170"],
+["Dylan Henderson","Z","Berkeley Prep HS","FL","6' 3\"","175"],
+["Jordan Donahoo","Z","Oviedo HS","FL","6' 4\"","190"],
+["Andrew Morrison III","Z","Victory Christian HS","FL","6' 2\"","184"],
+["Jaylen Davis","Z","Lakeland HS","FL","6' 1\"","147"],
+["Kyson McLeod","Z","South Aiken HS","SC","6' 4\"",""],
+["London Munoz","Z","Winder-Barrow HS","GA","6' 3\"","180"],
+["La'Damian Defreeze","Z","North Shore HS","TX","6' 1\"","180"],
+["Tavarco Jackson","Z","Melrose HS","TN","6' 2\"","185"],
+["Collin Porterfield","Z","Gainesville HS","GA","6' 2\"","185"],
+["John Walker","Z","Plaquemine HS","LA","6' 1\"","160"],
+["Malik Newton","Z","Clearwater Central Catholic HS","FL","6' 3\"","176"],
+["Dj Spence","Z","Choctawhatchee HS","FL","6' 0\"","166"],
+["Anthony Bonnet Jr","Z","Barbers Hill HS","TX","6' 2\"","190"],
+["Cash Erdmann","Z","Keller HS","TX","6' 3\"","175"],
+["Tyson Brooks","Z","Cypress Creek HS","TX","6' 1\"","186"],
+["Elijah Kerby","Z","South Panola HS","MS","6' 6\"","195"],
+["Anthony Williams","Z","Oceanside Collegiate Academy","SC","6' 1\"","185"],
+["Jayden Jean","Z","Lincoln HS","FL","6' 0\"","162"],
+["Cedric Mitchell Jr","Z","West Broward HS","FL","6' 1\"","173"],
+["Jamarius Feltus","Z","Habersham Central HS","GA","6' 1\"","168"],
+["Zaiden Moreland","Z","Heard County HS","GA","5' 11\"","170"],
+["Xzavian Davis-Grimes","Z","Parkview HS","GA","6' 3.25\"","174"],
+["Brody Archie","Z","Marietta HS","GA","6' 2\"","155"],
+["Tyler Morgan","Z","Ashbrook HS","NC","6' 2\"","195"],
+["Winston Jones","Z","Img Academy","FL","6' 3\"","190"],
+["Deion Suber","Z","Boiling Springs HS","SC","6' 4\"","190"],
+["Amohd Desir","Z","Palm Beach Lakes HS","FL","6' 1\"","175"],
+["Ethan Kimmie","Z","Zachary HS","LA","6' 4\"","190"],
+["Anderson Bean","Z","Dutch Fork HS","SC","6' 3\"",""],
+["Trent Richburg","Z","Forest HS","FL","",""],
+["Dre Mitchell","Z","Madison County High School, Madison, Fl","FL","",""],
+["Kingston Butler","Z","Davidson HS","AL","6' 3\"","185"],
+["Ahvin Magee","Z","Biloxi HS","MS","6' 3\"","180"],
+["Timothy Dorsey","Z","Saint Helena Central HS","LA","6' 3\"","175"],
+["Connor Patrick","Z","Cypress Springs HS","TX","6' 3\"","175"],
+["Tyler Grant","Z","Carver-Montgomery HS","AL","6' 5\"","180"],
+["Amir Johnson","Z","Almeta Crawford HS","TX","6' 3\"","205"],
+["Myles Rodgers","Z","Providence Christian Academy","GA","5' 11\"","171"],
+["Derek Goulbourne","Z","Spanish River High School, Boca Raton, Fl","FL","6' 2\"","190"],
+["Tajeh Watson","H","Belton-Honea Path HS","SC","5' 10\"","170"],
+["Jaiden Kelly-Murray","H","Summerville HS","SC","5' 10\"","170"],
+["Mason McClure","H","Spain Park HS","AL","5' 10\"","180"],
+["Carter Feagin","H","Mcadory HS","AL","6' 0\"","182"],
+["Gavin Davis","H","Zephyrhills Christian Academy","FL","5' 6\"","153"],
+["Jalijah Rutledge","H","Moody HS","AL","6' 0\"","185"],
+["Jayvon Funnye","H","Lake Howell HS","FL","5' 10\"","170"],
+["Darius Carter","H","River Bluff HS","SC","5' 11\"","160"],
+["Lagracion Little","H","Clarke Central HS","GA","5' 11\"","145"],
+["Zalen Green","H","Douglass HS","GA","5' 9\"","155"],
+["Jaylen Britt","H","Newnan HS","GA","5' 9\"","155"],
+["Zy Wilson","H","Vigor HS","AL","5' 5.75\"","115"],
+["Jacoby Parker","H","Ola HS","GA","5' 8\"","150"],
+["Jaxson Dixon","H","Foley HS","AL","5' 10\"","160"],
+["Alijah Woods","H","Reeltown HS","AL","5' 9\"","180"],
+["Zay'Veion Brinson","H","Thomson HS","GA","5' 10\"","180"],
+["Christian Alexander","H","Prattville HS","AL","5' 7\"","150"],
+["Walker Collins","H","Bayside Academy","AL","5' 9\"","154"],
+["Torossie Leslie","H","Warren County HS","GA","6' 0\"","160"],
+["Jacob Gibbs","H","Pelham HS","AL","5' 10\"","170"],
+["Andre Ford","H","Oxford HS","AL","5' 6\"","150"],
+["Jayden Heard","H","Ohatchee HS","AL","5' 11\"","180"],
+["Aidden White","H","Moody HS","AL","5' 8\"","140"],
+["Taylon Gaiter","H","Leeds HS","AL","5' 4\"","145"],
+["Dezmon Harris","H","Fayette County HS","AL","5' 4\"","135"],
+["Branden Brown","H","Central-Phenix City HS","AL","5' 10\"","151"],
+["Mekhi Williams","H","Carver-Montgomery HS","AL","5' 7.875\"","142"],
+["Cooper Hooker","H","Salina HS","OK","5' 9\"","165"],
+["Jaren Joiner","H","Central-Phenix City HS","AL","5' 11\"","180"],
+["Saif Bin-Wahad","H","Grayson HS","GA","5' 8\"","145"],
+["Aaron Johnson Jr","H","Rickards HS","FL","5' 9\"","145"],
+["Drayden Roberts","H","Screven County HS","GA","5' 8\"","165"],
+["Omar Gonzalez Jr","H","Saint Thomas Aquinas HS","FL","5' 8\"","151"],
+["Zay Small","H","Ridge View HS","SC","",""],
+["Jordan Simmons","H","Yates HS","TX","5' 9\"","165"],
+["Malik Denson","H","Archbishop Mccarthy HS","FL","5' 10\"","176"],
+["Gerrod Modest","H","Booker T. Washington HS","FL","5' 10\"","163"],
+["Malik Meza","H","Goleman HS","FL","5' 9\"","173"],
+["Victwon Miller","H","Miami Edison HS","FL","5' 8\"","155"],
+["Jason Kelly","H","Brookstone","GA","5' 11\"","165"],
+["Mikey Vernon","H","Jesuit HS","FL","5' 8\"","160"],
+["Cordae Alexander","H","Griffin HS","GA","5' 6\"","151"],
+["Jamarcus Giscombe","H","Riverside HS","FL","5' 10\"","165"],
+["Liam Madkins","H","Cypress Falls HS","TX","5' 10\"","173"],
+["Sylvester Brinkley","H","Jensen Beach HS","FL","5' 8\"","156"],
+["Noah Flores","H","Melbourne Central Catholic HS","FL","5' 8\"","170"],
+["Cole Emanuel","H","Edgewater HS","FL","5' 9\"","161"],
+["Takeo Edwards","H","Auburndale HS","FL","5' 10\"","146"],
+["Joseph Howard Jr","H","Lakeland HS","FL","5' 10\"","148"],
+["Earl Garcia","H","Hillsborough HS","FL","6' 0\"","180"],
+["Marvin Brown","H","Jones HS","FL","5' 10\"","157"],
+["Yuto Kawamura-Johnson","H","West Orange HS","FL","5' 11\"","181"],
+["Waseem Murray","H","Brunswick HS","GA","5' 10\"","165"],
+["Jaylon Elliott","H","Jenkins HS","GA","5' 9\"","150"],
+["Dayondre Cousey","H","Roswell HS","GA","5' 8\"","161"],
+["Jahnai Weaver","H","Westlake HS","GA","5' 9\"","170"],
+["Ayden Gonzalez","H","Bishop Verot HS","FL","5' 10\"","165"],
+["Frederick Jackson Jr","H","Dunbar HS","FL","5' 10\"","150"],
+["Jayvon Funnye","H","Lake Howell HS","FL","5' 9\"","141"],
+["Delreon Cleveland","H","Griffin HS","GA","5' 10\"","163"],
+["Robert Spry","H","Jackson County HS","GA","5' 7\"","128"],
+["Kavion \"Jk\" Clayborn","H","Lee HS","AL","5' 10\"","160"],
+["Billy Clancy III","H","West Boca High School, Boca Raton, Fl","FL","5' 10\"","160"],
+["Christian Rust","H","Columbus HS","FL","5' 10\"","173"],
+["Larry Brown","H","Summer Creek HS","TX","5' 9\"","165"],
+["Kaegan Morton","H","Barbers Hill HS","TX","5' 7\"","143"],
+["Carmari Solomon","H","Oviedo HS","FL","5' 10\"","163"],
+["Trysten Shaw","H","Mesquite HS","TX","5' 7.625\"","148"],
+["Maleek Miller","H","Dutch Fork HS","SC","5' 11\"","175"],
+["Trayvis Hunter","H","Effingham County HS","GA","5' 7\"","140"],
+["Jaylen Prater","H","East Paulding HS","GA","5' 6\"","144"],
+["Kadin Vassel","H","South Pointe HS","SC","5' 11\"","160"],
+["Eric Richardson","H","Lugoff-Elgin HS","SC","6' 0\"","165"],
+["Lo'Than McBride","H","Richmond Academy","GA","5' 9.875\"","169"],
+["Nicholas Gordon","H","Cheraw HS","SC","5' 10\"","165"],
+["Romeo Sararo","H","Lely HS","FL","6' 0\"","177"],
+["Onix Vazquez","H","Windermere HS","FL","5' 9\"","167"],
+["Cawanis Leonard","H","Evans HS","FL","5' 7\"","150"],
+["Geron Miller","H","Spanish River High School, Boca Raton, Fl","FL","",""],
+["Toreon Wilson","H","Jenkins HS","GA","5' 9\"","160"],
+["Aaron Brown","H","Liberty County HS","GA","5' 11\"","180"],
+["Brian Manuel","H","Atascocita HS","TX","5' 10\"","155"],
+["Kj Wright","H","Palatka HS","FL","5' 7.5\"","140"],
+["Zamar Smith","H","Somerset Academy-Pembroke Pines","FL","5' 11\"","138"],
+["Eron Mallard","H","Benedictine Military","GA","5' 9\"","180"],
+["Mykah Patterson","H","Bowdon HS","GA","5' 8\"","140"],
+["Jaren Joseph","H","Central Gwinnett HS","GA","5' 8\"","156"],
+["Sharrod Simmons","H","Collins Hill HS","GA","5' 10\"","170"],
+["Jamel Tuff","H","Collins Hill HS","GA","5' 9\"","168"],
+["Antonio Taylor","H","Evans HS","GA","5' 9\"","160"],
+["Brody Cofield","H","Heard County HS","GA","5' 8\"","140"],
+["Jarvaris Reed","H","Mceachern HS","GA","5' 8\"","168"],
+["Armani Myco","H","Lithonia HS","GA","5' 9\"","152"],
+["Aaron Graham","H","Martin Luther King HS","GA","5' 8\"","148"],
+["Zaire Sykes","H","North Springs HS","GA","5' 9.5\"","165"],
+["Canyon Carter","H","South Paulding HS","GA","5' 7\"","155"],
+["Elias Gandy","H","Westlake HS","GA","5' 9\"","165"],
+["Tucker Henderson","H","Ponte Vedra HS","FL","5' 11\"","175"],
+["Davie Griffin","H","Biloxi HS","MS","5' 10\"","160"],
+["Xavier Green","H","Manvel HS","TX","5' 8\"","170"],
+["Essien Lockleer","H","Commerce High School, Commerce, Ga","GA","6' 3\"","178"],
+["Sebastian Lora","H","Lake Nona HS","FL","5' 11\"","149"],
+["Brian Dillard","H","First Academy - Orlando HS","FL","5' 11\"","150"],
+["Braylen Marrow","H","West Forsyth HS","NC","5' 11\"","190"],
+["Ty Sorrells","H","Commerce HS","GA","5' 10\"","180"],
+["Andre Moss","H","Dunbar HS","FL","5' 10\"","191"],
+["Kawan Ingraham","H","Palm Beach Lakes HS","FL","5' 10\"","170"],
+["Troy \"Tes\" Scott","H","Palm Beach Lakes HS","FL","5' 9\"","160"],
+["Devon Garrett","H","Gautier HS","MS","5' 10\"","170"],
+["Kaden Thrash","H","Mcgill-Toolen HS","AL","5' 10\"","160"],
+["Chanse Bost","H","Mooresville HS","NC","5' 10\"","165"],
+["Xavier Huggins","H","Powdersville HS","SC","5' 9\"","170"],
+["Cortney Brown","H","Forest HS","FL","",""],
+["Ethan Collins","H","Forest HS","FL","",""],
+["Jamarcus Cherry","H","Suwannee High School, Live Oak, Fl","FL","",""],
+["Murry Charles","H","Cypress Falls HS","TX","5' 11\"","175"],
+["Amir Parks-Brooks","H","Saint Pius X HS","TX","5' 9\"","155"],
+["Damir Williams","H","Evans HS","FL","6' 0\"","168"],
+["Kamari Frazier","H","Lithia Springs HS","GA","5' 8\"","158"],
+["Kaden Grigsby","H","Nashville Christian HS","TN","5' 11\"","175"]
+];
+
+const BOARD_KEY = 'inhome_board_status_v1';
+let boardStatus = {};
+let boardPosFilter = 'All';
+let boardStatusFilter = 'All';
+
+function loadBoardStatus(){
+  try{ boardStatus = JSON.parse(localStorage.getItem(BOARD_KEY) || '{}'); }
+  catch(e){ boardStatus = {}; }
+}
+function saveBoardStatus(){
+  try{ localStorage.setItem(BOARD_KEY, JSON.stringify(boardStatus)); }
+  catch(e){ console.error('Could not save board progress:', e); }
+}
+function boardKey(p){ return p[0] + '|' + p[1]; }
+
+function setBoardStatus(key, status){
+  if(boardStatus[key] === status) delete boardStatus[key];
+  else boardStatus[key] = status;
+  saveBoardStatus();
+  renderBoardProgress();
+  renderBoard();
+}
+
+function renderBoardProgress(){
+  const done = Object.values(boardStatus).filter(v=>v==='done').length;
+  const flag = Object.values(boardStatus).filter(v=>v==='flag').length;
+  const left = BOARD_DATA.length - done;
+  document.getElementById('bpDone').textContent = done;
+  document.getElementById('bpFlag').textContent = flag;
+  document.getElementById('bpLeft').textContent = left;
+  document.getElementById('bpBar').style.width = Math.round(done/BOARD_DATA.length*100) + '%';
+  document.getElementById('cntBoard').textContent = left + ' left';
+}
+
+function buildBoardFilters(){
+  const positions = ['All', ...new Set(BOARD_DATA.map(p=>p[1]))];
+  document.getElementById('boardPosChips').innerHTML = positions.map(p=>
+    `<button type="button" class="chip ${p===boardPosFilter?'on':''}" onclick="setBoardPos('${p}')">${p==='All'?'All positions':p}</button>`).join('');
+
+  const statuses = [['All','All'],['open','Not worked'],['done','Worked'],['flag','Flagged']];
+  document.getElementById('boardStatusChips').innerHTML = statuses.map(([k,l])=>
+    `<button type="button" class="chip ${k===boardStatusFilter?'on':''}" onclick="setBoardStatusFilter('${k}')">${l}</button>`).join('');
+
+  const states = [...new Set(BOARD_DATA.map(p=>p[3]).filter(Boolean))].sort();
+  const sel = document.getElementById('boardState');
+  if(!sel.options.length){
+    sel.innerHTML = '<option value="All">All states</option>' +
+      states.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+}
+function setBoardPos(p){ boardPosFilter = p; buildBoardFilters(); renderBoard(); }
+function setBoardStatusFilter(s){ boardStatusFilter = s; buildBoardFilters(); renderBoard(); }
+
+function renderBoard(){
+  const q = (document.getElementById('boardSearch').value||'').trim().toLowerCase();
+  const st = document.getElementById('boardState').value;
+
+  const list = BOARD_DATA.filter(p=>{
+    if(boardPosFilter !== 'All' && p[1] !== boardPosFilter) return false;
+    if(st !== 'All' && p[3] !== st) return false;
+    const status = boardStatus[boardKey(p)] || 'open';
+    if(boardStatusFilter === 'open' && status !== 'open') return false;
+    if(boardStatusFilter === 'done' && status !== 'done') return false;
+    if(boardStatusFilter === 'flag' && status !== 'flag') return false;
+    if(!q) return true;
+    return p[0].toLowerCase().includes(q) || p[2].toLowerCase().includes(q);
+  });
+
+  const el = document.getElementById('boardList');
+  if(!list.length){
+    el.innerHTML = `<div class="b-empty"><div class="t">Nothing here</div><div class="s">No players match this filter.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((p,i)=>{
+    const key = boardKey(p);
+    const status = boardStatus[key] || 'open';
+    const meta = [p[2], p[3], [p[4],p[5]].filter(Boolean).join(' / ')].filter(Boolean).join(' \u00b7 ');
+    return `<div class="b-card ${status==='done'?'done':''} ${status==='flag'?'flag':''}">
+      <div class="b-top">
+        <div class="b-num">${i+1}</div>
+        <div class="b-mid">
+          <div class="b-name">${esc(p[0])}</div>
+          <div class="b-meta">${esc(meta)}</div>
+        </div>
+        <div class="b-pos">${esc(p[1])}</div>
+      </div>
+      ${railHTML(p[0], '')}
+      <div class="rc-actions">
+        <button type="button" class="mini-btn ${status==='done'?'go':''}" onclick="setBoardStatus('${esc(key)}','done')">${status==='done'?'Worked':'Mark Worked'}</button>
+        <button type="button" class="mini-btn ${status==='flag'?'go':''}" onclick="setBoardStatus('${esc(key)}','flag')">${status==='flag'?'Flagged':'Flag'}</button>
+        <button type="button" class="mini-btn" onclick="assignFromBoard('${esc(key)}')">Assign to Scout</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* Pushes a board player into the assign form, prefilled. */
+function assignFromBoard(key){
+  const p = BOARD_DATA.find(x=>boardKey(x)===key);
+  if(!p) return;
+  document.getElementById('aName').value   = p[0];
+  document.getElementById('aSchool').value = p[2];
+  document.getElementById('aLevel').value  = 'HS';
+  document.getElementById('aPos').value    = 'WR';
+  document.getElementById('aNote').value   = `Off the offense board (${p[1]})${p[4]?' \u00b7 '+p[4]:''}${p[5]?' / '+p[5]:''}`;
+  switchTab('assign');
+  window.scrollTo({top:0, behavior:'smooth'});
+  toast('Loaded into assign form. Pick a scout.');
+}
+
+/* ---------------- MAP ----------------
+   Google Maps view of the board, filed reports, and college programs.
+
+   SETUP: put your Maps JavaScript API key in MAPS_API_KEY below. The key
+   ships in this file (that's normal for Maps JS — it's a client library),
+   so restrict it in Google Cloud Console by HTTP referrer to your domain
+   and enable only "Maps JavaScript API" and "Geocoding API".
+
+   Board players and colleges have no stored coordinates, so they're
+   geocoded on demand and cached in localStorage. Pins sit on their state
+   centroid until resolved, so the map is never blank. Cache means you pay
+   for each lookup once, not once per page load.
+------------------------------------------------------------------ */
+const MAPS_API_KEY = 'PASTE_YOUR_GOOGLE_MAPS_API_KEY_HERE';
+
+const STATE_CENTROIDS = {
+  "AL":[32.806671,-86.79113],
+  "AR":[34.969704,-92.373123],
+  "CA":[36.116203,-119.681564],
+  "DC":[38.897438,-77.026817],
+  "FL":[27.766279,-81.686783],
+  "GA":[33.040619,-83.643074],
+  "KY":[37.66814,-84.670067],
+  "LA":[31.169546,-91.867805],
+  "MD":[39.063946,-76.802101],
+  "MS":[32.741646,-89.678696],
+  "NC":[35.630066,-79.806419],
+  "OK":[35.565342,-96.928917],
+  "SC":[33.856892,-80.945007],
+  "TN":[35.747845,-86.692345],
+  "TX":[31.054487,-97.563461],
+  "VA":[37.769337,-78.169968]
+};
+
+/* Program list covering the board's footprint. Name + level + state only;
+   real coordinates come from Google at runtime and cache in localStorage.
+   ESPN team id (5th field) drives the logo where known, blank falls back
+   to a colored marker with initials. Add a school by adding a line. */
+const COLLEGES = [
+/* ---- FBS ---- */
+["Alabama","FBS","AL",333],["Auburn","FBS","AL",2],["UAB","FBS","AL",5],
+["South Alabama","FBS","AL",6],["Troy","FBS","AL",2653],
+["Georgia","FBS","GA",61],["Georgia Tech","FBS","GA",59],["Georgia State","FBS","GA",2247],
+["Georgia Southern","FBS","GA",290],["Kennesaw State","FBS","GA",338],
+["Florida","FBS","FL",57],["Florida State","FBS","FL",52],["Miami","FBS","FL",2390],
+["UCF","FBS","FL",2116],["South Florida","FBS","FL",58],["Florida Atlantic","FBS","FL",2226],
+["FIU","FBS","FL",2229],["Jacksonville State","FBS","AL",55],
+["Texas","FBS","TX",251],["Texas A&M","FBS","TX",245],["TCU","FBS","TX",2628],
+["Baylor","FBS","TX",239],["Houston","FBS","TX",248],["SMU","FBS","TX",2567],
+["Texas Tech","FBS","TX",2641],["North Texas","FBS","TX",249],["UTSA","FBS","TX",2636],
+["Texas State","FBS","TX",326],["Rice","FBS","TX",242],["UTEP","FBS","TX",2638],
+["South Carolina","FBS","SC",2579],["Clemson","FBS","SC",228],["Coastal Carolina","FBS","SC",324],
+["Mississippi State","FBS","MS",344],["Ole Miss","FBS","MS",145],["Southern Miss","FBS","MS",2572],
+["North Carolina","FBS","NC",153],["NC State","FBS","NC",152],["Duke","FBS","NC",150],
+["Wake Forest","FBS","NC",154],["East Carolina","FBS","NC",151],["Charlotte","FBS","NC",2429],
+["Appalachian State","FBS","NC",2026],
+["LSU","FBS","LA",99],["Tulane","FBS","LA",2655],["Louisiana","FBS","LA",309],
+["Louisiana Tech","FBS","LA",2348],["ULM","FBS","LA",2433],
+["Tennessee","FBS","TN",2633],["Vanderbilt","FBS","TN",238],["Memphis","FBS","TN",235],
+["Middle Tennessee","FBS","TN",2393],
+["Oklahoma","FBS","OK",201],["Oklahoma State","FBS","OK",197],["Tulsa","FBS","OK",202],
+["Kentucky","FBS","KY",96],["Louisville","FBS","KY",97],["Western Kentucky","FBS","KY",98],
+
+/* ---- FCS ---- */
+["Samford","FCS","AL",2535],["Alabama State","FCS","AL",2011],["Alabama A&M","FCS","AL",2010],
+["North Alabama","FCS","AL",2453],
+["Mercer","FCS","GA",2382],["Savannah State","FCS","GA",2542],
+["Bethune-Cookman","FCS","FL",2065],["Florida A&M","FCS","FL",50],["Stetson","FCS","FL",56],
+["Sam Houston","FCS","TX",2534],["Stephen F. Austin","FCS","TX",2617],
+["Prairie View A&M","FCS","TX",2504],["Texas Southern","FCS","TX",2640],["Abilene Christian","FCS","TX",2000],
+["Furman","FCS","SC",231],["Wofford","FCS","SC",2747],["The Citadel","FCS","SC",2643],
+["South Carolina State","FCS","SC",2569],["Charleston Southern","FCS","SC",2127],
+["Jackson State","FCS","MS",2296],["Alcorn State","FCS","MS",2016],["Mississippi Valley State","FCS","MS",2400],
+["North Carolina A&T","FCS","NC",2448],["North Carolina Central","FCS","NC",2428],
+["Elon","FCS","NC",2210],["Campbell","FCS","NC",2097],["Davidson","FCS","NC",2166],
+["Grambling State","FCS","LA",2755],["Southern","FCS","LA",2582],["Nicholls","FCS","LA",2447],
+["Southeastern Louisiana","FCS","LA",2545],["McNeese","FCS","LA",2377],
+["Tennessee State","FCS","TN",2634],["Tennessee Tech","FCS","TN",2635],
+["Austin Peay","FCS","TN",2046],["UT Martin","FCS","TN",2630],["Chattanooga","FCS","TN",236],
+["Eastern Kentucky","FCS","KY",2198],["Murray State","FCS","KY",93],
+
+/* ---- D2 ---- */
+["West Alabama","D2","AL",0],["West Georgia","D2","GA",0],["Valdosta State","D2","GA",0],
+["Albany State","D2","GA",0],["Fort Valley State","D2","GA",0],["Tuskegee","D2","AL",0],
+["Miles College","D2","AL",0],["Delta State","D2","MS",0],
+["Lenoir-Rhyne","D2","NC",0],["Newberry College","D2","SC",0],["Limestone University","D2","SC",0],
+["Tarleton State","D2","TX",0],["Angelo State","D2","TX",0],["West Texas A&M","D2","TX",0],
+
+/* ---- JUCO ---- */
+["Coahoma Community College","JUCO","MS",0],["East Mississippi Community College","JUCO","MS",0],
+["Hinds Community College","JUCO","MS",0],["Jones College","JUCO","MS",0],
+["Northwest Mississippi Community College","JUCO","MS",0],["Copiah-Lincoln Community College","JUCO","MS",0],
+["Pearl River Community College","JUCO","MS",0],["Mississippi Gulf Coast Community College","JUCO","MS",0],
+["East Central Community College","JUCO","MS",0],["Itawamba Community College","JUCO","MS",0],
+["Holmes Community College","JUCO","MS",0],["Southwest Mississippi Community College","JUCO","MS",0],
+["Northeast Mississippi Community College","JUCO","MS",0],
+["Coffeyville Community College","JUCO","KS",0],["Hutchinson Community College","JUCO","KS",0],
+["Garden City Community College","JUCO","KS",0],["Independence Community College","JUCO","KS",0],
+["Butler Community College","JUCO","KS",0],["Dodge City Community College","JUCO","KS",0],
+["Highland Community College","JUCO","KS",0],
+["Kilgore College","JUCO","TX",0],["Tyler Junior College","JUCO","TX",0],
+["Blinn College","JUCO","TX",0],["Navarro College","JUCO","TX",0],
+["Trinity Valley Community College","JUCO","TX",0],["Cisco College","JUCO","TX",0],
+["Georgia Military College","JUCO","GA",0],["East Georgia State College","JUCO","GA",0],
+["Snow College","JUCO","UT",0],["Iowa Western Community College","JUCO","IA",0],
+["Northwest Kansas Technical College","JUCO","KS",0],["Arizona Western College","JUCO","AZ",0],
+["Mesa Community College","JUCO","AZ",0],["Scottsdale Community College","JUCO","AZ",0],
+["Northeast Oklahoma A&M College","JUCO","OK",0],["Eastern Oklahoma State College","JUCO","OK",0]
+];
+
+const GEO_KEY = 'inhome_geocache_v1';
+const LEVEL_COLOR = { FBS:'#4A90D9', FCS:'#7E57C2', D2:'#E0A419', JUCO:'#EC7000' };
+let geoCache = {};
+let mapLevelFilter = { FBS:true, FCS:true, D2:true, JUCO:true };
+let gmarkers = [];
+let geocoder = null, infoWin = null, geoRunning = false;
+
+function loadGeoCache(){
+  try{ geoCache = JSON.parse(localStorage.getItem(GEO_KEY) || '{}'); }
+  catch(e){ geoCache = {}; }
+}
+function saveGeoCache(){
+  try{ localStorage.setItem(GEO_KEY, JSON.stringify(geoCache)); }
+  catch(e){ console.error('geocache save failed', e); }
+}
+function clearGeoCache(){
+  if(!confirm('Clear cached map locations? They will be looked up again.')) return;
+  geoCache = {}; saveGeoCache(); drawMap(); toast('Location cache cleared');
+}
+
+/* ---- what needs a location ---- */
+function prospectGeoKey(p){ return 'hs|' + p[2] + '|' + p[3]; }
+function collegeGeoKey(c){ return 'col|' + c[0] + '|' + c[2]; }
+function prospectQuery(p){ return p[2] + ' High School, ' + (p[3]||'') + ', USA'; }
+function collegeQuery(c){ return c[0] + ' university football, ' + (c[2]||'') + ', USA'; }
+
+function posFor(key, fallbackState){
+  const hit = geoCache[key];
+  if(hit && hit.lat) return { lat:hit.lat, lng:hit.lng, exact:true };
+  const c = STATE_CENTROIDS[fallbackState];
+  if(!c) return null;
+  /* jitter so same-state pins don't stack into one dot */
+  const j = (Math.abs(hashStr(key))%1000)/1000;
+  const j2 = (Math.abs(hashStr(key+'x'))%1000)/1000;
+  return { lat:c[0]+(j-0.5)*1.1, lng:c[1]+(j2-0.5)*1.1, exact:false };
+}
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=((h<<5)-h)+s.charCodeAt(i); h|=0; } return h; }
+
+/* ---- geocode queue, throttled ---- */
+async function geocodeQueue(userTriggered){
+  if(geoRunning) return;
+  if(!geocoder){ if(userTriggered) toast('Map not ready yet'); return; }
+
+  const jobs = [];
+  BOARD_DATA.forEach(p=>{
+    const k = prospectGeoKey(p);
+    if(!geoCache[k] && p[2]) jobs.push({key:k, q:prospectQuery(p)});
+  });
+  COLLEGES.forEach(c=>{
+    const k = collegeGeoKey(c);
+    if(!geoCache[k]) jobs.push({key:k, q:collegeQuery(c)});
+  });
+  const seen = new Set(); const queue = jobs.filter(j=>{
+    if(seen.has(j.key)) return false; seen.add(j.key); return true;
+  });
+
+  if(!queue.length){ if(userTriggered) toast('Everything already located'); return; }
+
+  geoRunning = true;
+  let done = 0, failed = 0;
+  for(const job of queue){
+    try{
+      const res = await new Promise((resolve,reject)=>{
+        geocoder.geocode({ address: job.q }, (r,status)=>{
+          if(status==='OK' && r && r[0]) resolve(r[0]);
+          else if(status==='OVER_QUERY_LIMIT') reject(new Error('OVER_QUERY_LIMIT'));
+          else resolve(null);
+        });
+      });
+      if(res){
+        geoCache[job.key] = { lat:res.geometry.location.lat(), lng:res.geometry.location.lng() };
+      } else {
+        geoCache[job.key] = { lat:null, lng:null };  /* remember the miss, don't retry forever */
+        failed++;
+      }
+    }catch(err){
+      if(err.message==='OVER_QUERY_LIMIT'){
+        setMapStatus('Rate limited. Saved ' + done + '. Hit Resolve Locations again in a minute.');
+        break;
+      }
+      failed++;
+    }
+    done++;
+    if(done % 10 === 0){ saveGeoCache(); setMapStatus('Locating... ' + done + ' of ' + queue.length); }
+    await new Promise(r=>setTimeout(r, 90));
+  }
+  saveGeoCache();
+  geoRunning = false;
+  setMapStatus('');
+  drawMap();
+  toast('Located ' + (done-failed) + ' of ' + queue.length);
+}
+function setMapStatus(txt){
+  const el = document.getElementById('mapStatus');
+  if(!el) return;
+  el.textContent = txt || '';
+  el.style.display = txt ? 'block' : 'none';
+}
+
+/* ---- markers ---- */
+function dot(color, size){
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: color, fillOpacity: 0.95,
+    strokeColor: '#000', strokeWeight: 1.2,
+    scale: size
+  };
+}
+function clearMarkers(){ gmarkers.forEach(m=>m.setMap(null)); gmarkers = []; }
+
+function drawMap(){
+  if(!window.gmap) return;
+  clearMarkers();
+  const bounds = new google.maps.LatLngBounds();
+  const stF = document.getElementById('mState').value;
+  const posF = document.getElementById('mPos').value;
+  const statF = document.getElementById('mStatus').value;
+  const showP = document.getElementById('mLayerProspects').checked;
+  const showC = document.getElementById('mLayerColleges').checked;
+  const showR = document.getElementById('mLayerReports').checked;
+  let pCount = 0, cCount = 0, unresolved = 0;
+
+  if(showP){
+    BOARD_DATA.forEach(p=>{
+      if(stF!=='All' && p[3]!==stF) return;
+      if(posF!=='All' && p[1]!==posF) return;
+      const status = boardStatus[boardKey(p)] || 'open';
+      if(statF!=='All' && status!==statF) return;
+      const loc = posFor(prospectGeoKey(p), p[3]);
+      if(!loc) return;
+      if(!loc.exact) unresolved++;
+      const color = status==='done' ? '#5A5A5A' : (status==='flag' ? '#FF7043' : '#FF0000');
+      const m = new google.maps.Marker({
+        position:{lat:loc.lat,lng:loc.lng}, map:window.gmap,
+        icon: dot(color, loc.exact?6:4.5),
+        opacity: loc.exact?1:0.55,
+        title: p[0] + ' — ' + p[2]
+      });
+      m.addListener('click', ()=>openProspectPop(p, m, status));
+      gmarkers.push(m); bounds.extend(m.getPosition()); pCount++;
+    });
+  }
+
+  if(showC){
+    COLLEGES.forEach(c=>{
+      if(!mapLevelFilter[c[1]]) return;
+      if(stF!=='All' && c[2]!==stF) return;
+      const loc = posFor(collegeGeoKey(c), c[2]);
+      if(!loc) return;
+      const m = new google.maps.Marker({
+        position:{lat:loc.lat,lng:loc.lng}, map:window.gmap,
+        icon: dot(LEVEL_COLOR[c[1]]||'#888', loc.exact?7:5),
+        opacity: loc.exact?1:0.5,
+        title: c[0] + ' (' + c[1] + ')'
+      });
+      m.addListener('click', ()=>openCollegePop(c, m));
+      gmarkers.push(m); bounds.extend(m.getPosition()); cCount++;
+    });
+  }
+
+  if(showR){
+    reports.forEach(r=>{
+      if(!r.latitude || !r.longitude) return;
+      if(stF!=='All' && r.home_state!==stF) return;
+      const m = new google.maps.Marker({
+        position:{lat:Number(r.latitude), lng:Number(r.longitude)}, map:window.gmap,
+        icon: dot('#35C759', 7), title: r.prospect + ' — report filed'
+      });
+      m.addListener('click', ()=>{
+        infoWin.setContent(`<div class="gm-pop"><h4>${esc(r.prospect)}</h4>
+          <div class="gm-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'')}<br>
+          Score ${r.inhome_score ?? '—'} &middot; ${esc(r.recommendation_tier||'Ungraded')}<br>
+          Filed by ${esc(r.scout_name||scoutName(r.scout_id))}</div></div>`);
+        infoWin.open(window.gmap, m);
+      });
+      gmarkers.push(m); bounds.extend(m.getPosition());
+    });
+  }
+
+  document.getElementById('cntMap').textContent = pCount + ' pins';
+  window.gmapBounds = bounds;
+  if(!bounds.isEmpty()) window.gmap.fitBounds(bounds);
+  setMapStatus(unresolved ? unresolved + ' still on state center — tap Resolve Locations' : '');
+}
+
+function openProspectPop(p, marker, status){
+  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p[0])}" target="_blank" rel="noopener">${s.name}</a>`).join('');
+  infoWin.setContent(`<div class="gm-pop">
+    <h4>${esc(p[0])}</h4>
+    <div class="gm-meta">${esc(p[1])} &middot; ${esc(p[2])} &middot; ${esc(p[3]||'')}<br>
+      ${esc([p[4],p[5]].filter(Boolean).join(' / '))}<br>
+      Status: ${status==='done'?'Worked':status==='flag'?'Flagged':'Not worked'}</div>
+    <div>${links}</div>
+    <button onclick="assignFromBoard('${esc(boardKey(p))}')">Assign to Scout</button>
+  </div>`);
+  infoWin.open(window.gmap, marker);
+}
+function openCollegePop(c, marker){
+  const logo = c[3] ? `<img src="https://a.espncdn.com/i/teamlogos/ncaa/500/${c[3]}.png" alt="" style="width:34px;height:34px;object-fit:contain;float:right;margin-left:8px" onerror="this.style.display='none'">` : '';
+  infoWin.setContent(`<div class="gm-pop">${logo}
+    <h4>${esc(c[0])}</h4>
+    <div class="gm-meta">${esc(c[1])} &middot; ${esc(c[2])}</div>
+  </div>`);
+  infoWin.open(window.gmap, marker);
+}
+
+function buildMapFilters(){
+  const states = [...new Set([...BOARD_DATA.map(p=>p[3]), ...COLLEGES.map(c=>c[2])].filter(Boolean))].sort();
+  const sel = document.getElementById('mState');
+  if(!sel.options.length){
+    sel.innerHTML = '<option value="All">All states</option>' + states.map(s=>`<option value="${s}">${s}</option>`).join('');
+  }
+  document.getElementById('mLevelChips').innerHTML = ['FBS','FCS','D2','JUCO'].map(l=>
+    `<button type="button" class="chip ${mapLevelFilter[l]?'on':''}" onclick="toggleLevel('${l}')">${l}</button>`).join('');
+}
+function toggleLevel(l){ mapLevelFilter[l] = !mapLevelFilter[l]; buildMapFilters(); drawMap(); }
+
+/* ---- boot ---- */
+function initMap(){
+  geocoder = new google.maps.Geocoder();
+  infoWin = new google.maps.InfoWindow();
+  window.gmap = new google.maps.Map(document.getElementById('gmap-canvas'), {
+    center:{lat:32.8,lng:-85.5}, zoom:6,
+    mapTypeControl:false, streetViewControl:false, fullscreenControl:true,
+    backgroundColor:'#0F0F0F',
+    styles:[
+      {elementType:'geometry',stylers:[{color:'#1A1A1A'}]},
+      {elementType:'labels.text.stroke',stylers:[{color:'#0F0F0F'}]},
+      {elementType:'labels.text.fill',stylers:[{color:'#8A8A8A'}]},
+      {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#3A3A3A'}]},
+      {featureType:'administrative.province',elementType:'geometry.stroke',stylers:[{color:'#4A4A4A'}]},
+      {featureType:'poi',stylers:[{visibility:'off'}]},
+      {featureType:'road',elementType:'geometry',stylers:[{color:'#242424'}]},
+      {featureType:'road',elementType:'labels',stylers:[{visibility:'off'}]},
+      {featureType:'transit',stylers:[{visibility:'off'}]},
+      {featureType:'water',elementType:'geometry',stylers:[{color:'#0B0B0B'}]}
+    ]
+  });
+  buildMapFilters();
+  drawMap();
+}
+function loadMapsScript(){
+  if(!MAPS_API_KEY || MAPS_API_KEY.indexOf('PASTE_') === 0){
+    document.getElementById('mapKeyWarn').style.display = 'block';
+    document.getElementById('cntMap').textContent = 'key needed';
+    return;
+  }
+  if(window.google && window.google.maps){ initMap(); return; }
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${MAPS_API_KEY}&callback=initMap`;
+  s.async = true; s.defer = true;
+  s.onerror = ()=>{ document.getElementById('mapKeyWarn').style.display='block'; };
+  document.head.appendChild(s);
+}
+
+/* ---------------- SCOUT ROSTER ---------------- */
+async function createScout(){
+  const name = document.getElementById('rName').value.trim();
+  if(!name){ toast('Name required'); return; }
+  const rec = {
+    name,
+    role: document.getElementById('rRole').value.trim() || 'Regional Scout',
+    region: document.getElementById('rRegion').value.trim() || 'Unassigned'
+  };
+  const btn = document.getElementById('rBtn');
+  btn.disabled = true; btn.textContent = 'Generating...';
+  try{
+    let scout;
+    if(demoMode){
+      const base = name.split(' ').filter(Boolean);
+      const id = (base[0]?.[0]||'s').toLowerCase() + (base[base.length-1]||'scout').replace(/[^a-zA-Z]/g,'').toLowerCase();
+      const code = (base[base.length-1]||'SCOUT').replace(/[^a-zA-Z]/g,'').toUpperCase() + '26';
+      scout = { pkId:'demo_'+Date.now(), id, accessCode:code, active:true, ...rec };
+      SCOUT_ROSTER.unshift(scout);
+    } else {
+      const out = await api('createScout', rec);
+      scout = normalizeScouts([out.scout])[0];
+      SCOUT_ROSTER.unshift(scout);
+    }
+    document.getElementById('rResult').innerHTML = `
+      <div class="code-result">
+        <div class="cr-lbl">Access Code Generated</div>
+        <div class="cr-code">${esc(scout.accessCode)}</div>
+        <div class="cr-name">${esc(scout.name)} &middot; ${esc(scout.role)} &middot; ${esc(scout.region)}</div>
+        <button type="button" class="cr-copy" onclick="copyCode('${esc(scout.accessCode)}')">Copy Code</button>
+      </div>`;
+    document.getElementById('rName').value = '';
+    document.getElementById('rRegion').value = '';
+    fillSelects(); renderRoster(); renderScouts();
+    toast('Scout added');
+  }catch(err){ toast(err.message); }
+  btn.disabled = false; btn.textContent = 'Generate & Add Scout';
+}
+function copyCode(code){
+  navigator.clipboard.writeText(code).then(()=>toast('Code copied')).catch(()=>toast(code));
+}
+async function toggleScoutActive(pkId, makeActive){
+  try{
+    if(!demoMode) await api('updateScout', { id: pkId, active: makeActive });
+    const s = SCOUT_ROSTER.find(s=>s.pkId===pkId); if(s) s.active = makeActive;
+    fillSelects(); renderRoster(); renderScouts(); renderStats();
+    toast(makeActive ? 'Scout reactivated' : 'Scout deactivated');
+  }catch(err){ toast(err.message); }
+}
+function renderRoster(){
+  const el = document.getElementById('rosterList');
+  if(!SCOUT_ROSTER.length){
+    el.innerHTML = `<div class="empty"><div class="t">No scouts yet</div><div class="s">Add one above.</div></div>`;
+    return;
+  }
+  const sorted = SCOUT_ROSTER.slice().sort((a,b)=>(b.active-a.active) || a.name.localeCompare(b.name));
+  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Deploy scouts-schema.sql and list-scouts.js to go live.</div>` : '')
+    + sorted.map(s=>`
+    <div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(s.name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(s.name)}</div>
+          <div class="rc-meta">${esc(s.role||'')} &middot; ${esc(s.region||'')}</div>
+          <span class="scout-status ${s.active?'active':'inactive'}">${s.active?'Active':'Inactive'}</span>
+        </div>
+        <div class="rc-right">
+          <div class="rc-sub" style="font-family:'Anton',sans-serif; font-size:15px; color:var(--ink); letter-spacing:.04em;">${esc(s.accessCode||'—')}</div>
+          <div class="rc-sub">access code</div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="mini-btn" onclick="copyCode('${esc(s.accessCode)}')">Copy Code</button>
+        ${s.active
+          ? `<button type="button" class="mini-btn danger" onclick="toggleScoutActive('${s.pkId}', false)">Deactivate</button>`
+          : `<button type="button" class="mini-btn" onclick="toggleScoutActive('${s.pkId}', true)">Reactivate</button>`}
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- SCOUT LOAD ---------------- */
+/* ---------------- STATE COVERAGE ----------------
+   Maps each scout's region to the states they cover, then stacks that
+   against demand: how many board players sit in each state, plus how
+   many live assignments and filed reports. Surfaces the gaps.
+
+   REGION_STATES is the one thing to maintain by hand — when you add a
+   scout whose region isn't listed, add it here so their coverage
+   registers. Anything unmatched falls through as uncovered.
+------------------------------------------------------------------ */
+const REGION_STATES = {
+  'alabama':['AL'], 'georgia':['GA'], 'texas':['TX'], 'florida':['FL'],
+  'kentucky':['KY'], 'california':['CA'], 'tennessee':['TN'],
+  'mississippi':['MS'], 'louisiana':['LA'], 'south carolina':['SC'],
+  'north carolina':['NC'], 'oklahoma':['OK'], 'arkansas':['AR'],
+  'dmv':['MD','DC','VA'],
+  'southeast':['AL','GA','FL','SC','TN','MS'],
+  'national':[]   /* national roles float; they don't count as coverage for a state */
+};
+function statesForScout(s){
+  const key = (s.region||'').trim().toLowerCase();
+  return REGION_STATES[key] || [];
+}
+
+function renderCoverage(){
+  /* demand from the board */
+  const boardByState = {};
+  BOARD_DATA.forEach(p=>{ if(p[3]) boardByState[p[3]] = (boardByState[p[3]]||0)+1; });
+
+  /* who covers what */
+  const coverByState = {};
+  SCOUT_ROSTER.filter(s=>s.active).forEach(s=>{
+    statesForScout(s).forEach(st=>{
+      (coverByState[st] = coverByState[st] || []).push(s.name);
+    });
+  });
+
+  /* live activity per state, from assignment school strings and report home_state */
+  const asgByState = {}, repByState = {};
+  assignments.filter(a=>a.status!=='complete').forEach(a=>{
+    const m = /\(([A-Z]{2})\)/.exec(a.school||'');
+    if(m) asgByState[m[1]] = (asgByState[m[1]]||0)+1;
+  });
+  reports.forEach(r=>{
+    if(r.home_state) repByState[r.home_state] = (repByState[r.home_state]||0)+1;
+  });
+
+  const states = [...new Set([
+    ...Object.keys(boardByState), ...Object.keys(coverByState),
+    ...Object.keys(asgByState), ...Object.keys(repByState)
+  ])].sort((a,b)=>(boardByState[b]||0)-(boardByState[a]||0) || a.localeCompare(b));
+
+  const maxBoard = Math.max(1, ...Object.values(boardByState));
+  const gapCount = states.filter(st=>(boardByState[st]||0)>0 && !(coverByState[st]||[]).length).length;
+  const gapPlayers = states.filter(st=>!(coverByState[st]||[]).length)
+    .reduce((n,st)=>n+(boardByState[st]||0),0);
+
+  const rows = states.map(st=>{
+    const demand = boardByState[st]||0;
+    const scouts = coverByState[st]||[];
+    const covered = scouts.length>0;
+    return `<div class="cov-row ${covered?'':'gap'}">
+      <div class="cov-st">${st}</div>
+      <div class="cov-mid">
+        <div class="cov-bar"><i style="width:${Math.round(demand/maxBoard*100)}%"></i></div>
+        <div class="cov-who">${covered
+          ? scouts.map(esc).join(', ')
+          : '<span class="cov-none">No scout assigned</span>'}</div>
+      </div>
+      <div class="cov-nums">
+        <div class="cov-n">${demand}</div>
+        <div class="cov-l">board</div>
+      </div>
+      <div class="cov-nums">
+        <div class="cov-n" style="color:${(asgByState[st]||0)?'var(--warn)':'var(--dim)'}">${asgByState[st]||0}</div>
+        <div class="cov-l">open</div>
+      </div>
+      <div class="cov-nums">
+        <div class="cov-n" style="color:${(repByState[st]||0)?'var(--good)':'var(--dim)'}">${repByState[st]||0}</div>
+        <div class="cov-l">filed</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('coverageBox').innerHTML = `
+    <div class="panel">
+      <h3>State Coverage</h3>
+      <div class="sub">Board demand against who actually covers that state. Gaps are the states where players sit and nobody's assigned.</div>
+      ${gapCount ? `<div class="banner" style="background:#241010;border-color:#4A1010;color:#FF9B9B;">
+        ${gapPlayers} board players across ${gapCount} state${gapCount>1?'s':''} with no scout assigned.
+      </div>` : ''}
+      <div class="cov-head">
+        <div class="cov-st">ST</div>
+        <div class="cov-mid">Coverage</div>
+        <div class="cov-nums">Board</div>
+        <div class="cov-nums">Open</div>
+        <div class="cov-nums">Filed</div>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function renderScouts(){
+  renderCoverage();
+  const maxOpen = Math.max(1, ...SCOUT_ROSTER.map(s=>assignments.filter(a=>a.scout_id===s.id && a.status!=='complete').length));
+  document.getElementById('scoutsList').innerHTML = SCOUT_ROSTER.map(s=>{
+    const open = assignments.filter(a=>a.scout_id===s.id && a.status!=='complete').length;
+    const done = assignments.filter(a=>a.scout_id===s.id && a.status==='complete').length;
+    const filed = reports.filter(r=>r.scout_id===s.id).length;
+    const cov = statesForScout(s);
+    const boardInRegion = cov.reduce((n,st)=>n+BOARD_DATA.filter(p=>p[3]===st).length,0);
+    return `<div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(s.name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(s.name)}</div>
+          <div class="rc-meta">${esc(s.role)} &middot; ${esc(s.region)}${cov.length?` (${cov.join(', ')})`:''}</div>
+          <div class="load-bar"><i style="width:${Math.round(open/maxOpen*100)}%"></i></div>
+        </div>
+        <div class="rc-right">
+          <div class="rc-score">${filed}</div>
+          <div class="rc-sub">reports filed</div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <span class="pill open">${open} open</span>
+        <span class="pill done">${done} complete</span>
+        ${boardInRegion?`<span class="pill normal">${boardInRegion} on board in region</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- ALL REPORTS ---------------- */
+function renderReports(){
+  const q = (document.getElementById('repSearch').value||'').trim().toLowerCase();
+  const sf = document.getElementById('repScoutFilter').value;
+  let list = reports.filter(r=>{
+    if(sf!=='All' && r.scout_id!==sf) return false;
+    if(!q) return true;
+    return (r.prospect||'').toLowerCase().includes(q) || (r.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=> new Date(b.date_evaluated||b.created_at||0) - new Date(a.date_evaluated||a.created_at||0));
+
+  const el = document.getElementById('repList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty"><div class="t">No reports</div><div class="s">Nothing matches this filter.</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(r=>`
+    <div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${r.has_headshot?`<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(r.prospect)}</div>
+          <div class="rc-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'—')} &middot; Class of ${esc(r.class_year||'—')}</div>
+          ${(r.home_city||r.home_state) ? `<div class="rc-meta">${esc([r.home_city, r.home_state].filter(Boolean).join(', '))}</div>` : ''}
+          <div class="rc-meta">Filed by ${esc(r.scout_name||scoutName(r.scout_id))} &middot; ${fmtDate(r.date_evaluated||r.created_at)}</div>
+        </div>
+        <div class="rc-right">
+          <div class="rc-score">${r.inhome_score ?? '—'}</div>
+          <div class="rc-sub" style="color:${tierColor(r.recommendation_tier)}">${esc(r.recommendation_tier||'Ungraded')}</div>
+        </div>
+      </div>
+      ${railHTML(r.prospect, '')}
+    </div>`).join('');
+}
+
+/* ---------------- PERFORMANCE ---------------- */
+async function createPerformance(){
+  const name = document.getElementById('pName').value.trim();
+  if(!name){ toast('Player name required'); return; }
+  const rec = {
+    name,
+    level:      document.getElementById('pLevel').value,
+    position:   document.getElementById('pPos').value,
+    class_year: document.getElementById('pClass').value.trim(),
+    school:     document.getElementById('pSchool').value.trim(),
+    stat_line:  document.getElementById('pStat').value.trim(),
+    source_link:document.getElementById('pLink').value.trim(),
+    performance_date: document.getElementById('pDate').value
+  };
+  try{
+    if(demoMode){
+      performances.unshift({ id:'demo_'+Date.now(), ...rec });
+    } else {
+      const out = await api('createPerformance', rec);
+      performances.unshift(out.performance);
+    }
+    ['pName','pClass','pSchool','pStat','pLink'].forEach(id=>document.getElementById(id).value='');
+    renderStats(); renderPerfChips(); renderPerf();
+    toast('Performance logged');
+  }catch(err){ toast(err.message); }
+}
+async function deletePerformance(id){
+  if(!confirm('Remove this performance log?')) return;
+  try{
+    if(!demoMode) await api('deletePerformance', { id });
+    performances = performances.filter(p=>p.id!==id);
+    renderStats(); renderPerf();
+    toast('Removed');
+  }catch(err){ toast(err.message); }
+}
+/* Sends a logged performance straight into the assign form */
+function assignFromPerf(id){
+  const p = performances.find(p=>p.id===id); if(!p) return;
+  document.getElementById('aName').value   = p.name || '';
+  document.getElementById('aPos').value    = p.position || 'ATH';
+  document.getElementById('aClass').value  = p.class_year || '';
+  document.getElementById('aSchool').value = p.school || '';
+  document.getElementById('aLevel').value  = p.level || 'HS';
+  document.getElementById('aLink').value   = p.source_link || '';
+  document.getElementById('aNote').value   = p.stat_line ? `Flagged on: ${p.stat_line}` : '';
+  switchTab('assign');
+  window.scrollTo({top:0, behavior:'smooth'});
+  toast('Loaded into assign form. Pick a scout.');
+}
+
+function renderPerfChips(){
+  const opts = ['All','JUCO','HS'];
+  document.getElementById('perfLevelChips').innerHTML = opts.map(k=>
+    `<button type="button" class="chip ${k===perfLevelFilter?'on':''}" onclick="setPerfLevel('${k}')">${k==='HS'?'High School':k}</button>`).join('');
+}
+function setPerfLevel(l){ perfLevelFilter = l; renderPerfChips(); renderPerf(); }
+
+function renderPerf(){
+  const q = (document.getElementById('perfSearch').value||'').trim().toLowerCase();
+  let list = performances.filter(p=>{
+    if(perfLevelFilter!=='All' && p.level!==perfLevelFilter) return false;
+    if(!q) return true;
+    return (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)
+      || (p.stat_line||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=> new Date(b.performance_date||0) - new Date(a.performance_date||0));
+
+  const el = document.getElementById('perfList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty"><div class="t">No performances logged</div><div class="s">Add a stat line above with its source link.</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(p=>`
+    <div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(p.name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(p.name)}</div>
+          <div class="rc-meta">${esc(p.position||'')} &middot; ${esc(p.school||'—')} &middot; Class of ${esc(p.class_year||'—')}</div>
+          <span class="pill ${p.level==='JUCO'?'juco':'hs'}">${esc(p.level||'HS')}</span>
+        </div>
+        <div class="rc-right"><div class="rc-sub">${fmtDate(p.performance_date)}</div></div>
+      </div>
+      ${p.stat_line?`<div style="font-size:13px;color:#D6D6D6;line-height:1.5;margin-top:9px;background:var(--card-2);border-left:2px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;">${esc(p.stat_line)}</div>`:''}
+      ${railHTML(p.name, p.source_link)}
+      <div class="rc-actions">
+        <button type="button" class="mini-btn go" onclick="assignFromPerf('${p.id}')">Assign to Scout</button>
+        <button type="button" class="mini-btn danger" onclick="deletePerformance('${p.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+}
+</script>
+
+</body>
+</html>

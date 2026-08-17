@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>InHome | Scout Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#FF0000; --red-deep:#170000;
+    --paper:#0A0A0A; --card:#141414; --card-2:#1B1B1B;
+    --ink:#F5F5F5; --line:#2A2A2A; --mute:#9A9A9A; --dim:#6A6A6A;
+    --good:#35C759; --warn:#E0A419; --bad:#C62828;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;}
+  h1,h2,h3,.disp{font-family:'Anton',sans-serif; font-weight:400; letter-spacing:.02em; text-transform:uppercase;}
+  a{color:inherit;}
+  button{font-family:'Inter',sans-serif;}
+
+  /* ---------- GATE (matches report form) ---------- */
+  #gate{position:fixed; inset:0; background:#000; z-index:200; display:flex; align-items:center;
+    justify-content:center; padding:24px;}
+  #gate.hide{display:none;}
+  .gate-box{width:100%; max-width:420px; text-align:center;}
+  .gate-mark{margin:0 auto 20px; height:82px; width:auto; display:block;}
+  .gate-title{font-family:'Anton',sans-serif; font-weight:400; font-size:18px; letter-spacing:.02em;
+    color:#fff; text-transform:uppercase; line-height:1.1;}
+  .gate-s{font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--red);
+    font-weight:500; margin-top:9px;}
+  .gate-intro{font-size:12.5px; line-height:1.6; color:var(--mute); margin-top:16px; font-weight:400;}
+  .gate-box input{width:100%; margin-top:24px; text-align:center; font-family:'Anton',sans-serif; font-size:22px;
+    letter-spacing:.16em; text-transform:uppercase; padding:14px; border:1.5px solid var(--line); border-radius:10px;
+    background:var(--card-2); color:var(--ink);}
+  .gate-box input:focus{outline:none; border-color:var(--red);}
+  .gate-btn{width:100%; margin-top:10px; background:var(--red); color:#fff; border:none; border-radius:10px;
+    padding:14px; font-family:'Anton',sans-serif; font-weight:400; font-size:17px; letter-spacing:.06em;
+    text-transform:uppercase; cursor:pointer;}
+  .gate-err{color:var(--bad); font-size:12.5px; font-weight:600; margin-top:12px; min-height:17px;}
+  .gate-help{font-size:11px; color:var(--dim); margin-top:16px; line-height:1.5;}
+  .gate-help a{color:var(--red); text-decoration:none; font-weight:700;}
+  .gate-by{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim);
+    font-weight:700; margin-top:22px; padding-top:16px; border-top:1px solid #1A1A1A;}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{background:#000; border-bottom:1px solid var(--line); padding:16px 18px;
+    position:sticky; top:0; z-index:50;}
+  .topbar-row{max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;}
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo-mark{width:32px; height:38px; flex:0 0 auto;}
+  .logo-mark svg{width:100%; height:100%; display:block;}
+  .logo-text{font-family:'Anton',sans-serif; font-weight:400; font-size:19px; letter-spacing:.03em;}
+  .logo-text b{color:var(--red); font-weight:400;}
+  .scout-chip{display:flex; align-items:center; gap:9px;}
+  .scout-chip .who{text-align:right;}
+  .scout-chip .nm{font-family:'Anton',sans-serif; font-weight:400; font-size:13.5px; letter-spacing:.02em;
+    line-height:1.15;}
+  .scout-chip .rl{font-size:10px; color:var(--mute); font-weight:600;}
+  .scout-chip .avatar{width:32px; height:32px; border-radius:50%; background:var(--card-2);
+    border:1.5px solid var(--red); display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:13px; flex:0 0 auto;}
+  .signout-btn{background:none; border:1px solid var(--line); color:var(--dim); border-radius:7px;
+    padding:5px 9px; font-size:10px; font-weight:700; cursor:pointer; text-transform:uppercase;
+    letter-spacing:.06em; margin-left:8px;}
+  .signout-btn:hover{border-color:var(--bad); color:var(--bad);}
+
+  .wrap{max-width:760px; margin:0 auto; padding:0 14px;}
+
+  /* ---------- STATS ---------- */
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 10px;
+    text-align:center;}
+  .stat-card .n{font-family:'Anton',sans-serif; font-weight:400; font-size:24px; color:var(--ink); line-height:1;}
+  .stat-card .l{font-size:9.5px; color:var(--mute); font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; margin-top:5px; line-height:1.3;}
+  .stat-card.accent .n{color:var(--red);}
+  @media (max-width:480px){ .stat-row{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- NEW REPORT CTA ---------- */
+  .new-report-btn{display:block; width:100%; margin-top:14px; background:var(--red); color:#fff;
+    border:none; border-radius:12px; padding:15px; font-family:'Anton',sans-serif; font-weight:400;
+    font-size:15px; letter-spacing:.04em; text-transform:uppercase; text-align:center; text-decoration:none;
+    cursor:pointer;}
+  .new-report-btn:hover{background:#E60000;}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex; gap:8px; margin-top:20px;}
+  .tab-btn{flex:1; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
+    border-radius:11px; padding:12px 10px; cursor:pointer; text-align:center; font-family:'Anton',sans-serif;
+    font-weight:400; font-size:13.5px; letter-spacing:.03em; text-transform:uppercase;}
+  .tab-btn .cnt{display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:10px;
+    color:var(--dim); margin-top:2px; letter-spacing:0;}
+  .tab-btn.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
+  .tab-btn.on .cnt{color:var(--red);}
+  .tab-pane{display:none;}
+  .tab-pane.on{display:block;}
+
+  /* ---------- TOOLS ---------- */
+  .tools{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .tools input{flex:1; min-width:150px; border:1.5px solid var(--line); border-radius:9px; padding:10px 12px;
+    background:var(--card-2); color:var(--ink); font-family:'Inter',sans-serif; font-size:14px;}
+  .tools input:focus{outline:none; border-color:var(--red);}
+  .chip-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px;}
+  .chip{background:#101010; border:1.5px solid var(--line); color:var(--mute); border-radius:15px;
+    padding:6px 12px; font-size:11px; font-weight:600; cursor:pointer;}
+  .chip.on{border-color:var(--red); color:var(--ink); background:var(--red-deep);}
+
+  /* ---------- REPORT / TARGET CARDS ---------- */
+  .list{margin-top:14px; display:flex; flex-direction:column; gap:9px;}
+  .p-card{display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:13px; padding:11px 12px; cursor:pointer; text-align:left; width:100%;}
+  .p-card:hover{border-color:#3D3D3D;}
+  .p-avatar{width:48px; height:48px; border-radius:10px; flex:0 0 auto; background:var(--card-2);
+    border:1.5px solid var(--line); overflow:hidden; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:16px; color:var(--dim);}
+  .p-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .p-mid{flex:1; min-width:0;}
+  .p-name{font-family:'Anton',sans-serif; font-weight:400; font-size:16px; letter-spacing:.02em;
+    line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .p-meta{font-size:11px; color:var(--mute); font-weight:500; margin-top:2px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;}
+  .p-right{flex:0 0 auto; text-align:right;}
+  .p-score{font-family:'Anton',sans-serif; font-weight:400; font-size:19px; color:var(--red);}
+  .p-tier{font-size:9px; color:var(--mute); font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    margin-top:2px;}
+  .p-date{font-size:10px; color:var(--dim); margin-top:2px;}
+  .p-scout-btn{background:var(--red); color:#fff; border:none; border-radius:8px; padding:8px 13px;
+    font-family:'Anton',sans-serif; font-weight:400; font-size:11.5px; letter-spacing:.03em;
+    text-transform:uppercase; cursor:pointer; white-space:nowrap;}
+  .p-priority{font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    padding:3px 8px; border-radius:10px; margin-top:3px; display:inline-block;}
+  .p-priority.high{background:var(--red-deep); color:var(--red);}
+  .p-priority.normal{background:var(--card-2); color:var(--mute);}
+
+  .empty-state{text-align:center; padding:50px 20px; color:var(--dim);}
+  .empty-state .ic{font-size:32px; margin-bottom:10px;}
+  .empty-state .t{font-family:'Anton',sans-serif; font-weight:400; font-size:16px; color:var(--mute);
+    text-transform:uppercase; letter-spacing:.02em;}
+  .empty-state .s{font-size:12.5px; margin-top:6px; line-height:1.5;}
+
+  .load-state{text-align:center; padding:40px 20px; color:var(--dim); font-size:13px;}
+
+  .demo-banner{background:#241A00; border:1px solid #4A3600; color:#E0A419; font-size:11.5px;
+    font-weight:600; border-radius:9px; padding:10px 12px; margin-top:14px; line-height:1.5;}
+
+  /* ---------- MODAL ---------- */
+  .modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:300; align-items:flex-end;
+    justify-content:center;}
+  .modal.on{display:flex;}
+  .modal-card{background:var(--card); border:1px solid var(--line); border-radius:18px 18px 0 0;
+    max-width:520px; width:100%; max-height:85vh; display:flex; flex-direction:column;}
+  @media (min-width:560px){ .modal{align-items:center;} .modal-card{border-radius:16px; max-height:80vh;} }
+  .modal-head{display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line);}
+  .modal-head .p-avatar{width:52px; height:52px;}
+  .modal-head-mid{flex:1; min-width:0;}
+  .modal-head-mid h2{margin:0; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .modal-head-mid .sub{font-size:11.5px; color:var(--mute); margin-top:2px;}
+  .modal-close{background:none; border:none; color:var(--mute); cursor:pointer; font-size:26px; line-height:1;
+    padding:0; width:30px; height:30px; flex:0 0 auto;}
+  .modal-close:hover{color:var(--red);}
+  .modal-body{flex:1; overflow-y:auto; padding:18px 20px;}
+  .modal-foot{padding:14px 20px; border-top:1px solid var(--line);}
+  .m-scorebig{display:flex; align-items:center; justify-content:center; gap:18px; background:var(--card-2);
+    border-radius:12px; padding:16px; margin-bottom:14px;}
+  .m-scorebig .n{font-family:'Anton',sans-serif; font-weight:400; font-size:38px; color:var(--red); line-height:1;}
+  .m-scorebig .l{font-size:10px; color:var(--mute); font-weight:700; text-transform:uppercase; margin-top:4px;}
+  .m-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .m-item{background:var(--card-2); border-radius:9px; padding:9px 11px;}
+  .m-item .k{font-size:9.5px; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .m-item .v{font-size:13.5px; font-weight:600; color:var(--ink); margin-top:2px;}
+  .m-narrative{font-size:13px; line-height:1.6; color:#D6D6D6; margin-top:14px; background:var(--card-2);
+    border-left:2px solid var(--red); border-radius:0 8px 8px 0; padding:12px 14px;}
+  .modal-open-btn{width:100%; background:var(--card-2); color:var(--ink); border:1.5px solid var(--line);
+    border-radius:10px; padding:12px; font-family:'Anton',sans-serif; font-weight:400; font-size:14px;
+    letter-spacing:.04em; text-transform:uppercase; cursor:pointer; text-decoration:none; display:block;
+    text-align:center;}
+  .modal-open-btn:hover{border-color:var(--red);}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <img class="gate-mark" src="data:image/png;base64,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" alt="InHome">
+    <div class="gate-title">The Network</div>
+    <div class="gate-s">Invitation Only</div>
+    <div class="gate-intro">An invite-only network of former college and NFL players. Reports filed here go straight to directors of player personnel across the country. Enter your access code to continue.</div>
+    <input type="text" id="gateCode" placeholder="Access code" autocomplete="off" autocapitalize="characters">
+    <button type="button" class="gate-btn" onclick="tryGate()">Enter The Network</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-help">Same code you use on the scouting report form.<br>Not in the network yet? Email <a href="mailto:support@thelabusa.org?subject=InHome%20Scout%20Network%20Access">support@thelabusa.org</a></div>
+    <div class="gate-by">Powered by Athlete&rsquo;s Inc+</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="logo">
+      <div class="logo-mark">
+        <img src="data:image/png;base64,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" alt="" style="height:30px;width:auto;display:block;">
+      </div>
+      <div class="logo-text">IN<b>HOME</b></div>
+    </div>
+    <div class="scout-chip" id="scoutChip" style="display:none;">
+      <div class="who">
+        <div class="nm" id="scoutNm">&mdash;</div>
+        <div class="rl" id="scoutRl">&mdash;</div>
+      </div>
+      <div class="avatar" id="scoutAvatar">&mdash;</div>
+      <button type="button" class="signout-btn" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="stat-row">
+    <div class="stat-card accent"><div class="n" id="statTotal">&mdash;</div><div class="l">Reports Filed</div></div>
+    <div class="stat-card"><div class="n" id="statWeek">&mdash;</div><div class="l">This Week</div></div>
+    <div class="stat-card"><div class="n" id="statAvg">&mdash;</div><div class="l">Avg Score</div></div>
+    <div class="stat-card"><div class="n" id="statUnscouted">&mdash;</div><div class="l">Unscouted</div></div>
+  </div>
+
+  <a class="new-report-btn" href="report.html">+ New Scouting Report</a>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn on" id="tabBtnReports" onclick="switchTab('reports')">
+      My Reports<span class="cnt" id="tabCntReports">&mdash;</span>
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnTargets" onclick="switchTab('targets')">
+      Unscouted Players<span class="cnt" id="tabCntTargets">&mdash;</span>
+    </button>
+  </div>
+
+  <div class="tab-pane on" id="paneReports">
+    <div class="tools">
+      <input type="text" id="reportSearch" placeholder="Search your reports..." oninput="renderReports()">
+    </div>
+    <div class="chip-row" id="reportPosChips"></div>
+    <div id="reportsList" class="list"></div>
+  </div>
+
+  <div class="tab-pane" id="paneTargets">
+    <div class="tools">
+      <input type="text" id="targetSearch" placeholder="Search unscouted players..." oninput="renderTargets()">
+    </div>
+    <div class="chip-row" id="targetPosChips"></div>
+    <div id="targetsList" class="list"></div>
+  </div>
+
+</div>
+
+<div id="reportModal" class="modal" onclick="if(event.target===this) closeModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="p-avatar" id="mAvatar"></div>
+      <div class="modal-head-mid">
+        <h2 id="mName">&mdash;</h2>
+        <div class="sub" id="mSub">&mdash;</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-foot">
+      <a class="modal-open-btn" id="mOpenBtn" href="#">Open Full Report</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   BACKEND CONTRACT (implement these two functions; page runs on demo
+   data until they respond correctly):
+
+   GET /.netlify/functions/list-reports?scoutId=<id>
+     -> [{ id, prospect, position, positionLabel, classYear, school,
+           inhomeScore, recommendationTier, dateEvaluated, createdAt,
+           scoutId, scoutName, hasHeadshot }]
+     (this already exists per the portal build — reused here filtered
+      by scoutId instead of program)
+
+   GET /.netlify/functions/list-targets?scoutId=<id>&region=<region>
+     -> [{ id, name, position, positionLabel, school, classYear,
+           region, priority ('high'|'normal'), addedAt }]
+     Should return only prospects that do NOT yet have a report from
+     this scout. If the backend returns the full target list instead,
+     this page filters client-side by matching name+position against
+     already-filed reports as a fallback.
+
+   Headshots render the same way they do in the report form:
+     /.netlify/functions/frame?key=headshot_<reportId>
+===================================================================== */
+
+/* Hardcoded list is now just a fallback in case list-scouts is
+   unreachable — the live roster comes from Neon via list-scouts.js,
+   same origin since this page lives on the portal site. New scouts
+   added in admin show up here without editing this file. */
+const SCOUTS_FALLBACK = {
+  "CROWELL26":  { id:"dcrowell",  name:"Daniel Crowell",   role:"National Director of Scouting", region:"Southeast" },
+  "TFOSTER26":  { id:"tfoster",   name:"Tray Foster",      role:"Regional Scout, DB",            region:"Alabama" },
+  "STEWART26":  { id:"astewart",  name:"ArDarius Stewart", role:"Regional Scout, WR",            region:"Texas" },
+  "RFOSTER26":  { id:"rfoster",   name:"Reuben Foster",    role:"Regional Scout, LB",            region:"DMV" },
+  "KINNAIRD26": { id:"tkinnaird", name:"Tre'tez Kinnaird", role:"Regional Scout",                region:"Kentucky" },
+  "BLUFORD26":  { id:"kbluford",  name:"Kevin Bluford",    role:"Regional Scout",                region:"California" },
+  "SWINNEY26":  { id:"eswinney",  name:"Eric Swinney",     role:"Regional Scout",                region:"Georgia" },
+  "DLEE26":     { id:"dlee",      name:"Donnie Lee Jr.",   role:"Founder / Director",            region:"National" },
+  "LANIERB26":  { id:"blanier",   name:"Brylan Lanier",    role:"Regional Scout",                region:"Unassigned" },
+  "TAYLORD26":  { id:"dtaylor",   name:"Damien Taylor",    role:"Regional Scout",                region:"Unassigned" },
+  "DWIGHT26":   { id:"jdwight",   name:"Johnny Dwight",    role:"Regional Scout",                region:"Unassigned" },
+  "LANIERJ26":  { id:"jlanier",   name:"Josh Lanier",      role:"Regional Scout",                region:"Unassigned" },
+  "GARDNER26":  { id:"jgardner",  name:"Jalen Gardner",    role:"Regional Scout",                region:"Unassigned" },
+  "PRICE26":    { id:"dprice",    name:"Demetric Price",   role:"Regional Scout",                region:"Unassigned" },
+  "ROSHELL26":  { id:"croshell",  name:"Christian Roshell", role:"Regional Scout",               region:"Unassigned" },
+  "ADMIN26":    { id:"admin",     name:"Athlete's Inc+ Admin", role:"Administrator",             region:"National" },
+  "DEMO26":     { id:"demo",      name:"Demo Scout",       role:"Demo / Training",               region:"Test" }
+};
+let SCOUTS = { ...SCOUTS_FALLBACK };
+async function refreshScouts(){
+  try{
+    const res = await fetch('/.netlify/functions/list-scouts');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if(data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length){
+      SCOUTS = { ...SCOUTS_FALLBACK, ...data };
+    }
+  }catch(err){
+    console.error('list-scouts unreachable, using fallback roster:', err.message);
+  }
+}
+refreshScouts();
+
+let SCOUT = null;
+let reports = [];
+let targets = [];
+let usingDemoReports = false;
+let usingDemoTargets = false;
+let activeTab = 'reports';
+let reportPosFilter = 'All';
+let targetPosFilter = 'All';
+
+/* ---------------- GATE ---------------- */
+function tryGate(){
+  const el = document.getElementById('gateCode');
+  const code = (el.value || '').trim().toUpperCase();
+  const found = SCOUTS[code];
+  if(!found){
+    document.getElementById('gateErr').textContent = 'Code not recognized.';
+    el.value = '';
+    el.focus();
+    return;
+  }
+  SCOUT = found;
+  localStorage.setItem('inhome_scout_code', code);
+  document.getElementById('gateErr').textContent = '';
+  document.getElementById('gate').classList.add('hide');
+  applyScout();
+  loadData();
+}
+function applyScout(){
+  document.getElementById('scoutChip').style.display = 'flex';
+  document.getElementById('scoutNm').textContent = SCOUT.name;
+  document.getElementById('scoutRl').textContent = SCOUT.role + ' \u00b7 ' + SCOUT.region;
+  document.getElementById('scoutAvatar').textContent = SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+}
+function signOut(){
+  SCOUT = null;
+  localStorage.removeItem('inhome_scout_code');
+  document.getElementById('scoutChip').style.display = 'none';
+  document.getElementById('gateCode').value = '';
+  document.getElementById('gate').classList.remove('hide');
+}
+document.getElementById('gateCode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); tryGate(); }
+});
+(function autoSignIn(){
+  const saved = localStorage.getItem('inhome_scout_code');
+  if(saved && SCOUTS[saved]){
+    SCOUT = SCOUTS[saved];
+    document.getElementById('gate').classList.add('hide');
+    applyScout();
+    loadData();
+  }
+})();
+
+/* ---------------- DEMO FALLBACK DATA ---------------- */
+function demoReports(){
+  const today = new Date();
+  const daysAgo = n => new Date(today - n*86400000).toISOString();
+  return [
+    { id:'demo1', prospect:'Marcus Whitfield', position:'CB', positionLabel:'Cornerback', classYear:'2026', school:'Hoover HS', inhomeScore:87, recommendationTier:'Priority', dateEvaluated:daysAgo(1), scoutId:SCOUT.id, hasHeadshot:false },
+    { id:'demo2', prospect:'Deja Coleman', position:'WR', positionLabel:'Wide Receiver', classYear:'2027', school:'Thompson HS', inhomeScore:79, recommendationTier:'Watch', dateEvaluated:daysAgo(4), scoutId:SCOUT.id, hasHeadshot:false },
+    { id:'demo3', prospect:'Trey Boykins', position:'EDGE', positionLabel:'Edge Rusher', classYear:'2026', school:'Central HS', inhomeScore:91, recommendationTier:'Priority', dateEvaluated:daysAgo(9), scoutId:SCOUT.id, hasHeadshot:false }
+  ];
+}
+function demoTargets(){
+  return [
+    { id:'t1', name:'Jaylen Marks', position:'QB', positionLabel:'Quarterback', school:'Spain Park HS', classYear:'2027', region:SCOUT.region, priority:'high' },
+    { id:'t2', name:'Corey Danielson', position:'OL', positionLabel:'Offensive Lineman', school:'Vestavia Hills HS', classYear:'2026', region:SCOUT.region, priority:'normal' },
+    { id:'t3', name:'Amir Blackwell', position:'S', positionLabel:'Safety', school:'Oak Mountain HS', classYear:'2027', region:SCOUT.region, priority:'normal' },
+    { id:'t4', name:'DeShawn Ruiz', position:'LB', positionLabel:'Linebacker', school:'Pinson Valley HS', classYear:'2026', region:SCOUT.region, priority:'high' }
+  ];
+}
+
+/* ---------------- LOAD ---------------- */
+async function loadData(){
+  document.getElementById('reportsList').innerHTML = '<div class="load-state">Loading your reports...</div>';
+  document.getElementById('targetsList').innerHTML = '<div class="load-state">Loading target list...</div>';
+
+  try{
+    const res = await fetch(`/.netlify/functions/list-reports?scoutId=${encodeURIComponent(SCOUT.id)}`);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    reports = Array.isArray(data) ? data : (data.reports || []);
+    usingDemoReports = false;
+  }catch(err){
+    reports = demoReports();
+    usingDemoReports = true;
+  }
+
+  try{
+    const res = await fetch(`/.netlify/functions/list-targets?scoutId=${encodeURIComponent(SCOUT.id)}&region=${encodeURIComponent(SCOUT.region)}`);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    targets = Array.isArray(data) ? data : (data.targets || []);
+    usingDemoTargets = false;
+  }catch(err){
+    targets = demoTargets();
+    usingDemoTargets = true;
+  }
+
+  /* fallback client-side filter: drop any target this scout already
+     filed a report on, in case the endpoint returns the full list */
+  const scoutedKeys = new Set(reports.map(r => (r.prospect||'').trim().toLowerCase() + '|' + (r.position||'')));
+  targets = targets.filter(t => !scoutedKeys.has((t.name||'').trim().toLowerCase() + '|' + (t.position||'')));
+
+  renderStats();
+  buildPosChips();
+  renderReports();
+  renderTargets();
+}
+
+/* ---------------- STATS ---------------- */
+function renderStats(){
+  const total = reports.length;
+  const weekAgo = Date.now() - 7*86400000;
+  const thisWeek = reports.filter(r => new Date(r.dateEvaluated || r.createdAt || 0).getTime() >= weekAgo).length;
+  const scores = reports.map(r => Number(r.inhomeScore)).filter(n => !isNaN(n));
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statWeek').textContent = thisWeek;
+  document.getElementById('statAvg').textContent = scores.length ? avg : '\u2014';
+  document.getElementById('statUnscouted').textContent = targets.length;
+  document.getElementById('tabCntReports').textContent = total + ' filed';
+  document.getElementById('tabCntTargets').textContent = targets.length + ' pending';
+}
+
+/* ---------------- TABS ---------------- */
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tabBtnReports').classList.toggle('on', tab==='reports');
+  document.getElementById('tabBtnTargets').classList.toggle('on', tab==='targets');
+  document.getElementById('paneReports').classList.toggle('on', tab==='reports');
+  document.getElementById('paneTargets').classList.toggle('on', tab==='targets');
+}
+
+/* ---------------- POSITION CHIPS ---------------- */
+function buildPosChips(){
+  const reportPositions = ['All', ...new Set(reports.map(r=>r.position).filter(Boolean))];
+  const targetPositions = ['All', ...new Set(targets.map(t=>t.position).filter(Boolean))];
+  document.getElementById('reportPosChips').innerHTML = reportPositions.map(p =>
+    `<button type="button" class="chip ${p===reportPosFilter?'on':''}" onclick="setReportPos('${p}')">${p}</button>`).join('');
+  document.getElementById('targetPosChips').innerHTML = targetPositions.map(p =>
+    `<button type="button" class="chip ${p===targetPosFilter?'on':''}" onclick="setTargetPos('${p}')">${p}</button>`).join('');
+}
+function setReportPos(p){ reportPosFilter = p; buildPosChips(); renderReports(); }
+function setTargetPos(p){ targetPosFilter = p; buildPosChips(); renderTargets(); }
+
+/* ---------------- RENDER: MY REPORTS ---------------- */
+function initials(name){
+  return (name||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+}
+function fmtDate(d){
+  if(!d) return '';
+  const dt = new Date(d);
+  if(isNaN(dt)) return '';
+  return dt.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+function tierColor(tier){
+  const t = (tier||'').toLowerCase();
+  if(t.includes('priority') || t.includes('elite')) return 'var(--good)';
+  if(t.includes('pass') || t.includes('no')) return 'var(--bad)';
+  return 'var(--warn)';
+}
+
+function renderReports(){
+  const q = (document.getElementById('reportSearch').value||'').trim().toLowerCase();
+  let list = reports.filter(r=>{
+    if(reportPosFilter !== 'All' && r.position !== reportPosFilter) return false;
+    if(!q) return true;
+    return (r.prospect||'').toLowerCase().includes(q) || (r.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=> new Date(b.dateEvaluated||b.createdAt||0) - new Date(a.dateEvaluated||a.createdAt||0));
+
+  const el = document.getElementById('reportsList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F4CB}</div><div class="t">No reports yet</div>
+      <div class="s">Reports you file will show up here.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = (usingDemoReports ? `<div class="demo-banner">Showing sample data — list-reports endpoint not reachable yet. Wire it up to see your real reports.</div>` : '')
+    + list.map(r => `
+    <button type="button" class="p-card" onclick='openReportModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="p-avatar">
+        ${r.hasHeadshot ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">` : initials(r.prospect)}
+      </div>
+      <div class="p-mid">
+        <div class="p-name">${r.prospect||'Unnamed Prospect'}</div>
+        <div class="p-meta">${r.positionLabel||r.position||''} \u00b7 ${r.school||'—'} \u00b7 Class of ${r.classYear||'—'}</div>
+      </div>
+      <div class="p-right">
+        <div class="p-score">${r.inhomeScore ?? '—'}</div>
+        <div class="p-tier" style="color:${tierColor(r.recommendationTier)}">${r.recommendationTier||'Ungraded'}</div>
+        <div class="p-date">${fmtDate(r.dateEvaluated||r.createdAt)}</div>
+      </div>
+    </button>`).join('');
+}
+
+/* ---------------- RENDER: UNSCOUTED TARGETS ---------------- */
+function renderTargets(){
+  const q = (document.getElementById('targetSearch').value||'').trim().toLowerCase();
+  let list = targets.filter(t=>{
+    if(targetPosFilter !== 'All' && t.position !== targetPosFilter) return false;
+    if(!q) return true;
+    return (t.name||'').toLowerCase().includes(q) || (t.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=>{
+    if(a.priority==='high' && b.priority!=='high') return -1;
+    if(b.priority==='high' && a.priority!=='high') return 1;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+
+  const el = document.getElementById('targetsList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u2705</div><div class="t">All caught up</div>
+      <div class="s">No unscouted players assigned to you right now.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = (usingDemoTargets ? `<div class="demo-banner">Showing sample data — list-targets endpoint not reachable yet. Wire it up to see your real target list.</div>` : '')
+    + list.map(t => `
+    <div class="p-card" style="cursor:default;">
+      <div class="p-avatar">${initials(t.name)}</div>
+      <div class="p-mid">
+        <div class="p-name">${t.name||'Unnamed'}</div>
+        <div class="p-meta">${t.positionLabel||t.position||''} \u00b7 ${t.school||'—'} \u00b7 Class of ${t.classYear||'—'}</div>
+        ${t.priority==='high' ? '<span class="p-priority high">High Priority</span>' : ''}
+      </div>
+      <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>
+    </div>`).join('');
+}
+
+function scoutLink(t){
+  const params = new URLSearchParams();
+  if(t.position) params.set('position', t.position);
+  if(t.name) params.set('prospect', t.name);
+  if(t.school) params.set('school', t.school);
+  if(t.classYear) params.set('class', t.classYear);
+  return 'report.html?' + params.toString();
+}
+
+/* ---------------- REPORT DETAIL MODAL ---------------- */
+function openReportModal(r){
+  document.getElementById('mAvatar').innerHTML = r.hasHeadshot
+    ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">`
+    : initials(r.prospect);
+  document.getElementById('mName').textContent = r.prospect || 'Unnamed Prospect';
+  document.getElementById('mSub').textContent = `${r.positionLabel||r.position||''} \u00b7 ${r.school||'—'} \u00b7 Class of ${r.classYear||'—'}`;
+  document.getElementById('mBody').innerHTML = `
+    <div class="m-scorebig">
+      <div><div class="n">${r.inhomeScore ?? '—'}</div><div class="l">InHome Score</div></div>
+      <div><div class="n" style="color:${tierColor(r.recommendationTier)}; font-size:20px;">${r.recommendationTier||'Ungraded'}</div><div class="l">Recommendation</div></div>
+    </div>
+    <div class="m-grid">
+      <div class="m-item"><div class="k">Evaluated</div><div class="v">${fmtDate(r.dateEvaluated||r.createdAt)||'—'}</div></div>
+      <div class="m-item"><div class="k">Archetype</div><div class="v">${r.archetype||'—'}</div></div>
+      <div class="m-item"><div class="k">Height / Weight</div><div class="v">${[r.height,r.weight].filter(Boolean).join(' / ')||'—'}</div></div>
+      <div class="m-item"><div class="k">Football IQ</div><div class="v">${r.footballIQ ?? '—'}</div></div>
+    </div>
+    ${r.narrative ? `<div class="m-narrative">${String(r.narrative).replace(/</g,'&lt;')}</div>` : ''}
+  `;
+  document.getElementById('mOpenBtn').href = followUpLink(r);
+  document.getElementById('mOpenBtn').textContent = 'File Follow-Up Report';
+  document.getElementById('reportModal').classList.add('on');
+}
+function followUpLink(r){
+  const params = new URLSearchParams();
+  if(r.position) params.set('position', r.position);
+  if(r.prospect) params.set('prospect', r.prospect);
+  if(r.school) params.set('school', r.school);
+  if(r.classYear) params.set('class', r.classYear);
+  return 'report.html?' + params.toString();
+}
+function closeModal(){
+  document.getElementById('reportModal').classList.remove('on');
+}
+</script>
+
+</body>
+</html>

@@ -58,7 +58,7 @@ exports.handler = async (event) => {
   try {
     const rows = await sql`
       INSERT INTO reports (
-        prospect, position, position_label, archetype, class_year, school,
+        prospect_name, position, position_label, archetype, class_year, school,
         home_city, home_state, latitude, longitude,
         height, weight, film_link, eval_camp,
         scout_name, scout_id, scout_role, scout_region, date_evaluated,

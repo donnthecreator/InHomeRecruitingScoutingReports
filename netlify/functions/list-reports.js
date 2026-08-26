@@ -37,7 +37,7 @@ exports.handler = async (event) => {
                  home_city, home_state, latitude, longitude,
                  height, weight, film_link, eval_camp,
                  scout_name, scout_id, scout_role, scout_region, date_evaluated,
-                 football_iq, narrative, has_headshot, recommendation_tier, inhome_score,
+                 football_iq, narrative, has_headshot, recommendation_tier, inhome_score,raw,track
                  created_at
           FROM reports
           ORDER BY created_at DESC
@@ -69,8 +69,8 @@ exports.handler = async (event) => {
       narrative: r.narrative,
       hasHeadshot: r.has_headshot,
       recommendationTier: r.recommendation_tier,
-      inhomeScore: r.inhome_score
-    }));
+      inhomeScore: r.inhome_score,raw: r.raw || {},
+      track: r.track || null    }));
 
     return {
       statusCode: 200,

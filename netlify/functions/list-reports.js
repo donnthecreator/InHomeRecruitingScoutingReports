@@ -79,15 +79,13 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(reports)
+           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },      body: JSON.stringify(reports)
     };
   } catch (err) {
     console.error('list-reports error:', err);
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: err.message })
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },      body: JSON.stringify({ error: err.message })
     };
   }
 };

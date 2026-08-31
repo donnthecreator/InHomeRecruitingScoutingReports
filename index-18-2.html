@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>InHome | Scout Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#FF0000; --red-deep:#170000;
+    --paper:#0A0A0A; --card:#141414; --card-2:#1B1B1B;
+    --ink:#F5F5F5; --line:#2A2A2A; --mute:#9A9A9A; --dim:#6A6A6A;
+    --good:#35C759; --warn:#E0A419; --bad:#C62828;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding-bottom:60px;}
+  h1,h2,h3,.disp{font-family:'Anton',sans-serif; font-weight:400; letter-spacing:.02em; text-transform:uppercase;}
+  a{color:inherit;}
+  button{font-family:'Inter',sans-serif;}
+
+  /* ---------- GATE (matches report form) ---------- */
+  #gate{position:fixed; inset:0; background:#000; z-index:200; display:flex; align-items:center;
+    justify-content:center; padding:24px;}
+  #gate.hide{display:none;}
+  .gate-box{width:100%; max-width:420px; text-align:center;}
+  .gate-mark{margin:0 auto 20px; height:82px; width:auto; display:block;}
+  .gate-title{font-family:'Anton',sans-serif; font-weight:400; font-size:18px; letter-spacing:.02em;
+    color:#fff; text-transform:uppercase; line-height:1.1;}
+  .gate-s{font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--red);
+    font-weight:500; margin-top:9px;}
+  .gate-intro{font-size:12.5px; line-height:1.6; color:var(--mute); margin-top:16px; font-weight:400;}
+  .gate-box input{width:100%; margin-top:24px; text-align:center; font-family:'Anton',sans-serif; font-size:22px;
+    letter-spacing:.16em; text-transform:uppercase; padding:14px; border:1.5px solid var(--line); border-radius:10px;
+    background:var(--card-2); color:var(--ink);}
+  .gate-box input:focus{outline:none; border-color:var(--red);}
+  .gate-btn{width:100%; margin-top:10px; background:var(--red); color:#fff; border:none; border-radius:10px;
+    padding:14px; font-family:'Anton',sans-serif; font-weight:400; font-size:17px; letter-spacing:.06em;
+    text-transform:uppercase; cursor:pointer;}
+  .gate-err{color:var(--bad); font-size:12.5px; font-weight:600; margin-top:12px; min-height:17px;}
+  .gate-help{font-size:11px; color:var(--dim); margin-top:16px; line-height:1.5;}
+  .gate-help a{color:var(--red); text-decoration:none; font-weight:700;}
+  .gate-by{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim);
+    font-weight:700; margin-top:22px; padding-top:16px; border-top:1px solid #1A1A1A;}
+
+  /* ---------- TOPBAR ---------- */
+  .topbar{background:#000; border-bottom:1px solid var(--line); padding:16px 18px;
+    position:sticky; top:0; z-index:50;}
+  .topbar-row{max-width:760px; margin:0 auto; display:flex; align-items:center; justify-content:space-between;}
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo-mark{flex:0 0 auto;}
+  .logo-mark svg{width:100%; height:100%; display:block;}
+  .logo-text{font-family:'Anton',sans-serif; font-weight:400; font-size:19px; letter-spacing:.03em;}
+  .logo-text b{color:var(--red); font-weight:400;}
+  .scout-chip{display:flex; align-items:center; gap:9px;}
+  .scout-chip .who{text-align:right;}
+  .scout-chip .nm{font-family:'Anton',sans-serif; font-weight:400; font-size:13.5px; letter-spacing:.02em;
+    line-height:1.15;}
+  .scout-chip .rl{font-size:10px; color:var(--mute); font-weight:600;}
+  .scout-chip .avatar{width:32px; height:32px; border-radius:50%; background:var(--card-2);
+    border:1.5px solid var(--red); display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:13px; flex:0 0 auto;}
+  .signout-btn{background:none; border:1px solid var(--line); color:var(--dim); border-radius:7px;
+    padding:5px 9px; font-size:10px; font-weight:700; cursor:pointer; text-transform:uppercase;
+    letter-spacing:.06em; margin-left:8px;}
+  .signout-btn:hover{border-color:var(--bad); color:var(--bad);}
+
+  .wrap{max-width:760px; margin:0 auto; padding:0 14px;}
+
+  /* ---------- STATS ---------- */
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px;}
+  .stat-card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 10px;
+    text-align:center;}
+  .stat-card .n{font-family:'Anton',sans-serif; font-weight:400; font-size:24px; color:var(--ink); line-height:1;}
+  .stat-card .l{font-size:9.5px; color:var(--mute); font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; margin-top:5px; line-height:1.3;}
+  .stat-card.accent .n{color:var(--red);}
+  @media (max-width:480px){ .stat-row{grid-template-columns:repeat(2,1fr);} }
+
+  /* ---------- MY PROFILE ---------- */
+  .prof-hero{display:flex; align-items:center; gap:16px; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:18px 16px; margin-top:14px;}
+  .prof-headshot{width:76px; height:76px; border-radius:14px; flex:0 0 auto; background:var(--card-2);
+    border:2px solid var(--red); overflow:hidden; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:26px; color:var(--ink);}
+  .prof-headshot img{width:100%; height:100%; object-fit:cover; display:block;}
+  .prof-id{flex:1; min-width:0;}
+  .prof-name{font-family:'Anton',sans-serif; font-weight:400; font-size:23px; letter-spacing:.02em;
+    line-height:1.1;}
+  .prof-role{font-size:12px; color:var(--red); font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; margin-top:4px;}
+  .prof-region{font-size:11.5px; color:var(--mute); font-weight:600; margin-top:3px;}
+  .prof-bio{font-size:13px; line-height:1.65; color:#D6D6D6; margin-top:12px; background:var(--card);
+    border:1px solid var(--line); border-radius:12px; padding:14px 16px;}
+  .prof-sec-label{font-size:10px; color:var(--dim); font-weight:700; text-transform:uppercase;
+    letter-spacing:.1em; margin-bottom:8px;}
+  .prof-accolades{margin-top:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:12px; padding:14px 16px;}
+  .prof-accolades ul{margin:0; padding:0; list-style:none;}
+  .prof-accolades li{font-size:13px; color:var(--ink); font-weight:500; padding:7px 0 7px 18px;
+    position:relative; border-bottom:1px solid #1E1E1E;}
+  .prof-accolades li:last-child{border-bottom:none;}
+  .prof-accolades li::before{content:''; position:absolute; left:0; top:14px; width:7px; height:7px;
+    border-radius:50%; background:var(--red);}
+  .prof-public-link{display:block; margin-top:12px; background:var(--card-2); color:var(--ink);
+    border:1.5px solid var(--line); border-radius:10px; padding:12px; font-family:'Anton',sans-serif;
+    font-weight:400; font-size:14px; letter-spacing:.04em; text-transform:uppercase; cursor:pointer;
+    text-decoration:none; text-align:center;}
+  .prof-public-link:hover{border-color:var(--red);}
+
+  /* ---------- SCOUT BOARD (depth chart) ---------- */
+  .depth-banner{background:linear-gradient(135deg,#1A0000,#000); border:1px solid var(--red-deep);
+    border-radius:14px; padding:16px 18px; margin-top:14px; display:flex; align-items:center;
+    justify-content:space-between;}
+  .depth-banner-pos{font-family:'Anton',sans-serif; font-weight:400; font-size:30px; letter-spacing:.02em;
+    color:#fff; line-height:1;}
+  .depth-banner-sub{font-size:10px; color:var(--red); font-weight:700; text-transform:uppercase;
+    letter-spacing:.14em; margin-top:5px;}
+  .depth-banner-count{text-align:right;}
+  .depth-banner-count .n{font-family:'Anton',sans-serif; font-weight:400; font-size:22px; color:var(--red);
+    line-height:1;}
+  .depth-banner-count .l{font-size:8.5px; color:var(--dim); font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; margin-top:2px;}
+  .board-sub{font-size:10px; color:var(--dim); font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; margin-top:12px;}
+  .class-tabs{display:flex; gap:6px; margin-top:9px; overflow-x:auto; padding-bottom:2px;}
+  .class-tab{flex:0 0 auto; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
+    border-radius:9px; padding:8px 14px; font-family:'Anton',sans-serif; font-weight:400; font-size:13px;
+    letter-spacing:.02em; cursor:pointer; white-space:nowrap;}
+  .class-tab .n{display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:9px;
+    color:var(--dim); letter-spacing:0;}
+  .class-tab.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
+  .class-tab.on .n{color:var(--red);}
+  .depth-list{margin-top:12px; display:flex; flex-direction:column;}
+  .depth-slot{display:flex; align-items:center; gap:11px; padding:11px 4px; border-bottom:1px solid #1C1C1C;
+    position:relative;}
+  .depth-slot:first-child{padding-top:2px;}
+  .depth-slot:last-child{border-bottom:none;}
+  .depth-tier-line{width:3px; align-self:stretch; border-radius:2px; flex:0 0 auto; background:var(--line);}
+  .depth-slot.starter .depth-tier-line{background:var(--red);}
+  .depth-badge{width:36px; height:36px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center;
+    justify-content:center; font-family:'Anton',sans-serif; font-size:16px; background:var(--card-2);
+    border:2px solid var(--line); color:var(--ink);}
+  .depth-slot.starter .depth-badge{background:var(--red); border-color:var(--red); color:#fff;}
+  .depth-tier-label{font-size:8px; color:var(--dim); font-weight:800; text-transform:uppercase;
+    letter-spacing:.08em; position:absolute; left:47px; top:0px;}
+  .depth-mid{flex:1; min-width:0;}
+  .depth-name{font-family:'Anton',sans-serif; font-weight:400; font-size:15.5px; letter-spacing:.02em;
+    line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .depth-meta{font-size:10.5px; color:var(--mute); font-weight:500; margin-top:2px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;}
+  .board-delta{font-size:9px; font-weight:700; margin-top:2px;}
+  .board-delta.up{color:var(--good);}
+  .board-delta.down{color:var(--warn);}
+  .board-score{font-family:'Anton',sans-serif; font-weight:400; font-size:16px; color:var(--ink);
+    flex:0 0 auto; text-align:right;}
+  .board-score .l{display:block; font-family:'Inter',sans-serif; font-size:8.5px; color:var(--dim);
+    font-weight:700; text-transform:uppercase; letter-spacing:.05em;}
+  .board-moves{display:flex; flex-direction:column; gap:4px; flex:0 0 auto;}
+  .board-move{width:28px; height:24px; background:var(--card-2); border:1.5px solid var(--line);
+    border-radius:6px; color:var(--mute); font-size:12px; font-weight:700; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; padding:0;}
+  .board-move:active{border-color:var(--red); color:var(--red);}
+  .board-move:disabled{opacity:.25; cursor:default;}
+  .board-reset{display:block; width:100%; margin-top:12px; background:none; border:1px solid var(--line);
+    color:var(--dim); border-radius:9px; padding:10px; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; cursor:pointer;}
+  .board-reset:hover{border-color:var(--red); color:var(--red);}
+
+  /* ---------- NEW REPORT CTA ---------- */
+  .new-report-btn{display:block; width:100%; margin-top:14px; background:var(--red); color:#fff;
+    border:none; border-radius:12px; padding:15px; font-family:'Anton',sans-serif; font-weight:400;
+    font-size:15px; letter-spacing:.04em; text-transform:uppercase; text-align:center; text-decoration:none;
+    cursor:pointer;}
+  .new-report-btn:hover{background:#E60000;}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex; gap:8px; margin-top:20px;}
+  .tab-btn{flex:1; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
+    border-radius:11px; padding:12px 10px; cursor:pointer; text-align:center; font-family:'Anton',sans-serif;
+    font-weight:400; font-size:13.5px; letter-spacing:.03em; text-transform:uppercase;}
+  .tab-btn .cnt{display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:10px;
+    color:var(--dim); margin-top:2px; letter-spacing:0;}
+  .tab-btn.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
+  .tab-btn.on .cnt{color:var(--red);}
+  .tab-pane{display:none;}
+  .tab-pane.on{display:block;}
+
+  /* ---------- TOOLS ---------- */
+  .tools{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .tools input{flex:1; min-width:150px; border:1.5px solid var(--line); border-radius:9px; padding:10px 12px;
+    background:var(--card-2); color:var(--ink); font-family:'Inter',sans-serif; font-size:14px;}
+  .tools input:focus{outline:none; border-color:var(--red);}
+  .chip-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:9px;}
+  .chip{background:#101010; border:1.5px solid var(--line); color:var(--mute); border-radius:15px;
+    padding:6px 12px; font-size:11px; font-weight:600; cursor:pointer;}
+  .chip.on{border-color:var(--red); color:var(--ink); background:var(--red-deep);}
+
+  /* ---------- REPORT / TARGET CARDS ---------- */
+  .list{margin-top:14px; display:flex; flex-direction:column; gap:9px;}
+  .p-card{display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:13px; padding:11px 12px; cursor:pointer; text-align:left; width:100%;}
+  .p-card:hover{border-color:#3D3D3D;}
+  .p-avatar{width:48px; height:48px; border-radius:10px; flex:0 0 auto; background:var(--card-2);
+    border:1.5px solid var(--line); overflow:hidden; display:flex; align-items:center; justify-content:center;
+    font-family:'Anton',sans-serif; font-size:16px; color:var(--dim);}
+  .p-avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .p-mid{flex:1; min-width:0;}
+  .p-name{font-family:'Anton',sans-serif; font-weight:400; font-size:16px; letter-spacing:.02em;
+    line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .p-meta{font-size:11px; color:var(--mute); font-weight:500; margin-top:2px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;}
+  .p-right{flex:0 0 auto; text-align:right;}
+  .p-score{font-family:'Anton',sans-serif; font-weight:400; font-size:19px; color:var(--red);}
+  .p-tier{font-size:9px; color:var(--mute); font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    margin-top:2px;}
+  .p-date{font-size:10px; color:var(--dim); margin-top:2px;}
+  .p-scout-btn{background:var(--red); color:#fff; border:none; border-radius:8px; padding:8px 13px;
+    font-family:'Anton',sans-serif; font-weight:400; font-size:11.5px; letter-spacing:.03em;
+    text-transform:uppercase; cursor:pointer; white-space:nowrap;}
+  .p-priority{font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    padding:3px 8px; border-radius:10px; margin-top:3px; display:inline-block;}
+  .p-priority.high{background:var(--red-deep); color:var(--red);}
+  .p-priority.normal{background:var(--card-2); color:var(--mute);}
+
+  .empty-state{text-align:center; padding:50px 20px; color:var(--dim);}
+  .empty-state .ic{font-size:32px; margin-bottom:10px;}
+  .empty-state .t{font-family:'Anton',sans-serif; font-weight:400; font-size:16px; color:var(--mute);
+    text-transform:uppercase; letter-spacing:.02em;}
+  .empty-state .s{font-size:12.5px; margin-top:6px; line-height:1.5;}
+
+  .load-state{text-align:center; padding:40px 20px; color:var(--dim); font-size:13px;}
+
+  .demo-banner{background:#241A00; border:1px solid #4A3600; color:#E0A419; font-size:11.5px;
+    font-weight:600; border-radius:9px; padding:10px 12px; margin-top:14px; line-height:1.5;}
+
+  /* ---------- MODAL ---------- */
+  .modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:300; align-items:flex-end;
+    justify-content:center;}
+  .modal.on{display:flex;}
+  .modal-card{background:var(--card); border:1px solid var(--line); border-radius:18px 18px 0 0;
+    max-width:520px; width:100%; max-height:85vh; display:flex; flex-direction:column;}
+  @media (min-width:560px){ .modal{align-items:center;} .modal-card{border-radius:16px; max-height:80vh;} }
+  .modal-head{display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line);}
+  .modal-head .p-avatar{width:52px; height:52px;}
+  .modal-head-mid{flex:1; min-width:0;}
+  .modal-head-mid h2{margin:0; font-size:19px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .modal-head-mid .sub{font-size:11.5px; color:var(--mute); margin-top:2px;}
+  .modal-close{background:none; border:none; color:var(--mute); cursor:pointer; font-size:26px; line-height:1;
+    padding:0; width:30px; height:30px; flex:0 0 auto;}
+  .modal-close:hover{color:var(--red);}
+  .modal-body{flex:1; overflow-y:auto; padding:18px 20px;}
+  .modal-foot{padding:14px 20px; border-top:1px solid var(--line);}
+  .m-scorebig{display:flex; align-items:center; justify-content:center; gap:18px; background:var(--card-2);
+    border-radius:12px; padding:16px; margin-bottom:14px;}
+  .m-scorebig .n{font-family:'Anton',sans-serif; font-weight:400; font-size:38px; color:var(--red); line-height:1;}
+  .m-scorebig .l{font-size:10px; color:var(--mute); font-weight:700; text-transform:uppercase; margin-top:4px;}
+  .m-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .m-item{background:var(--card-2); border-radius:9px; padding:9px 11px;}
+  .m-item .k{font-size:9.5px; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:.04em;}
+  .m-item .v{font-size:13.5px; font-weight:600; color:var(--ink); margin-top:2px;}
+  .m-narrative{font-size:13px; line-height:1.6; color:#D6D6D6; margin-top:14px; background:var(--card-2);
+    border-left:2px solid var(--red); border-radius:0 8px 8px 0; padding:12px 14px;}
+  .modal-open-btn{width:100%; background:var(--card-2); color:var(--ink); border:1.5px solid var(--line);
+    border-radius:10px; padding:12px; font-family:'Anton',sans-serif; font-weight:400; font-size:14px;
+    letter-spacing:.04em; text-transform:uppercase; cursor:pointer; text-decoration:none; display:block;
+    text-align:center;}
+  .modal-open-btn:hover{border-color:var(--red);}
+  /* ---------- EDIT SHEET / COMMITMENT / OFFERS (added) ---------- */
+  .t-actions{display:flex; flex-direction:column; gap:5px; flex:0 0 auto;}
+  .edit-btn{background:var(--card-2); color:var(--mute); border:1.5px solid var(--line); border-radius:8px;
+    padding:7px 11px; font-family:'Anton',sans-serif; font-weight:400; font-size:11.5px; letter-spacing:.03em;
+    text-transform:uppercase; cursor:pointer; white-space:nowrap;}
+  .edit-btn:hover{border-color:var(--red); color:var(--ink);}
+
+  .commit-tag{font-size:9.5px; font-weight:700; letter-spacing:.04em; margin-top:4px;
+    display:inline-flex; align-items:center; gap:5px; color:var(--mute);}
+  .commit-tag img{width:14px; height:14px; object-fit:contain; display:block;}
+  .commit-tag.verbal{color:var(--warn);}
+  .commit-tag.committed,.commit-tag.signed{color:var(--good);}
+  .commit-tag.decommitted{color:var(--bad);}
+  .offer-count{font-size:9.5px; color:var(--dim); font-weight:700; margin-top:3px;}
+
+  .sheet-sec{border-top:1px solid var(--line); padding-top:16px; margin-top:16px;}
+  .sheet-sec:first-child{border-top:none; padding-top:0; margin-top:0;}
+  .sheet-sec-title{font-family:'Anton',sans-serif; font-weight:400; font-size:14px; letter-spacing:.03em;
+    text-transform:uppercase; margin-bottom:3px;}
+  .sheet-sec-note{font-size:11px; color:var(--dim); line-height:1.5; margin-bottom:12px;}
+
+  .f-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .f-grid.one{grid-template-columns:1fr;}
+  .field label{display:block; font-size:9.5px; color:var(--dim); font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; margin-bottom:5px;}
+  .field input,.field select,.field textarea{width:100%; border:1.5px solid var(--line); border-radius:9px;
+    padding:10px 11px; background:var(--card-2); color:var(--ink); font-family:'Inter',sans-serif;
+    font-size:14px;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none; border-color:var(--red);}
+  .field textarea{resize:vertical; min-height:64px; line-height:1.5;}
+  .field select{appearance:none; -webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 18px, calc(100% - 11px) 18px; background-size:5px 5px; background-repeat:no-repeat;}
+
+  .seg{display:flex; gap:5px; flex-wrap:wrap;}
+  .seg button{flex:1 1 auto; min-width:78px; background:var(--card-2); border:1.5px solid var(--line);
+    color:var(--mute); border-radius:9px; padding:9px 6px; font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.04em; cursor:pointer;}
+  .seg button.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
+
+  .picker{position:relative;}
+  .picker-input{display:flex; align-items:center; gap:9px; border:1.5px solid var(--line); border-radius:9px;
+    background:var(--card-2); padding:9px 11px; cursor:text;}
+  .picker-input.focus{border-color:var(--red);}
+  .picker-input img{width:22px; height:22px; object-fit:contain; flex:0 0 auto; display:block;}
+  .picker-input .dot{width:22px; height:22px; border-radius:5px; flex:0 0 auto;}
+  .picker-input input{flex:1; min-width:0; border:none; background:none; color:var(--ink);
+    font-family:'Inter',sans-serif; font-size:14px; padding:0;}
+  .picker-input input:focus{outline:none;}
+  .picker-clear{background:none; border:none; color:var(--dim); font-size:19px; line-height:1; cursor:pointer;
+    padding:0 2px; flex:0 0 auto;}
+  .picker-clear:hover{color:var(--bad);}
+  .picker-list{position:absolute; left:0; right:0; top:calc(100% + 5px); z-index:20; background:#0F0F0F;
+    border:1.5px solid var(--line); border-radius:11px; max-height:262px; overflow-y:auto; display:none;
+    box-shadow:0 12px 34px rgba(0,0,0,.6);}
+  .picker-list.on{display:block;}
+  .picker-opt{display:flex; align-items:center; gap:10px; padding:9px 11px; cursor:pointer; width:100%;
+    background:none; border:none; text-align:left; border-bottom:1px solid #1A1A1A;}
+  .picker-opt:last-child{border-bottom:none;}
+  .picker-opt:hover,.picker-opt.cursor{background:var(--red-deep);}
+  .picker-opt img{width:24px; height:24px; object-fit:contain; flex:0 0 auto; display:block;}
+  .picker-opt .dot{width:24px; height:24px; border-radius:6px; flex:0 0 auto;}
+  .picker-opt .pn{flex:1; min-width:0;}
+  .picker-opt .pn b{display:block; font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
+    color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .picker-opt .pn i{display:block; font-style:normal; font-size:10.5px; color:var(--dim); margin-top:1px;}
+  .picker-opt .dv{font-size:9px; color:var(--dim); font-weight:700; letter-spacing:.05em; flex:0 0 auto;}
+  .picker-empty{padding:13px 12px; font-size:12px; color:var(--dim); line-height:1.5;}
+  .picker-empty button{display:block; margin-top:8px; background:var(--card-2); border:1.5px solid var(--line);
+    color:var(--ink); border-radius:8px; padding:8px 11px; font-size:11.5px; font-weight:700; cursor:pointer;}
+  .picker-empty button:hover{border-color:var(--red);}
+
+  .offer-add{display:grid; grid-template-columns:1fr 128px; gap:8px; align-items:end;}
+  @media (max-width:440px){ .offer-add{grid-template-columns:1fr;} .f-grid{grid-template-columns:1fr;} }
+  .offer-list{display:flex; flex-direction:column; gap:7px; margin-top:12px;}
+  .offer-row{display:flex; align-items:center; gap:10px; background:var(--card-2); border-radius:9px;
+    padding:9px 11px;}
+  .offer-row img{width:26px; height:26px; object-fit:contain; flex:0 0 auto; display:block;}
+  .offer-row .dot{width:26px; height:26px; border-radius:6px; flex:0 0 auto;}
+  .offer-row .om{flex:1; min-width:0;}
+  .offer-row .on{font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis;}
+  .offer-row .od{font-size:10.5px; color:var(--dim); margin-top:1px;}
+  .offer-row.committed .on{color:var(--good);}
+  .offer-x{background:none; border:none; color:var(--dim); font-size:19px; line-height:1; cursor:pointer;
+    padding:0 3px; flex:0 0 auto;}
+  .offer-x:hover{color:var(--bad);}
+  .offer-empty{font-size:12px; color:var(--dim); padding:11px 0; line-height:1.5;}
+
+  .sheet-msg{font-size:12px; font-weight:600; margin-top:10px; min-height:16px; line-height:1.5;}
+  .sheet-msg.err{color:var(--bad);}
+  .sheet-msg.ok{color:var(--good);}
+  .sheet-save{width:100%; background:var(--red); color:#fff; border:none; border-radius:10px; padding:13px;
+    font-family:'Anton',sans-serif; font-weight:400; font-size:14.5px; letter-spacing:.04em;
+    text-transform:uppercase; cursor:pointer;}
+  .sheet-save:disabled{opacity:.5; cursor:default;}
+  .sheet-locked{background:#241A00; border:1px solid #4A3600; color:#E0A419; font-size:11.5px;
+    font-weight:600; border-radius:9px; padding:10px 12px; line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-box">
+    <svg class="gate-mark" role="img" aria-label="InHome" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 403.90 170.50"><g fill="#FFFFFF"><g transform="translate(22.00,95.50)"><g transform="translate(3.721,-54.000) scale(1.018868)"><path fill-rule="evenodd" d="M11 1.2 C11.5 1.2 12 1.4 12.4 1.8 L20.8 9.4 C21.6 10.1 21.7 11.3 21 12.1 C20.3 12.9 19.1 13 18.3 12.3 L11 5.7 L3.7 12.3 C2.9 13 1.7 12.9 1 12.1 C0.3 11.3 0.4 10.1 1.2 9.4 L9.6 1.8 C10 1.4 10.5 1.2 11 1.2 Z M4.2 22.5 C4.2 21.1 5.3 20 6.7 20 H15.3 C16.7 20 17.8 21.1 17.8 22.5 V70.5 C17.8 71.9 16.7 73 15.3 73 H6.7 C5.3 73 4.2 71.9 4.2 70.5 Z M5.2 44 C6.9 40.8 15.1 40.8 16.8 44 C15.1 47.2 6.9 47.2 5.2 44 Z" transform="translate(0,-20)"/></g><g transform="translate(27.400,0)"><g transform="translate(0.000,0) scale(0.050000,-0.050000)"><path d="M876 0V510Q876 547 872.0 604.5Q868 662 847.0 720.0Q826 778 778.5 817.0Q731 856 644 856Q609 856 569.0 845.0Q529 834 494.0 802.5Q459 771 436.5 710.0Q414 649 414 548L258 622Q258 750 310.0 862.0Q362 974 466.5 1043.0Q571 1112 730 1112Q857 1112 937.0 1069.0Q1017 1026 1061.5 960.0Q1106 894 1125.0 822.5Q1144 751 1148.0 692.0Q1152 633 1152 606V0ZM138 0V1080H380V722H414V0Z"/></g><g transform="translate(61.400,0) scale(0.050000,-0.050000)"><path d="M876 0V510Q876 547 872.0 604.5Q868 662 847.0 720.0Q826 778 778.5 817.0Q731 856 644 856Q609 856 569.0 845.0Q529 834 494.0 802.5Q459 771 436.5 710.0Q414 649 414 548L258 622Q258 750 310.0 862.0Q362 974 466.5 1043.0Q571 1112 730 1112Q857 1112 937.0 1069.0Q1017 1026 1061.5 960.0Q1106 894 1125.0 822.5Q1144 751 1148.0 692.0Q1152 633 1152 606V0ZM138 0V1440H380V700H414V0Z"/></g><g transform="translate(122.800,0) scale(0.050000,-0.050000)"><path d="M626 -30Q463 -30 340.0 43.0Q217 116 148.5 244.5Q80 373 80 540Q80 709 150.0 837.5Q220 966 343.0 1038.0Q466 1110 626 1110Q789 1110 912.5 1037.0Q1036 964 1105.0 835.5Q1174 707 1174 540Q1174 372 1104.5 243.5Q1035 115 911.5 42.5Q788 -30 626 -30ZM626 224Q757 224 821.5 312.5Q886 401 886 540Q886 684 820.5 770.0Q755 856 626 856Q537 856 480.0 816.0Q423 776 395.5 705.0Q368 634 368 540Q368 395 433.5 309.5Q499 224 626 224Z"/></g><g transform="translate(183.300,0) scale(0.050000,-0.050000)"><path d="M1440 0V638Q1440 745 1389.5 804.5Q1339 864 1250 864Q1193 864 1151.0 837.5Q1109 811 1085.5 763.5Q1062 716 1062 654L948 730Q948 841 1000.5 926.0Q1053 1011 1141.5 1058.5Q1230 1106 1338 1106Q1523 1106 1617.5 996.5Q1712 887 1712 710V0ZM138 0V1080H378V722H412V0ZM790 0V638Q790 745 739.5 804.5Q689 864 600 864Q515 864 463.5 805.5Q412 747 412 654L298 734Q298 840 351.0 924.0Q404 1008 493.5 1057.0Q583 1106 694 1106Q821 1106 902.5 1052.0Q984 998 1023.0 908.0Q1062 818 1062 710V0Z"/></g><g transform="translate(271.700,0) scale(0.050000,-0.050000)"><path d="M642 -30Q476 -30 349.5 41.5Q223 113 151.5 238.5Q80 364 80 526Q80 703 150.0 834.0Q220 965 343.0 1037.5Q466 1110 626 1110Q796 1110 915.0 1030.0Q1034 950 1091.0 805.0Q1148 660 1131 464H862V564Q862 729 809.5 801.5Q757 874 638 874Q499 874 433.5 789.5Q368 705 368 540Q368 389 433.5 306.5Q499 224 626 224Q706 224 763.0 259.0Q820 294 850 360L1122 282Q1061 134 929.5 52.0Q798 -30 642 -30ZM284 464V666H1000V464Z"/></g></g></g><g transform="translate(33.95,148.50)"><g transform="translate(0.000,0) scale(0.021000,-0.021000)"><path d="M195 0H84V698H345Q445 698 497.5 642.0Q550 586 550 488Q550 408 511.0 356.0Q472 304 399 292L560 0H436L288 282H195ZM329 372Q433 372 433 467V510Q433 605 329 605H195V372Z"/></g><g transform="translate(14.700,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(29.400,0) scale(0.021000,-0.021000)"><path d="M320 -12Q187 -12 122.5 82.0Q58 176 58 349Q58 522 122.5 616.0Q187 710 320 710Q371 710 408.5 696.5Q446 683 473.0 659.5Q500 636 518.5 604.5Q537 573 549 537L448 503Q440 527 430.0 548.0Q420 569 405.0 584.0Q390 599 369.5 608.0Q349 617 319 617Q245 617 211.0 560.5Q177 504 177 408V290Q177 194 211.0 137.5Q245 81 319 81Q349 81 369.5 90.0Q390 99 405.0 114.0Q420 129 430.0 150.0Q440 171 448 195L549 161Q537 125 518.5 93.5Q500 62 473.0 38.5Q446 15 408.5 1.5Q371 -12 320 -12Z"/></g><g transform="translate(44.100,0) scale(0.021000,-0.021000)"><path d="M195 0H84V698H345Q445 698 497.5 642.0Q550 586 550 488Q550 408 511.0 356.0Q472 304 399 292L560 0H436L288 282H195ZM329 372Q433 372 433 467V510Q433 605 329 605H195V372Z"/></g><g transform="translate(58.800,0) scale(0.021000,-0.021000)"><path d="M181 698V269Q181 226 183.5 191.0Q186 156 198.0 131.5Q210 107 234.0 94.0Q258 81 300 81Q342 81 366.0 94.0Q390 107 402.0 131.5Q414 156 416.5 191.0Q419 226 419 269V698H531V289Q531 214 522.5 157.5Q514 101 489.0 63.5Q464 26 418.5 7.0Q373 -12 300 -12Q227 -12 181.5 7.0Q136 26 111.0 63.5Q86 101 77.5 157.5Q69 214 69 289V698Z"/></g><g transform="translate(73.500,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(88.200,0) scale(0.021000,-0.021000)"><path d="M356 604V0H244V604H25V698H575V604Z"/></g><g transform="translate(102.900,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(117.600,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(132.300,0) scale(0.021000,-0.021000)"><path d="M430 96H423Q414 75 401.5 55.5Q389 36 370.5 21.0Q352 6 326.0 -3.0Q300 -12 266 -12Q157 -12 102.0 81.0Q47 174 47 344Q47 522 110.0 616.0Q173 710 303 710Q354 710 392.5 696.0Q431 682 458.0 658.5Q485 635 503.0 603.5Q521 572 532 537L431 503Q423 526 413.0 546.5Q403 567 388.5 583.0Q374 599 353.5 608.0Q333 617 304 617Q231 617 198.5 560.5Q166 504 166 408V297Q166 249 173.0 209.0Q180 169 196.5 140.5Q213 112 239.5 96.0Q266 80 304 80Q365 80 397.5 116.5Q430 153 430 210V273H295V357H532V0H430Z"/></g><g transform="translate(161.700,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(176.400,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(191.100,0) scale(0.021000,-0.021000)"><path d="M356 604V0H244V604H25V698H575V604Z"/></g><g transform="translate(205.800,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(220.500,0) scale(0.021000,-0.021000)"><path d="M108 0V698H220V94H538V0Z"/></g><g transform="translate(235.200,0) scale(0.021000,-0.021000)"><path d="M108 0V698H220V94H538V0Z"/></g><g transform="translate(249.900,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(264.600,0) scale(0.021000,-0.021000)"><path d="M430 96H423Q414 75 401.5 55.5Q389 36 370.5 21.0Q352 6 326.0 -3.0Q300 -12 266 -12Q157 -12 102.0 81.0Q47 174 47 344Q47 522 110.0 616.0Q173 710 303 710Q354 710 392.5 696.0Q431 682 458.0 658.5Q485 635 503.0 603.5Q521 572 532 537L431 503Q423 526 413.0 546.5Q403 567 388.5 583.0Q374 599 353.5 608.0Q333 617 304 617Q231 617 198.5 560.5Q166 504 166 408V297Q166 249 173.0 209.0Q180 169 196.5 140.5Q213 112 239.5 96.0Q266 80 304 80Q365 80 397.5 116.5Q430 153 430 210V273H295V357H532V0H430Z"/></g><g transform="translate(279.300,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(294.000,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(308.700,0) scale(0.021000,-0.021000)"><path d="M320 -12Q187 -12 122.5 82.0Q58 176 58 349Q58 522 122.5 616.0Q187 710 320 710Q371 710 408.5 696.5Q446 683 473.0 659.5Q500 636 518.5 604.5Q537 573 549 537L448 503Q440 527 430.0 548.0Q420 569 405.0 584.0Q390 599 369.5 608.0Q349 617 319 617Q245 617 211.0 560.5Q177 504 177 408V290Q177 194 211.0 137.5Q245 81 319 81Q349 81 369.5 90.0Q390 99 405.0 114.0Q420 129 430.0 150.0Q440 171 448 195L549 161Q537 125 518.5 93.5Q500 62 473.0 38.5Q446 15 408.5 1.5Q371 -12 320 -12Z"/></g><g transform="translate(323.400,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g></g></g></svg>
+    <div class="gate-title">The Network</div>
+    <div class="gate-s">Invitation Only</div>
+    <div class="gate-intro">An invite-only network of former college and NFL players. Reports filed here go straight to directors of player personnel across the country. Enter your access code to continue.</div>
+    <input type="text" id="gateCode" placeholder="Access code" autocomplete="off" autocapitalize="characters">
+    <button type="button" class="gate-btn" onclick="tryGate()">Enter The Network</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-help">Same code you use on the scouting report form.<br>Not in the network yet? Email <a href="mailto:support@thelabusa.org?subject=InHome%20Scout%20Network%20Access">support@thelabusa.org</a></div>
+    <div class="gate-by">Powered by Athlete&rsquo;s Inc+</div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg style="height:34px;width:auto;display:block;" role="img" aria-label="InHome" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 403.90 170.50"><g fill="#FFFFFF"><g transform="translate(22.00,95.50)"><g transform="translate(3.721,-54.000) scale(1.018868)"><path fill-rule="evenodd" d="M11 1.2 C11.5 1.2 12 1.4 12.4 1.8 L20.8 9.4 C21.6 10.1 21.7 11.3 21 12.1 C20.3 12.9 19.1 13 18.3 12.3 L11 5.7 L3.7 12.3 C2.9 13 1.7 12.9 1 12.1 C0.3 11.3 0.4 10.1 1.2 9.4 L9.6 1.8 C10 1.4 10.5 1.2 11 1.2 Z M4.2 22.5 C4.2 21.1 5.3 20 6.7 20 H15.3 C16.7 20 17.8 21.1 17.8 22.5 V70.5 C17.8 71.9 16.7 73 15.3 73 H6.7 C5.3 73 4.2 71.9 4.2 70.5 Z M5.2 44 C6.9 40.8 15.1 40.8 16.8 44 C15.1 47.2 6.9 47.2 5.2 44 Z" transform="translate(0,-20)"/></g><g transform="translate(27.400,0)"><g transform="translate(0.000,0) scale(0.050000,-0.050000)"><path d="M876 0V510Q876 547 872.0 604.5Q868 662 847.0 720.0Q826 778 778.5 817.0Q731 856 644 856Q609 856 569.0 845.0Q529 834 494.0 802.5Q459 771 436.5 710.0Q414 649 414 548L258 622Q258 750 310.0 862.0Q362 974 466.5 1043.0Q571 1112 730 1112Q857 1112 937.0 1069.0Q1017 1026 1061.5 960.0Q1106 894 1125.0 822.5Q1144 751 1148.0 692.0Q1152 633 1152 606V0ZM138 0V1080H380V722H414V0Z"/></g><g transform="translate(61.400,0) scale(0.050000,-0.050000)"><path d="M876 0V510Q876 547 872.0 604.5Q868 662 847.0 720.0Q826 778 778.5 817.0Q731 856 644 856Q609 856 569.0 845.0Q529 834 494.0 802.5Q459 771 436.5 710.0Q414 649 414 548L258 622Q258 750 310.0 862.0Q362 974 466.5 1043.0Q571 1112 730 1112Q857 1112 937.0 1069.0Q1017 1026 1061.5 960.0Q1106 894 1125.0 822.5Q1144 751 1148.0 692.0Q1152 633 1152 606V0ZM138 0V1440H380V700H414V0Z"/></g><g transform="translate(122.800,0) scale(0.050000,-0.050000)"><path d="M626 -30Q463 -30 340.0 43.0Q217 116 148.5 244.5Q80 373 80 540Q80 709 150.0 837.5Q220 966 343.0 1038.0Q466 1110 626 1110Q789 1110 912.5 1037.0Q1036 964 1105.0 835.5Q1174 707 1174 540Q1174 372 1104.5 243.5Q1035 115 911.5 42.5Q788 -30 626 -30ZM626 224Q757 224 821.5 312.5Q886 401 886 540Q886 684 820.5 770.0Q755 856 626 856Q537 856 480.0 816.0Q423 776 395.5 705.0Q368 634 368 540Q368 395 433.5 309.5Q499 224 626 224Z"/></g><g transform="translate(183.300,0) scale(0.050000,-0.050000)"><path d="M1440 0V638Q1440 745 1389.5 804.5Q1339 864 1250 864Q1193 864 1151.0 837.5Q1109 811 1085.5 763.5Q1062 716 1062 654L948 730Q948 841 1000.5 926.0Q1053 1011 1141.5 1058.5Q1230 1106 1338 1106Q1523 1106 1617.5 996.5Q1712 887 1712 710V0ZM138 0V1080H378V722H412V0ZM790 0V638Q790 745 739.5 804.5Q689 864 600 864Q515 864 463.5 805.5Q412 747 412 654L298 734Q298 840 351.0 924.0Q404 1008 493.5 1057.0Q583 1106 694 1106Q821 1106 902.5 1052.0Q984 998 1023.0 908.0Q1062 818 1062 710V0Z"/></g><g transform="translate(271.700,0) scale(0.050000,-0.050000)"><path d="M642 -30Q476 -30 349.5 41.5Q223 113 151.5 238.5Q80 364 80 526Q80 703 150.0 834.0Q220 965 343.0 1037.5Q466 1110 626 1110Q796 1110 915.0 1030.0Q1034 950 1091.0 805.0Q1148 660 1131 464H862V564Q862 729 809.5 801.5Q757 874 638 874Q499 874 433.5 789.5Q368 705 368 540Q368 389 433.5 306.5Q499 224 626 224Q706 224 763.0 259.0Q820 294 850 360L1122 282Q1061 134 929.5 52.0Q798 -30 642 -30ZM284 464V666H1000V464Z"/></g></g></g><g transform="translate(33.95,148.50)"><g transform="translate(0.000,0) scale(0.021000,-0.021000)"><path d="M195 0H84V698H345Q445 698 497.5 642.0Q550 586 550 488Q550 408 511.0 356.0Q472 304 399 292L560 0H436L288 282H195ZM329 372Q433 372 433 467V510Q433 605 329 605H195V372Z"/></g><g transform="translate(14.700,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(29.400,0) scale(0.021000,-0.021000)"><path d="M320 -12Q187 -12 122.5 82.0Q58 176 58 349Q58 522 122.5 616.0Q187 710 320 710Q371 710 408.5 696.5Q446 683 473.0 659.5Q500 636 518.5 604.5Q537 573 549 537L448 503Q440 527 430.0 548.0Q420 569 405.0 584.0Q390 599 369.5 608.0Q349 617 319 617Q245 617 211.0 560.5Q177 504 177 408V290Q177 194 211.0 137.5Q245 81 319 81Q349 81 369.5 90.0Q390 99 405.0 114.0Q420 129 430.0 150.0Q440 171 448 195L549 161Q537 125 518.5 93.5Q500 62 473.0 38.5Q446 15 408.5 1.5Q371 -12 320 -12Z"/></g><g transform="translate(44.100,0) scale(0.021000,-0.021000)"><path d="M195 0H84V698H345Q445 698 497.5 642.0Q550 586 550 488Q550 408 511.0 356.0Q472 304 399 292L560 0H436L288 282H195ZM329 372Q433 372 433 467V510Q433 605 329 605H195V372Z"/></g><g transform="translate(58.800,0) scale(0.021000,-0.021000)"><path d="M181 698V269Q181 226 183.5 191.0Q186 156 198.0 131.5Q210 107 234.0 94.0Q258 81 300 81Q342 81 366.0 94.0Q390 107 402.0 131.5Q414 156 416.5 191.0Q419 226 419 269V698H531V289Q531 214 522.5 157.5Q514 101 489.0 63.5Q464 26 418.5 7.0Q373 -12 300 -12Q227 -12 181.5 7.0Q136 26 111.0 63.5Q86 101 77.5 157.5Q69 214 69 289V698Z"/></g><g transform="translate(73.500,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(88.200,0) scale(0.021000,-0.021000)"><path d="M356 604V0H244V604H25V698H575V604Z"/></g><g transform="translate(102.900,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(117.600,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(132.300,0) scale(0.021000,-0.021000)"><path d="M430 96H423Q414 75 401.5 55.5Q389 36 370.5 21.0Q352 6 326.0 -3.0Q300 -12 266 -12Q157 -12 102.0 81.0Q47 174 47 344Q47 522 110.0 616.0Q173 710 303 710Q354 710 392.5 696.0Q431 682 458.0 658.5Q485 635 503.0 603.5Q521 572 532 537L431 503Q423 526 413.0 546.5Q403 567 388.5 583.0Q374 599 353.5 608.0Q333 617 304 617Q231 617 198.5 560.5Q166 504 166 408V297Q166 249 173.0 209.0Q180 169 196.5 140.5Q213 112 239.5 96.0Q266 80 304 80Q365 80 397.5 116.5Q430 153 430 210V273H295V357H532V0H430Z"/></g><g transform="translate(161.700,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(176.400,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(191.100,0) scale(0.021000,-0.021000)"><path d="M356 604V0H244V604H25V698H575V604Z"/></g><g transform="translate(205.800,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(220.500,0) scale(0.021000,-0.021000)"><path d="M108 0V698H220V94H538V0Z"/></g><g transform="translate(235.200,0) scale(0.021000,-0.021000)"><path d="M108 0V698H220V94H538V0Z"/></g><g transform="translate(249.900,0) scale(0.021000,-0.021000)"><path d="M80 0V85H244V613H80V698H520V613H356V85H520V0Z"/></g><g transform="translate(264.600,0) scale(0.021000,-0.021000)"><path d="M430 96H423Q414 75 401.5 55.5Q389 36 370.5 21.0Q352 6 326.0 -3.0Q300 -12 266 -12Q157 -12 102.0 81.0Q47 174 47 344Q47 522 110.0 616.0Q173 710 303 710Q354 710 392.5 696.0Q431 682 458.0 658.5Q485 635 503.0 603.5Q521 572 532 537L431 503Q423 526 413.0 546.5Q403 567 388.5 583.0Q374 599 353.5 608.0Q333 617 304 617Q231 617 198.5 560.5Q166 504 166 408V297Q166 249 173.0 209.0Q180 169 196.5 140.5Q213 112 239.5 96.0Q266 80 304 80Q365 80 397.5 116.5Q430 153 430 210V273H295V357H532V0H430Z"/></g><g transform="translate(279.300,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g><g transform="translate(294.000,0) scale(0.021000,-0.021000)"><path d="M179 537H170V0H72V698H216L421 161H430V698H528V0H384Z"/></g><g transform="translate(308.700,0) scale(0.021000,-0.021000)"><path d="M320 -12Q187 -12 122.5 82.0Q58 176 58 349Q58 522 122.5 616.0Q187 710 320 710Q371 710 408.5 696.5Q446 683 473.0 659.5Q500 636 518.5 604.5Q537 573 549 537L448 503Q440 527 430.0 548.0Q420 569 405.0 584.0Q390 599 369.5 608.0Q349 617 319 617Q245 617 211.0 560.5Q177 504 177 408V290Q177 194 211.0 137.5Q245 81 319 81Q349 81 369.5 90.0Q390 99 405.0 114.0Q420 129 430.0 150.0Q440 171 448 195L549 161Q537 125 518.5 93.5Q500 62 473.0 38.5Q446 15 408.5 1.5Q371 -12 320 -12Z"/></g><g transform="translate(323.400,0) scale(0.021000,-0.021000)"><path d="M86 0V698H523V604H198V401H511V307H198V94H523V0Z"/></g></g></g></svg>
+      </div>
+    </div>
+    <div class="scout-chip" id="scoutChip" style="display:none;">
+      <div class="who">
+        <div class="nm" id="scoutNm">&mdash;</div>
+        <div class="rl" id="scoutRl">&mdash;</div>
+      </div>
+      <div class="avatar" id="scoutAvatar">&mdash;</div>
+      <button type="button" class="signout-btn" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <a class="new-report-btn" href="report.html">+ New Scouting Report</a>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn on" id="tabBtnProfile" onclick="switchTab('profile')">
+      Profile<span class="cnt" id="tabCntProfile">Home</span>
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnBoard" onclick="switchTab('board')">
+      Board<span class="cnt" id="tabCntBoard">&mdash;</span>
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnReports" onclick="switchTab('reports')">
+      Reports<span class="cnt" id="tabCntReports">&mdash;</span>
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnTargets" onclick="switchTab('targets')">
+      Unscouted<span class="cnt" id="tabCntTargets">&mdash;</span>
+    </button>
+  </div>
+
+  <div class="tab-pane on" id="paneProfile">
+    <div class="prof-hero">
+      <div class="prof-headshot" id="profHeadshot">&mdash;</div>
+      <div class="prof-id">
+        <div class="prof-name" id="profName">&mdash;</div>
+        <div class="prof-role" id="profRole">&mdash;</div>
+        <div class="prof-region" id="profRegion">&mdash;</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card accent"><div class="n" id="statTotal">&mdash;</div><div class="l">Reports Filed</div></div>
+      <div class="stat-card"><div class="n" id="statWeek">&mdash;</div><div class="l">This Week</div></div>
+      <div class="stat-card"><div class="n" id="statAvg">&mdash;</div><div class="l">Avg Score</div></div>
+      <div class="stat-card"><div class="n" id="statUnscouted">&mdash;</div><div class="l">Unscouted</div></div>
+    </div>
+
+    <div class="m-grid" id="profFacts" style="margin-top:12px; display:none;"></div>
+
+    <div class="prof-bio" id="profBio" style="display:none;"></div>
+
+    <div class="prof-accolades" id="profAccoladesWrap" style="display:none;">
+      <div class="prof-sec-label">Accolades</div>
+      <ul id="profAccolades"></ul>
+    </div>
+
+    <a class="prof-public-link" id="profPublicLink" href="#">View Public Profile</a>
+  </div>
+
+  <div class="tab-pane" id="paneBoard">
+    <div class="chip-row" id="boardPosChips"></div>
+    <div class="depth-banner">
+      <div>
+        <div class="depth-banner-pos" id="depthBannerPos">&mdash;</div>
+        <div class="depth-banner-sub" id="depthBannerSub">Depth Chart</div>
+      </div>
+      <div class="depth-banner-count">
+        <div class="n" id="depthBannerCount">&mdash;</div>
+        <div class="l">Ranked</div>
+      </div>
+    </div>
+    <div class="class-tabs" id="boardClassTabs"></div>
+    <div id="boardList" class="depth-list"></div>
+  </div>
+
+  <div class="tab-pane" id="paneReports">
+    <div class="tools">
+      <input type="text" id="reportSearch" placeholder="Search your reports..." oninput="renderReports()">
+    </div>
+    <div class="chip-row" id="reportPosChips"></div>
+    <div id="reportsList" class="list"></div>
+  </div>
+
+  <div class="tab-pane" id="paneTargets">
+    <div class="tools">
+      <input type="text" id="targetSearch" placeholder="Search unscouted players..." oninput="renderTargets()">
+    </div>
+    <div class="chip-row" id="targetPosChips"></div>
+    <div id="targetsList" class="list"></div>
+  </div>
+
+</div>
+
+<div id="reportModal" class="modal" onclick="if(event.target===this) closeModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="p-avatar" id="mAvatar"></div>
+      <div class="modal-head-mid">
+        <h2 id="mName">&mdash;</h2>
+        <div class="sub" id="mSub">&mdash;</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-foot">
+      <a class="modal-open-btn" id="mOpenBtn" href="#">Open Full Report</a>
+    </div>
+  </div>
+</div>
+
+<div id="editSheet" class="modal" onclick="if(event.target===this) closeEditSheet()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="p-avatar" id="esAvatar"></div>
+      <div class="modal-head-mid">
+        <h2 id="esName">&mdash;</h2>
+        <div class="sub" id="esSub">&mdash;</div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeEditSheet()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="sheet-sec">
+        <div class="sheet-sec-title">Player info</div>
+        <div class="sheet-sec-note">Correct what you saw in person. Name changes go through the admin, so report those to your director instead.</div>
+        <div class="f-grid">
+          <div class="field"><label for="esHeight">Height</label><input type="text" id="esHeight" placeholder="6'2&quot;" autocomplete="off"></div>
+          <div class="field"><label for="esWeight">Weight</label><input type="text" id="esWeight" placeholder="215" autocomplete="off"></div>
+          <div class="field"><label for="esSchool">School</label><input type="text" id="esSchool" autocomplete="off"></div>
+          <div class="field"><label for="esClass">Class</label><input type="text" id="esClass" placeholder="2027" autocomplete="off"></div>
+          <div class="field"><label for="esPosition">Position</label><input type="text" id="esPosition" placeholder="DL" autocomplete="off"></div>
+          <div class="field">
+            <label for="esLevel">Level</label>
+            <select id="esLevel">
+              <option value="">Not set</option>
+              <option value="HS">High school</option>
+              <option value="JUCO">Juco</option>
+              <option value="TRANSFER">Transfer</option>
+            </select>
+          </div>
+        </div>
+        <div class="f-grid one" style="margin-top:9px;">
+          <div class="field"><label for="esFilm">Film link</label><input type="text" id="esFilm" placeholder="https://" autocomplete="off"></div>
+          <div class="field"><label for="esNote">Note</label><textarea id="esNote" placeholder="Anything the next scout should know before they watch him."></textarea></div>
+        </div>
+      </div>
+
+      <div class="sheet-sec" id="esCommitSec">
+        <div class="sheet-sec-title">Commitment</div>
+        <div class="sheet-sec-note">Coaches see who reported this and where it came from, so pick the source honestly. A rumor logged as a commitment is worse than leaving it blank.</div>
+
+        <div class="seg" id="esStatusSeg"></div>
+
+        <div id="esCommitDetail" style="display:none; margin-top:12px;">
+          <div class="field" style="margin-bottom:9px;">
+            <label>Committed to</label>
+            <div class="picker" id="esCommitPicker"></div>
+          </div>
+          <div class="f-grid">
+            <div class="field"><label for="esCommitDate">Date</label><input type="date" id="esCommitDate"></div>
+            <div class="field">
+              <label for="esCommitSource">How you know</label>
+              <select id="esCommitSource">
+                <option value="">Pick one</option>
+                <option value="social">He announced it</option>
+                <option value="hs_coach">His high school coach</option>
+                <option value="athlete">He told me</option>
+                <option value="parent">His parent</option>
+                <option value="media">Reported by media</option>
+                <option value="scout_inference">My read, unconfirmed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet-sec" id="esOffersSec">
+        <div class="sheet-sec-title">Offers</div>
+        <div class="sheet-sec-note">Add them as you confirm them. Dates matter more than the count, because they show who was in early.</div>
+        <div class="offer-add">
+          <div class="field">
+            <label>School</label>
+            <div class="picker" id="esOfferPicker"></div>
+          </div>
+          <div class="field"><label for="esOfferDate">Offer date</label><input type="date" id="esOfferDate"></div>
+        </div>
+        <div class="offer-list" id="esOfferList"></div>
+      </div>
+
+      <div class="sheet-msg" id="esMsg"></div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="sheet-save" id="esSave" onclick="saveEditSheet()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   BACKEND CONTRACT (implement these two functions; page runs on demo
+   data until they respond correctly):
+
+   GET /.netlify/functions/list-reports?scoutId=<id>
+     -> [{ id, prospect, position, positionLabel, classYear, school,
+           inhomeScore, recommendationTier, dateEvaluated, createdAt,
+           scoutId, scoutName, hasHeadshot }]
+     (this already exists per the portal build — reused here filtered
+      by scoutId instead of program)
+
+   GET /.netlify/functions/list-targets?scoutId=<id>&region=<region>
+     -> [{ id, name, position, positionLabel, school, classYear,
+           region, priority ('high'|'normal'), addedAt }]
+     Should return only prospects that do NOT yet have a report from
+     this scout. If the backend returns the full target list instead,
+     this page filters client-side by matching name+position against
+     already-filed reports as a fallback.
+
+   Headshots render the same way they do in the report form:
+     /.netlify/functions/frame?key=headshot_<reportId>
+===================================================================== */
+
+/* Hardcoded list is now just a fallback in case list-scouts is
+   unreachable — the live roster comes from Neon via list-scouts.js,
+   same origin since this page lives on the portal site. New scouts
+   added in admin show up here without editing this file. */
+const SCOUTS_FALLBACK = {
+  "CROWELL26":  { id:"dcrowell",  name:"Daniel Crowell",   role:"National Director of Scouting", region:"Southeast" },
+  "TFOSTER26":  { id:"tfoster",   name:"Tray Foster",      role:"Regional Scout, DB",            region:"Alabama" },
+  "STEWART26":  { id:"astewart",  name:"ArDarius Stewart", role:"Regional Scout, WR",            region:"Texas" },
+  "RFOSTER26":  { id:"rfoster",   name:"Reuben Foster",    role:"Regional Scout, LB",            region:"DMV" },
+  "KINNAIRD26": { id:"tkinnaird", name:"Tre'tez Kinnaird", role:"Regional Scout",                region:"Kentucky" },
+  "BLUFORD26":  { id:"kbluford",  name:"Kevin Bluford",    role:"Regional Scout",                region:"California" },
+  "SWINNEY26":  { id:"eswinney",  name:"Eric Swinney",     role:"Regional Scout",                region:"Georgia" },
+  "DLEE26":     { id:"dlee",      name:"Donnie Lee Jr.",   role:"Founder / Director",            region:"National" },
+  "LANIERB26":  { id:"blanier",   name:"Brylan Lanier",    role:"Regional Scout",                region:"Unassigned" },
+  "TAYLORD26":  { id:"dtaylor",   name:"Damien Taylor",    role:"Regional Scout",                region:"Unassigned" },
+  "DWIGHT26":   { id:"jdwight",   name:"Johnny Dwight",    role:"Regional Scout",                region:"Unassigned" },
+  "LANIERJ26":  { id:"jlanier",   name:"Josh Lanier",      role:"Regional Scout",                region:"Unassigned" },
+  "GARDNER26":  { id:"jgardner",  name:"Jalen Gardner",    role:"Regional Scout",                region:"Unassigned" },
+  "WORKS26":    { id:"jworks",    name:"James Works",      role:"Regional Scout",                region:"Unassigned" },
+  "PRICE26":    { id:"dprice",    name:"Demetric Price",   role:"Regional Scout",                region:"Unassigned" },
+  "ROSHELL26":  { id:"croshell",  name:"Christian Roshell", role:"Regional Scout",               region:"Unassigned" },
+  "ADMIN26":    { id:"admin",     name:"Athlete's Inc+ Admin", role:"Administrator",             region:"National" },
+  "DEMO26":     { id:"demo",      name:"Demo Scout",       role:"Demo / Training",               region:"Test" }
+};
+let SCOUTS = { ...SCOUTS_FALLBACK };
+async function refreshScouts(){
+  try{
+    const res = await fetch('/.netlify/functions/list-scouts');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if(data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length){
+      SCOUTS = { ...SCOUTS_FALLBACK, ...data };
+    }
+  }catch(err){
+    console.error('list-scouts unreachable, using fallback roster:', err.message);
+  }
+}
+refreshScouts();
+
+let SCOUT = null;
+let reports = [];
+let targets = [];
+let usingDemoReports = false;
+let usingDemoTargets = false;
+let activeTab = 'reports';
+let reportPosFilter = 'All';
+let targetPosFilter = 'All';
+
+/* ---------------- GATE ---------------- */
+function tryGate(){
+  const el = document.getElementById('gateCode');
+  const code = (el.value || '').trim().toUpperCase();
+  const found = SCOUTS[code];
+  if(!found){
+    document.getElementById('gateErr').textContent = 'Code not recognized.';
+    el.value = '';
+    el.focus();
+    return;
+  }
+  SCOUT = found;
+  localStorage.setItem('inhome_scout_code', code);
+  document.getElementById('gateErr').textContent = '';
+  document.getElementById('gate').classList.add('hide');
+  applyScout();
+  loadData();
+}
+function applyScout(){
+  document.getElementById('scoutChip').style.display = 'flex';
+  document.getElementById('scoutNm').textContent = SCOUT.name;
+  document.getElementById('scoutRl').textContent = SCOUT.role + ' \u00b7 ' + SCOUT.region;
+  document.getElementById('scoutAvatar').textContent = SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  loadProfile();
+}
+
+/* ---------------- MY PROFILE ---------------- */
+async function loadProfile(){
+  /* instant render from the roster object, then enrich from Neon */
+  document.getElementById('profName').textContent = SCOUT.name;
+  document.getElementById('profRole').textContent = SCOUT.role;
+  document.getElementById('profRegion').textContent = SCOUT.region;
+  document.getElementById('profHeadshot').textContent = SCOUT.name.split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+  document.getElementById('profPublicLink').href = 'scout.html?id=' + encodeURIComponent(SCOUT.id);
+  document.getElementById('profBio').style.display = 'none';
+  document.getElementById('profAccoladesWrap').style.display = 'none';
+  document.getElementById('profFacts').style.display = 'none';
+
+  /* the endpoint may key on id or scoutId — try both before giving up */
+  const attempts = [
+    '/.netlify/functions/scout-profile?id=' + encodeURIComponent(SCOUT.id),
+    '/.netlify/functions/scout-profile?scoutId=' + encodeURIComponent(SCOUT.id)
+  ];
+  let data = null;
+  for(const url of attempts){
+    try{
+      const res = await fetch(url);
+      if(!res.ok) continue;
+      data = await res.json();
+      if(data) break;
+    }catch(e){}
+  }
+  if(!data){
+    console.error('scout-profile: no usable response for id=' + SCOUT.id);
+    return;
+  }
+  console.log('scout-profile raw response:', data);
+
+  /* unwrap common envelope shapes: {scout:{}}, {profile:{}}, [row], row */
+  let p = data;
+  if(Array.isArray(p)) p = p[0] || {};
+  if(p && typeof p === 'object'){
+    if(p.scout && typeof p.scout === 'object') p = p.scout;
+    else if(p.profile && typeof p.profile === 'object') p = p.profile;
+    else if(p.data && typeof p.data === 'object' && !Array.isArray(p.data)) p = p.data;
+  }
+  if(!p || typeof p !== 'object') return;
+
+  const pick = (...keys) => { for(const k of keys){ if(p[k] != null && p[k] !== '') return p[k]; } return null; };
+
+  const headshot = pick('headshotUrl','headshot_url','headshot','photoUrl','photo_url','photo','image','imageUrl','image_url','img','avatar');
+  if(headshot){
+    const hs = document.getElementById('profHeadshot');
+    hs.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = headshot;
+    img.alt = SCOUT.name;
+    img.onerror = function(){ hs.textContent = SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); };
+    hs.appendChild(img);
+  }
+
+  const bio = pick('bio','bio_text','bioText','about','description');
+  if(bio){
+    const b = document.getElementById('profBio');
+    b.textContent = bio;
+    b.style.display = 'block';
+  }
+
+  /* quick facts from the scouts table's rich columns */
+  const facts = [
+    ['Hometown', pick('hometown')],
+    ['College', pick('college')],
+    ['Position Played', pick('play_position','playPosition')],
+    ['Pro Experience', pick('pro_experience','proExperience')],
+    ['Years Active', pick('years_active','yearsActive')],
+    ['Brand', pick('brand')]
+  ].filter(f => f[1] != null && String(f[1]).trim() !== '');
+  if(facts.length){
+    const fg = document.getElementById('profFacts');
+    fg.innerHTML = '';
+    facts.forEach(([k,v])=>{
+      const item = document.createElement('div');
+      item.className = 'm-item';
+      const kd = document.createElement('div'); kd.className = 'k'; kd.textContent = k;
+      const vd = document.createElement('div'); vd.className = 'v'; vd.textContent = String(v);
+      item.appendChild(kd); item.appendChild(vd);
+      fg.appendChild(item);
+    });
+    fg.style.display = 'grid';
+  }
+
+  let accs = pick('accolades','accolade','accolades_json','accoladesJson','achievements','honors');
+  if(typeof accs === 'string'){
+    try{ accs = JSON.parse(accs); }catch(e){ accs = accs.split('\n').map(s=>s.trim()).filter(Boolean); }
+  }
+  if(Array.isArray(accs) && accs.length){
+    document.getElementById('profAccolades').innerHTML = accs.map(a=>{
+      const li = document.createElement('li');
+      li.textContent = typeof a === 'object' ? (a.text || a.title || JSON.stringify(a)) : String(a);
+      return li.outerHTML;
+    }).join('');
+    document.getElementById('profAccoladesWrap').style.display = 'block';
+  }
+}
+function signOut(){
+  SCOUT = null;
+  localStorage.removeItem('inhome_scout_code');
+  document.getElementById('scoutChip').style.display = 'none';
+  document.getElementById('gateCode').value = '';
+  document.getElementById('gate').classList.remove('hide');
+}
+document.getElementById('gateCode').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); tryGate(); }
+});
+(function autoSignIn(){
+  const saved = localStorage.getItem('inhome_scout_code');
+  if(saved && SCOUTS[saved]){
+    SCOUT = SCOUTS[saved];
+    document.getElementById('gate').classList.add('hide');
+    applyScout();
+    loadData();
+  }
+})();
+
+/* ---------------- DEMO FALLBACK DATA ---------------- */
+function demoReports(){
+  const today = new Date();
+  const daysAgo = n => new Date(today - n*86400000).toISOString();
+  return [
+    { id:'demo1', prospect:'Marcus Whitfield', position:'CB', positionLabel:'Cornerback', classYear:'2026', school:'Hoover HS', inhomeScore:87, recommendationTier:'Priority', dateEvaluated:daysAgo(1), scoutId:SCOUT.id, hasHeadshot:false },
+    { id:'demo2', prospect:'Deja Coleman', position:'WR', positionLabel:'Wide Receiver', classYear:'2027', school:'Thompson HS', inhomeScore:79, recommendationTier:'Watch', dateEvaluated:daysAgo(4), scoutId:SCOUT.id, hasHeadshot:false },
+    { id:'demo3', prospect:'Trey Boykins', position:'EDGE', positionLabel:'Edge Rusher', classYear:'2026', school:'Central HS', inhomeScore:91, recommendationTier:'Priority', dateEvaluated:daysAgo(9), scoutId:SCOUT.id, hasHeadshot:false }
+  ];
+}
+function demoTargets(){
+  return [
+    { id:'t1', name:'Jaylen Marks', position:'QB', positionLabel:'Quarterback', school:'Spain Park HS', classYear:'2027', region:SCOUT.region, priority:'high' },
+    { id:'t2', name:'Corey Danielson', position:'OL', positionLabel:'Offensive Lineman', school:'Vestavia Hills HS', classYear:'2026', region:SCOUT.region, priority:'normal' },
+    { id:'t3', name:'Amir Blackwell', position:'S', positionLabel:'Safety', school:'Oak Mountain HS', classYear:'2027', region:SCOUT.region, priority:'normal' },
+    { id:'t4', name:'DeShawn Ruiz', position:'LB', positionLabel:'Linebacker', school:'Pinson Valley HS', classYear:'2026', region:SCOUT.region, priority:'high' }
+  ];
+}
+
+/* ---------------- LOAD ---------------- */
+async function loadData(){
+  document.getElementById('reportsList').innerHTML = '<div class="load-state">Loading your reports...</div>';
+  document.getElementById('targetsList').innerHTML = '<div class="load-state">Loading target list...</div>';
+
+  try{
+    const res = await fetch(`/.netlify/functions/list-reports?scoutId=${encodeURIComponent(SCOUT.id)}`);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    reports = Array.isArray(data) ? data : (data.reports || []);
+    usingDemoReports = false;
+  }catch(err){
+    reports = demoReports();
+    usingDemoReports = true;
+  }
+
+  try{
+    const res = await fetch(`/.netlify/functions/list-targets?scoutId=${encodeURIComponent(SCOUT.id)}&region=${encodeURIComponent(SCOUT.region)}`);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    targets = Array.isArray(data) ? data : (data.targets || []);
+    usingDemoTargets = false;
+  }catch(err){
+    targets = demoTargets();
+    usingDemoTargets = true;
+  }
+
+  /* fallback client-side filter: drop any target this scout already
+     filed a report on, in case the endpoint returns the full list */
+  const scoutedKeys = new Set(reports.map(r => (r.prospect||'').trim().toLowerCase() + '|' + (r.position||'')));
+  targets = targets.filter(t => !scoutedKeys.has((t.name||'').trim().toLowerCase() + '|' + (t.position||'')));
+
+  renderStats();
+  buildPosChips();
+  renderReports();
+  renderTargets();
+  initBoard();
+}
+
+/* ---------------- SCOUT BOARD ----------------
+   Kiper-style positional rankings, but every name on the board has a
+   filed report behind it — scouts rank only players they've evaluated.
+
+   Default order = InHome score (the model). Every manual reorder is
+   the scout's eye overriding the model; the +/- delta next to each
+   player shows how far their ranking diverges from score order.
+   That divergence is Model vs Scout Flag data.
+
+   Persistence: localStorage now (per scout, per position), with a
+   fire-and-forget sync to the backend when the endpoint exists:
+
+   POST /.netlify/functions/save-board
+     { scoutId, position, order: [prospectKey, ...] }
+   GET  /.netlify/functions/get-board?scoutId=<id>&position=<pos>
+     -> { order: [prospectKey, ...] }
+
+   Suggested Neon table:
+   scout_boards(scout_id text, position text, board_order jsonb,
+                updated_at timestamptz, primary key(scout_id, position))
+------------------------------------------------ */
+let boardPos = null;
+let boardClass = null;
+
+function prospectKey(r){
+  return (r.prospect||'').trim().toLowerCase() + '|' + (r.position||'');
+}
+function boardStorageKey(pos, cls){
+  return 'inhome_board_' + SCOUT.id + '_' + pos + '_' + cls;
+}
+function boardReportsFor(pos, cls){
+  /* latest report per prospect at this position + class, model order = score desc */
+  const byKey = {};
+  reports.filter(r => r.position === pos && (r.classYear||'—') === cls).forEach(r => {
+    const k = prospectKey(r);
+    const prev = byKey[k];
+    if(!prev || new Date(r.dateEvaluated||r.createdAt||0) > new Date(prev.dateEvaluated||prev.createdAt||0)) byKey[k] = r;
+  });
+  return Object.values(byKey).sort((a,b)=>(Number(b.inhomeScore)||0)-(Number(a.inhomeScore)||0));
+}
+function loadBoardOrder(pos, cls){
+  try{
+    const raw = localStorage.getItem(boardStorageKey(pos, cls));
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function saveBoardOrder(pos, cls, order){
+  try{ localStorage.setItem(boardStorageKey(pos, cls), JSON.stringify(order)); }catch(e){}
+  try{
+    fetch('/.netlify/functions/save-board', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ scoutId: SCOUT.id, position: pos, classYear: cls, order: order })
+    }).catch(()=>{});
+  }catch(e){}
+}
+function orderedBoard(pos, cls){
+  const pool = boardReportsFor(pos, cls);
+  const saved = loadBoardOrder(pos, cls);
+  if(!saved) return pool;
+  const byKey = {};
+  pool.forEach(r => byKey[prospectKey(r)] = r);
+  const ranked = [];
+  saved.forEach(k => { if(byKey[k]){ ranked.push(byKey[k]); delete byKey[k]; } });
+  Object.values(byKey).forEach(r => { r._isNew = true; ranked.push(r); });
+  return ranked;
+}
+function initBoard(){
+  const positions = [...new Set(reports.map(r=>r.position).filter(Boolean))];
+  document.getElementById('tabCntBoard').textContent = positions.length ? positions.length + ' pos' : '\u2014';
+  if(!positions.length){ boardPos = null; boardClass = null; renderBoard(); return; }
+  if(!boardPos || !positions.includes(boardPos)) boardPos = positions[0];
+  const classes = [...new Set(reports.filter(r=>r.position===boardPos).map(r=>r.classYear||'—'))].sort();
+  if(!boardClass || !classes.includes(boardClass)) boardClass = classes[0];
+  renderBoard();
+}
+function setBoardPos(p){
+  boardPos = p;
+  const classes = [...new Set(reports.filter(r=>r.position===p).map(r=>r.classYear||'—'))].sort();
+  boardClass = classes[0];
+  renderBoard();
+}
+function setBoardClass(c){ boardClass = c; renderBoard(); }
+
+function renderBoard(){
+  const positions = [...new Set(reports.map(r=>r.position).filter(Boolean))];
+  document.getElementById('boardPosChips').innerHTML = positions.map(p =>
+    `<button type="button" class="chip ${p===boardPos?'on':''}" onclick="setBoardPos('${p}')">${p}</button>`).join('');
+
+  const el = document.getElementById('boardList');
+  if(!boardPos){
+    document.getElementById('depthBannerPos').textContent = '\u2014';
+    document.getElementById('depthBannerSub').textContent = 'Depth Chart';
+    document.getElementById('depthBannerCount').textContent = '\u2014';
+    document.getElementById('boardClassTabs').innerHTML = '';
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F3C8}</div><div class="t">No board yet</div>
+      <div class="s">File reports and your evaluated players show up here to rank.</div></div>`;
+    return;
+  }
+
+  const classes = [...new Set(reports.filter(r=>r.position===boardPos).map(r=>r.classYear||'—'))].sort();
+  document.getElementById('boardClassTabs').innerHTML = classes.map(c => {
+    const cnt = boardReportsFor(boardPos, c).length;
+    return `<button type="button" class="class-tab ${c===boardClass?'on':''}" onclick="setBoardClass('${c}')">Class of ${c}<span class="n">${cnt} ranked</span></button>`;
+  }).join('');
+
+  const list = orderedBoard(boardPos, boardClass);
+  document.getElementById('depthBannerPos').textContent = boardPos;
+  document.getElementById('depthBannerSub').textContent = SCOUT.name.split(' ')[0] + "'s Depth Chart \u00b7 Class of " + boardClass;
+  document.getElementById('depthBannerCount').textContent = list.length;
+
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F3C8}</div><div class="t">Nothing ranked here</div>
+      <div class="s">No ${boardPos} reports filed for Class of ${boardClass} yet.</div></div>`;
+    return;
+  }
+
+  const modelRank = {};
+  boardReportsFor(boardPos, boardClass).forEach((r,i)=> modelRank[prospectKey(r)] = i+1);
+
+  const tierLabel = i => i===0 ? 'Starter' : (i===1 ? '2nd String' : (i===2 ? '3rd String' : ''));
+
+  el.innerHTML = list.map((r,i)=>{
+    const mr = modelRank[prospectKey(r)];
+    const diff = mr - (i+1);
+    let delta = '';
+    if(diff > 0) delta = `<div class="board-delta up">\u25B2 ${diff} vs model</div>`;
+    else if(diff < 0) delta = `<div class="board-delta down">\u25BC ${Math.abs(diff)} vs model</div>`;
+    const tl = tierLabel(i);
+    return `
+    <div class="depth-slot ${i===0?'starter':''}">
+      <div class="depth-tier-line"></div>
+      <div class="depth-badge">${i+1}</div>
+      <div class="depth-mid">
+        ${tl ? `<div class="depth-tier-label">${tl}</div>` : ''}
+        <div class="depth-name">${r.prospect||'Unnamed'}${r._isNew ? ' <span style="color:var(--red);font-family:Inter,sans-serif;font-size:9px;font-weight:800;vertical-align:3px;">NEW</span>' : ''}</div>
+        <div class="depth-meta">${r.school||'—'}</div>
+        ${delta}
+      </div>
+      <div class="board-score">${r.inhomeScore ?? '—'}<span class="l">InHome</span></div>
+      <div class="board-moves">
+        <button type="button" class="board-move" onclick="moveBoard(${i},-1)" ${i===0?'disabled':''}>\u25B2</button>
+        <button type="button" class="board-move" onclick="moveBoard(${i},1)" ${i===list.length-1?'disabled':''}>\u25BC</button>
+      </div>
+    </div>`;
+  }).join('') + (list.length > 1 ? `<button type="button" class="board-reset" onclick="resetBoard()">Reset to model order</button>` : '');
+}
+function moveBoard(i, dir){
+  const list = orderedBoard(boardPos, boardClass);
+  const j = i + dir;
+  if(j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  list.forEach(r => delete r._isNew);
+  saveBoardOrder(boardPos, boardClass, list.map(prospectKey));
+  renderBoard();
+}
+function resetBoard(){
+  try{ localStorage.removeItem(boardStorageKey(boardPos, boardClass)); }catch(e){}
+  renderBoard();
+}
+
+/* ---------------- STATS ---------------- */
+function renderStats(){
+  const total = reports.length;
+  const weekAgo = Date.now() - 7*86400000;
+  const thisWeek = reports.filter(r => new Date(r.dateEvaluated || r.createdAt || 0).getTime() >= weekAgo).length;
+  const scores = reports.map(r => Number(r.inhomeScore)).filter(n => !isNaN(n));
+  const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statWeek').textContent = thisWeek;
+  document.getElementById('statAvg').textContent = scores.length ? avg : '\u2014';
+  document.getElementById('statUnscouted').textContent = targets.length;
+  document.getElementById('tabCntReports').textContent = total + ' filed';
+  document.getElementById('tabCntTargets').textContent = targets.length + ' pending';
+}
+
+/* ---------------- TABS ---------------- */
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tabBtnProfile').classList.toggle('on', tab==='profile');
+  document.getElementById('tabBtnBoard').classList.toggle('on', tab==='board');
+  document.getElementById('tabBtnReports').classList.toggle('on', tab==='reports');
+  document.getElementById('tabBtnTargets').classList.toggle('on', tab==='targets');
+  document.getElementById('paneProfile').classList.toggle('on', tab==='profile');
+  document.getElementById('paneBoard').classList.toggle('on', tab==='board');
+  document.getElementById('paneReports').classList.toggle('on', tab==='reports');
+  document.getElementById('paneTargets').classList.toggle('on', tab==='targets');
+}
+
+/* ---------------- POSITION CHIPS ---------------- */
+function buildPosChips(){
+  const reportPositions = ['All', ...new Set(reports.map(r=>r.position).filter(Boolean))];
+  const targetPositions = ['All', ...new Set(targets.map(t=>t.position).filter(Boolean))];
+  document.getElementById('reportPosChips').innerHTML = reportPositions.map(p =>
+    `<button type="button" class="chip ${p===reportPosFilter?'on':''}" onclick="setReportPos('${p}')">${p}</button>`).join('');
+  document.getElementById('targetPosChips').innerHTML = targetPositions.map(p =>
+    `<button type="button" class="chip ${p===targetPosFilter?'on':''}" onclick="setTargetPos('${p}')">${p}</button>`).join('');
+}
+function setReportPos(p){ reportPosFilter = p; buildPosChips(); renderReports(); }
+function setTargetPos(p){ targetPosFilter = p; buildPosChips(); renderTargets(); }
+
+/* ---------------- RENDER: MY REPORTS ---------------- */
+function initials(name){
+  return (name||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+}
+function fmtDate(d){
+  if(!d) return '';
+  const dt = new Date(d);
+  if(isNaN(dt)) return '';
+  return dt.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+function tierColor(tier){
+  const t = (tier||'').toLowerCase();
+  if(t.includes('priority') || t.includes('elite')) return 'var(--good)';
+  if(t.includes('pass') || t.includes('no')) return 'var(--bad)';
+  return 'var(--warn)';
+}
+
+function renderReports(){
+  const q = (document.getElementById('reportSearch').value||'').trim().toLowerCase();
+  let list = reports.filter(r=>{
+    if(reportPosFilter !== 'All' && r.position !== reportPosFilter) return false;
+    if(!q) return true;
+    return (r.prospect||'').toLowerCase().includes(q) || (r.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=> new Date(b.dateEvaluated||b.createdAt||0) - new Date(a.dateEvaluated||a.createdAt||0));
+
+  const el = document.getElementById('reportsList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F4CB}</div><div class="t">No reports yet</div>
+      <div class="s">Reports you file will show up here.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = (usingDemoReports ? `<div class="demo-banner">Showing sample data — list-reports endpoint not reachable yet. Wire it up to see your real reports.</div>` : '')
+    + list.map(r => `
+    <button type="button" class="p-card" onclick='openReportModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="p-avatar">
+        ${r.hasHeadshot ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">` : initials(r.prospect)}
+      </div>
+      <div class="p-mid">
+        <div class="p-name">${r.prospect||'Unnamed Prospect'}</div>
+        <div class="p-meta">${r.positionLabel||r.position||''} \u00b7 ${r.school||'—'} \u00b7 Class of ${r.classYear||'—'}</div>
+      </div>
+      <div class="p-right">
+        <div class="p-score">${r.inhomeScore ?? '—'}</div>
+        <div class="p-tier" style="color:${tierColor(r.recommendationTier)}">${r.recommendationTier||'Ungraded'}</div>
+        <div class="p-date">${fmtDate(r.dateEvaluated||r.createdAt)}</div>
+      </div>
+    </button>`).join('');
+}
+
+/* ---------------- RENDER: UNSCOUTED TARGETS ---------------- */
+function renderTargets(){
+  const q = (document.getElementById('targetSearch').value||'').trim().toLowerCase();
+  let list = targets.filter(t=>{
+    if(targetPosFilter !== 'All' && t.position !== targetPosFilter) return false;
+    if(!q) return true;
+    return (t.name||'').toLowerCase().includes(q) || (t.school||'').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b)=>{
+    if(a.priority==='high' && b.priority!=='high') return -1;
+    if(b.priority==='high' && a.priority!=='high') return 1;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+
+  const el = document.getElementById('targetsList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u2705</div><div class="t">All caught up</div>
+      <div class="s">No unscouted players assigned to you right now.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = (usingDemoTargets ? `<div class="demo-banner">Showing sample data — list-targets endpoint not reachable yet. Wire it up to see your real target list.</div>` : '')
+    + list.map(t => `
+    <div class="p-card" style="cursor:default;">
+      <div class="p-avatar">${initials(t.name)}</div>
+      <div class="p-mid">
+        <div class="p-name">${t.name||'Unnamed'}</div>
+        <div class="p-meta">${t.positionLabel||t.position||''} \u00b7 ${t.school||'—'} \u00b7 Class of ${t.classYear||'—'}</div>
+        ${t.priority==='high' ? '<span class="p-priority high">High Priority</span>' : ''}
+      </div>
+      <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>
+    </div>`).join('');
+}
+
+function scoutLink(t){
+  const params = new URLSearchParams();
+  if(t.position) params.set('position', t.position);
+  if(t.name) params.set('prospect', t.name);
+  if(t.school) params.set('school', t.school);
+  if(t.classYear) params.set('class', t.classYear);
+  return 'report.html?' + params.toString();
+}
+
+/* ---------------- REPORT DETAIL MODAL ---------------- */
+function openReportModal(r){
+  document.getElementById('mAvatar').innerHTML = r.hasHeadshot
+    ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">`
+    : initials(r.prospect);
+  document.getElementById('mName').textContent = r.prospect || 'Unnamed Prospect';
+  document.getElementById('mSub').textContent = `${r.positionLabel||r.position||''} \u00b7 ${r.school||'—'} \u00b7 Class of ${r.classYear||'—'}`;
+  document.getElementById('mBody').innerHTML = `
+    <div class="m-scorebig">
+      <div><div class="n">${r.inhomeScore ?? '—'}</div><div class="l">InHome Score</div></div>
+      <div><div class="n" style="color:${tierColor(r.recommendationTier)}; font-size:20px;">${r.recommendationTier||'Ungraded'}</div><div class="l">Recommendation</div></div>
+    </div>
+    <div class="m-grid">
+      <div class="m-item"><div class="k">Evaluated</div><div class="v">${fmtDate(r.dateEvaluated||r.createdAt)||'—'}</div></div>
+      <div class="m-item"><div class="k">Archetype</div><div class="v">${r.archetype||'—'}</div></div>
+      <div class="m-item"><div class="k">Height / Weight</div><div class="v">${[r.height,r.weight].filter(Boolean).join(' / ')||'—'}</div></div>
+      <div class="m-item"><div class="k">Football IQ</div><div class="v">${r.footballIQ ?? '—'}</div></div>
+    </div>
+    ${r.narrative ? `<div class="m-narrative">${String(r.narrative).replace(/</g,'&lt;')}</div>` : ''}
+  `;
+  document.getElementById('mOpenBtn').href = followUpLink(r);
+  document.getElementById('mOpenBtn').textContent = 'File Follow-Up Report';
+  document.getElementById('reportModal').classList.add('on');
+}
+function followUpLink(r){
+  const params = new URLSearchParams();
+  if(r.position) params.set('position', r.position);
+  if(r.prospect) params.set('prospect', r.prospect);
+  if(r.school) params.set('school', r.school);
+  if(r.classYear) params.set('class', r.classYear);
+  return 'report.html?' + params.toString();
+}
+function closeModal(){
+  document.getElementById('reportModal').classList.remove('on');
+}
+
+/* =====================================================================
+   PLAYER EDIT / COMMITMENT / OFFERS  (added)
+
+   Backend it talks to:
+     GET  /.netlify/functions/list-programs
+     POST /.netlify/functions/update-assignment
+     POST /.netlify/functions/update-prospect   { action: get|commitment|addOffer|removeOffer }
+
+   REQUIRED CONTRACT CHANGE to list-targets: each target must also
+   return prospectId, height, weight, filmLink, sourceLink, level, note,
+   commitStatus, committedTo, committedToName, committedToLogo,
+   offerCount. Without prospectId the commitment and offers sections
+   stay locked and only the player info fields save.
+
+   renderTargets is redefined below on purpose. It overrides the earlier
+   declaration so the Unscouted cards get an Edit button, and the
+   original stays untouched above.
+===================================================================== */
+
+let PROGRAMS = [];
+let programsLoaded = false;
+
+async function loadPrograms(){
+  if(programsLoaded) return PROGRAMS;
+  try{
+    const res = await fetch('/.netlify/functions/list-programs');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    PROGRAMS = Array.isArray(data) ? data : (data.programs || []);
+    programsLoaded = true;
+  }catch(err){
+    console.error('list-programs unreachable:', err.message);
+    PROGRAMS = [];
+  }
+  return PROGRAMS;
+}
+loadPrograms();
+
+function programByKey(key){
+  if(!key) return null;
+  return PROGRAMS.find(p => p.school_key === key) || null;
+}
+function progLabel(p){ return p.short_name || p.name || p.school_key; }
+
+/* Logo, or a color block when the logo is missing or LOGO_MODE is off. */
+function progMark(p, cls){
+  if(!p) return `<div class="dot" style="background:var(--line);"></div>`;
+  if(p.logo_url) return `<img src="${p.logo_url}" alt="" onerror="this.outerHTML='<div class=\\'dot\\' style=\\'background:${p.primary_color||'#2A2A2A'}\\'></div>'">`;
+  return `<div class="dot" style="background:${p.primary_color || '#2A2A2A'};"></div>`;
+}
+
+/* ---------------- SCHOOL PICKER ----------------
+   Native select cannot render logos, and 200+ options is unusable on a
+   phone, so this is a filtering combobox. Free text is allowed for
+   schools missing from the directory. */
+function makePicker(mountId, opts){
+  const mount = document.getElementById(mountId);
+  if(!mount) return null;
+  const state = { key:null, other:null, open:false, cursor:-1, matches:[] };
+
+  mount.innerHTML = `
+    <div class="picker-input" id="${mountId}_box">
+      <span id="${mountId}_mark"><div class="dot" style="background:var(--line);"></div></span>
+      <input type="text" id="${mountId}_q" placeholder="${opts.placeholder || 'Type a school'}" autocomplete="off">
+      <button type="button" class="picker-clear" id="${mountId}_clr" style="display:none;">&times;</button>
+    </div>
+    <div class="picker-list" id="${mountId}_list"></div>`;
+
+  const box   = document.getElementById(mountId + '_box');
+  const input = document.getElementById(mountId + '_q');
+  const list  = document.getElementById(mountId + '_list');
+  const mark  = document.getElementById(mountId + '_mark');
+  const clr   = document.getElementById(mountId + '_clr');
+
+  function paintSelection(){
+    const p = programByKey(state.key);
+    mark.innerHTML = state.key ? progMark(p) : `<div class="dot" style="background:var(--line);"></div>`;
+    clr.style.display = (state.key || state.other) ? 'block' : 'none';
+  }
+
+  function close(){ state.open = false; state.cursor = -1; list.classList.remove('on'); box.classList.remove('focus'); }
+
+  function choose(p){
+    state.key = p.school_key; state.other = null;
+    input.value = progLabel(p);
+    paintSelection(); close();
+    if(opts.onPick) opts.onPick(state);
+  }
+  function chooseOther(text){
+    state.key = null; state.other = text;
+    input.value = text;
+    paintSelection(); close();
+    if(opts.onPick) opts.onPick(state);
+  }
+
+  function render(){
+    const q = input.value.trim().toLowerCase();
+    state.matches = !q
+      ? PROGRAMS.slice(0, 40)
+      : PROGRAMS.filter(p =>
+          (p.short_name || '').toLowerCase().includes(q) ||
+          (p.name || '').toLowerCase().includes(q) ||
+          (p.school_key || '').toLowerCase().startsWith(q)
+        ).slice(0, 40);
+
+    if(!PROGRAMS.length){
+      list.innerHTML = `<div class="picker-empty">School directory did not load. Type the school name and it saves as free text.
+        ${q ? `<button type="button" data-other="1">Use &ldquo;${q.replace(/</g,'&lt;')}&rdquo;</button>` : ''}</div>`;
+    } else if(!state.matches.length){
+      list.innerHTML = `<div class="picker-empty">No match in the directory.
+        ${q ? `<button type="button" data-other="1">Add &ldquo;${q.replace(/</g,'&lt;')}&rdquo; anyway</button>` : ''}</div>`;
+    } else {
+      list.innerHTML = state.matches.map((p,i) => `
+        <button type="button" class="picker-opt ${i===state.cursor?'cursor':''}" data-i="${i}">
+          ${progMark(p)}
+          <span class="pn"><b>${progLabel(p)}</b><i>${p.conference || ''}</i></span>
+          <span class="dv">${p.division || ''}</span>
+        </button>`).join('');
+    }
+    list.classList.add('on');
+    state.open = true;
+  }
+
+  input.addEventListener('focus', () => { box.classList.add('focus'); render(); });
+  input.addEventListener('input', () => { state.cursor = -1; render(); });
+  input.addEventListener('keydown', e => {
+    if(!state.open) return;
+    if(e.key === 'ArrowDown'){ e.preventDefault(); state.cursor = Math.min(state.cursor + 1, state.matches.length - 1); render(); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); state.cursor = Math.max(state.cursor - 1, 0); render(); }
+    else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(state.cursor >= 0 && state.matches[state.cursor]) choose(state.matches[state.cursor]);
+      else if(input.value.trim()) chooseOther(input.value.trim());
+    }
+    else if(e.key === 'Escape'){ close(); }
+  });
+  list.addEventListener('mousedown', e => {
+    const other = e.target.closest('[data-other]');
+    if(other){ e.preventDefault(); chooseOther(input.value.trim()); return; }
+    const opt = e.target.closest('.picker-opt');
+    if(opt){ e.preventDefault(); choose(state.matches[Number(opt.dataset.i)]); }
+  });
+  input.addEventListener('blur', () => setTimeout(close, 140));
+
+  clr.addEventListener('click', () => {
+    state.key = null; state.other = null; input.value = '';
+    paintSelection();
+    if(opts.onPick) opts.onPick(state);
+  });
+
+  return {
+    get(){ return { key: state.key, other: state.other }; },
+    set(key, otherOrLabel){
+      state.key = key || null;
+      state.other = key ? null : (otherOrLabel || null);
+      const p = programByKey(key);
+      input.value = p ? progLabel(p) : (otherOrLabel || '');
+      paintSelection();
+    },
+    reset(){ state.key = null; state.other = null; input.value = ''; paintSelection(); }
+  };
+}
+
+/* ---------------- EDIT SHEET ---------------- */
+const COMMIT_STATUSES = [
+  ['uncommitted','Open'],
+  ['verbal','Verbal'],
+  ['committed','Committed'],
+  ['signed','Signed'],
+  ['decommitted','Decommitted']
+];
+
+let ES = { target:null, status:'uncommitted', offers:[], commitPicker:null, offerPicker:null, dirty:false };
+
+function accessCode(){ return localStorage.getItem('inhome_scout_code') || ''; }
+function esMsg(text, kind){
+  const el = document.getElementById('esMsg');
+  el.textContent = text || '';
+  el.className = 'sheet-msg' + (kind ? ' ' + kind : '');
+}
+
+async function openEditSheet(t){
+  await loadPrograms();
+  ES.target = t;
+  ES.offers = [];
+  ES.dirty = false;
+  esMsg('');
+
+  document.getElementById('esAvatar').textContent = initials(t.name);
+  document.getElementById('esName').textContent = t.name || 'Unnamed';
+  document.getElementById('esSub').textContent =
+    `${t.positionLabel || t.position || ''} \u00b7 ${t.school || '—'} \u00b7 Class of ${t.classYear || '—'}`;
+
+  document.getElementById('esHeight').value   = t.height || '';
+  document.getElementById('esWeight').value   = t.weight || '';
+  document.getElementById('esSchool').value   = t.school || '';
+  document.getElementById('esClass').value    = t.classYear || '';
+  document.getElementById('esPosition').value = t.position || '';
+  document.getElementById('esLevel').value    = t.level || '';
+  document.getElementById('esFilm').value     = t.filmLink || t.film_link || t.sourceLink || t.source_link || '';
+  document.getElementById('esNote').value     = t.note || '';
+
+  const pid = t.prospectId || t.prospect_id || null;
+
+  if(!pid){
+    document.getElementById('esCommitSec').innerHTML =
+      `<div class="sheet-sec-title">Commitment</div>
+       <div class="sheet-locked">This player is not linked to a prospect record yet, so commitment and offers cannot be saved. Your director needs to run the prospect backfill. Everything above still saves.</div>`;
+    document.getElementById('esOffersSec').style.display = 'none';
+    document.getElementById('editSheet').classList.add('on');
+    return;
+  }
+
+  document.getElementById('esOffersSec').style.display = 'block';
+
+  ES.commitPicker = makePicker('esCommitPicker', { placeholder:'Where did he commit?' });
+  ES.offerPicker  = makePicker('esOfferPicker',  { placeholder:'Add a school', onPick: addOfferFromPicker });
+
+  ES.status = t.commitStatus || t.commit_status || 'uncommitted';
+  renderStatusSeg();
+  ES.commitPicker.set(t.committedTo || t.committed_to || null, t.committedToOther || t.committed_to_other || null);
+  document.getElementById('esCommitDate').value = (t.commitDate || t.commit_date || '').slice(0,10);
+  document.getElementById('esCommitSource').value = t.commitSource || t.commit_source || '';
+
+  document.getElementById('editSheet').classList.add('on');
+  loadProspectDetail(pid);
+}
+
+async function loadProspectDetail(pid){
+  document.getElementById('esOfferList').innerHTML = '<div class="offer-empty">Loading offers...</div>';
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'get', prospectId: pid, accessCode: accessCode() })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'load failed');
+
+    const p = data.prospect || {};
+    ES.status = p.commit_status || 'uncommitted';
+    renderStatusSeg();
+    ES.commitPicker.set(p.committed_to, p.committed_to_other);
+    document.getElementById('esCommitDate').value = (p.commit_date || '').slice(0,10);
+    document.getElementById('esCommitSource').value = p.commit_source || '';
+
+    ES.offers = data.offers || [];
+    renderOffers();
+  }catch(err){
+    document.getElementById('esOfferList').innerHTML =
+      `<div class="offer-empty">Could not load offers: ${err.message}</div>`;
+  }
+}
+
+function renderStatusSeg(){
+  document.getElementById('esStatusSeg').innerHTML = COMMIT_STATUSES.map(([v,l]) =>
+    `<button type="button" class="${v===ES.status?'on':''}" onclick="setCommitStatus('${v}')">${l}</button>`).join('');
+  document.getElementById('esCommitDetail').style.display = ES.status === 'uncommitted' ? 'none' : 'block';
+}
+function setCommitStatus(v){
+  ES.status = v;
+  ES.dirty = true;
+  renderStatusSeg();
+  esMsg('');
+}
+
+function renderOffers(){
+  const el = document.getElementById('esOfferList');
+  if(!ES.offers.length){
+    el.innerHTML = '<div class="offer-empty">No offers logged yet.</div>';
+    return;
+  }
+  el.innerHTML = ES.offers.map(o => {
+    const p = programByKey(o.school_key);
+    const label = o.school_name || (p ? progLabel(p) : null) || o.school_other || o.school_key;
+    const date = o.offer_date ? new Date(o.offer_date + 'T00:00:00').toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'}) : 'No date';
+    return `
+      <div class="offer-row ${o.status === 'committed' ? 'committed' : ''}">
+        ${o.logo_id ? `<img src="https://a.espncdn.com/i/teamlogos/ncaa/500/${o.logo_id}.png" alt="">` : progMark(p)}
+        <div class="om">
+          <div class="on">${label}</div>
+          <div class="od">${date}${o.reported_by ? ' \u00b7 ' + o.reported_by : ''}</div>
+        </div>
+        <button type="button" class="offer-x" onclick="removeOffer(${o.id})" title="Remove">&times;</button>
+      </div>`;
+  }).join('');
+}
+
+async function addOfferFromPicker(sel){
+  if(!sel.key && !sel.other) return;
+  const pid = ES.target.prospectId || ES.target.prospect_id;
+  const dateEl = document.getElementById('esOfferDate');
+  esMsg('Adding offer...');
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        action:'addOffer', prospectId: pid, accessCode: accessCode(),
+        schoolKey: sel.key, schoolOther: sel.other, offerDate: dateEl.value || null
+      })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'could not add');
+    ES.offers = data.offers || [];
+    renderOffers();
+    ES.offerPicker.reset();
+    dateEl.value = '';
+    esMsg('Offer added.', 'ok');
+  }catch(err){
+    esMsg(err.message, 'err');
+  }
+}
+
+async function removeOffer(offerId){
+  const pid = ES.target.prospectId || ES.target.prospect_id;
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'removeOffer', prospectId: pid, offerId, accessCode: accessCode() })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'could not remove');
+    ES.offers = data.offers || [];
+    renderOffers();
+    esMsg('Offer removed.', 'ok');
+  }catch(err){
+    esMsg(err.message, 'err');
+  }
+}
+
+async function saveEditSheet(){
+  const btn = document.getElementById('esSave');
+  const t = ES.target;
+  const pid = t.prospectId || t.prospect_id || null;
+  btn.disabled = true;
+  esMsg('Saving...');
+
+  const info = {
+    id: t.id,
+    accessCode: accessCode(),
+    height:      document.getElementById('esHeight').value,
+    weight:      document.getElementById('esWeight').value,
+    school:      document.getElementById('esSchool').value,
+    class_year:  document.getElementById('esClass').value,
+    position:    document.getElementById('esPosition').value,
+    level:       document.getElementById('esLevel').value,
+    film_link:   document.getElementById('esFilm').value,
+    note:        document.getElementById('esNote').value
+  };
+
+  try{
+    const res = await fetch('/.netlify/functions/update-assignment', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(info)
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'could not save player info');
+
+    const a = data.assignment || {};
+    Object.assign(t, {
+      height:a.height, weight:a.weight, school:a.school, classYear:a.class_year,
+      position:a.position, level:a.level, filmLink:a.film_link, note:a.note
+    });
+
+    /* Commitment saves second and only when a prospect record exists.
+       A status other than Open needs a school and a source, same rule
+       the server enforces, checked here so the scout is not bounced. */
+    if(pid){
+      const sel = ES.commitPicker.get();
+      const source = document.getElementById('esCommitSource').value;
+
+      if(ES.status !== 'uncommitted'){
+        if(!sel.key && !sel.other) throw new Error('Pick the school he committed to.');
+        if(!source) throw new Error('Pick how you know, so coaches can weigh it.');
+      }
+
+      const res2 = await fetch('/.netlify/functions/update-prospect', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          action:'commitment', prospectId: pid, accessCode: accessCode(),
+          commitStatus: ES.status,
+          committedTo: sel.key, committedToOther: sel.other,
+          commitDate: document.getElementById('esCommitDate').value || null,
+          commitSource: source || null
+        })
+      });
+      const data2 = await res2.json();
+      if(!res2.ok) throw new Error(data2.error || 'could not save commitment');
+
+      const p = data2.prospect || {};
+      Object.assign(t, {
+        commitStatus: p.commit_status,
+        committedTo: p.committed_to,
+        committedToOther: p.committed_to_other,
+        committedToName: p.committed_to_name,
+        committedToLogo: p.committed_to_logo,
+        offerCount: (data2.offers || []).length
+      });
+    }
+
+    esMsg('Saved.', 'ok');
+    renderTargets();
+    setTimeout(closeEditSheet, 650);
+  }catch(err){
+    esMsg(err.message, 'err');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function closeEditSheet(){
+  document.getElementById('editSheet').classList.remove('on');
+  ES.target = null;
+}
+
+/* ---------------- RENDER: UNSCOUTED TARGETS (overrides original) ---------------- */
+function commitTagHTML(t){
+  const status = t.commitStatus || t.commit_status;
+  if(!status || status === 'uncommitted') return '';
+  const label = (COMMIT_STATUSES.find(s => s[0] === status) || [null,status])[1];
+  const p = programByKey(t.committedTo || t.committed_to);
+  const school = t.committedToName || (p ? progLabel(p) : null) || t.committedToOther || t.committed_to_other || '';
+  const logo = t.committedToLogo
+    ? `<img src="https://a.espncdn.com/i/teamlogos/ncaa/500/${t.committedToLogo}.png" alt="">`
+    : (p && p.logo_url ? `<img src="${p.logo_url}" alt="">` : '');
+  return `<div class="commit-tag ${status}">${logo}${label}${school ? ' to ' + school : ''}</div>`;
+}
+
+function renderTargets(){
+  const q = (document.getElementById('targetSearch').value || '').trim().toLowerCase();
+  let list = targets.filter(t => {
+    if(targetPosFilter !== 'All' && t.position !== targetPosFilter) return false;
+    if(!q) return true;
+    return (t.name || '').toLowerCase().includes(q) || (t.school || '').toLowerCase().includes(q);
+  });
+  list = list.slice().sort((a,b) => {
+    if(a.priority === 'high' && b.priority !== 'high') return -1;
+    if(b.priority === 'high' && a.priority !== 'high') return 1;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+
+  const el = document.getElementById('targetsList');
+  if(!list.length){
+    el.innerHTML = `<div class="empty-state"><div class="ic">\u2705</div><div class="t">All caught up</div>
+      <div class="s">No unscouted players assigned to you right now.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = (usingDemoTargets ? `<div class="demo-banner">Showing sample data — list-targets endpoint not reachable yet. Wire it up to see your real target list.</div>` : '')
+    + list.map((t, i) => {
+      const offers = Number(t.offerCount ?? t.offer_count ?? 0);
+      return `
+    <div class="p-card" style="cursor:default;">
+      <div class="p-avatar">${initials(t.name)}</div>
+      <div class="p-mid">
+        <div class="p-name">${t.name || 'Unnamed'}</div>
+        <div class="p-meta">${t.positionLabel || t.position || ''} \u00b7 ${t.school || '—'} \u00b7 Class of ${t.classYear || '—'}</div>
+        ${t.priority === 'high' ? '<span class="p-priority high">High Priority</span>' : ''}
+        ${commitTagHTML(t)}
+        ${offers ? `<div class="offer-count">${offers} offer${offers === 1 ? '' : 's'} logged</div>` : ''}
+      </div>
+      <div class="t-actions">
+        <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>
+        <button type="button" class="edit-btn" onclick="openEditSheetByIndex(${i})">Edit</button>
+      </div>
+    </div>`;
+    }).join('');
+
+  /* Index into the rendered list so the object identity is preserved and
+     edits write back to the same target the card came from. */
+  window.__renderedTargets = list;
+}
+function openEditSheetByIndex(i){
+  const t = (window.__renderedTargets || [])[i];
+  if(t) openEditSheet(t);
+}
+</script>
+
+</body>
+</html>

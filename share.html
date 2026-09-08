@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome | Scouting Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#FF0000; --red-dim:#FF00001F; --red-deep:#170000;
+    --paper:#000; --card:#141414; --card-2:#1B1B1B; --line:#2A2A2A;
+    --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A;
+    --good:#35C759; --warn:#E0A419; --bad:#C62828;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:720px; margin:0 auto; padding:0 16px 60px;}
+  .topbar{padding:18px 0 14px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; justify-content:space-between;}
+  .logo{font-family:'Anton',sans-serif; font-size:24px; letter-spacing:.01em; color:#fff;}
+  .logo b{color:var(--red); font-weight:400;}
+  .logo small{display:block; font-family:'Inter',sans-serif; font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-top:2px;}
+  .tag{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--red); font-weight:700;}
+
+  .hero{display:flex; gap:16px; align-items:center; padding:22px 0 18px;}
+  .photo{width:92px; height:92px; border-radius:14px; background:var(--card-2); border:1px solid var(--line); overflow:hidden; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-family:'Anton',sans-serif; font-size:30px; color:var(--dim);}
+  .photo img{width:100%; height:100%; object-fit:cover; display:block;}
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:32px; margin:0; line-height:1; letter-spacing:.01em;}
+  .sub{color:var(--mute); font-size:13.5px; margin-top:6px; line-height:1.5;}
+  .sub b{color:var(--ink); font-weight:600;}
+
+  .scoreline{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:6px;}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 12px; text-align:center;}
+  .stat .n{font-family:'Anton',sans-serif; font-size:40px; line-height:1; color:#fff;}
+  .stat .n.red{color:var(--red);}
+  .stat .l{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-top:6px;}
+  .stat .tier{font-size:14px; font-weight:700; line-height:1.25; padding-top:8px;}
+
+  .section{margin-top:22px;}
+  .sec-h{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); font-weight:700; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline;}
+  .sec-h span{color:var(--mute); letter-spacing:0; text-transform:none; font-weight:600; font-size:12px;}
+
+  .comp{display:flex; flex-direction:column; gap:8px;}
+  .comp-row{display:grid; grid-template-columns:110px 1fr 40px; align-items:center; gap:10px; font-size:12.5px;}
+  .comp-row .k{color:var(--mute); font-weight:600;}
+  .bar{height:6px; background:var(--card-2); border-radius:3px; overflow:hidden;}
+  .bar i{display:block; height:100%; background:var(--red); border-radius:3px;}
+  .comp-row .v{text-align:right; font-family:'Anton',sans-serif; font-size:16px;}
+
+  .trait{display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px solid #1A1A1A; gap:12px;}
+  .trait:last-child{border-bottom:none;}
+  .trait .name{font-size:13.5px; font-weight:600;}
+  .trait .metric{font-size:11.5px; color:var(--dim); margin-top:2px;}
+  .grade{display:flex; gap:4px; flex:0 0 auto; align-items:center;}
+  .grade i{width:16px; height:6px; border-radius:2px; background:var(--card-2);}
+  .grade i.on{background:var(--ink);}
+  .grade .w{font-size:11px; color:var(--mute); margin-left:6px; min-width:64px; text-align:right;}
+
+  .gates{display:flex; flex-direction:column; gap:6px;}
+  .gate{display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:8px 0; border-bottom:1px solid #1A1A1A;}
+  .gate:last-child{border-bottom:none;}
+  .gate .r{font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;}
+  .r.pass{color:var(--good);} .r.concern{color:var(--warn);} .r.fail{color:var(--bad);}
+
+  .narr{font-size:14.5px; line-height:1.65; color:#DCDCDC; white-space:pre-wrap;}
+  .kv{display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; font-size:13px;}
+  .kv .k{color:var(--dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;}
+  .kv .v{margin-top:2px; font-weight:600;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:12px; font-weight:600; background:var(--card);}
+  .chip small{color:var(--dim); font-weight:500; margin-left:6px;}
+
+  .foot{margin-top:34px; padding-top:14px; border-top:1px solid var(--line); font-size:11.5px; color:var(--dim); line-height:1.6;}
+  .foot b{color:var(--mute);}
+  .state{padding:60px 0; text-align:center; color:var(--dim); font-size:14px;}
+  @media print{ body{background:#fff; color:#111;} .wrap{max-width:none;} .stat,.chip,.photo{border-color:#ccc; background:#fff;} .stat .n{color:#111;} .bar{background:#eee;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="logo">inh<b>o</b>me<small>Recruiting Intelligence</small></div>
+    <div class="tag">EIS Scouting Report</div>
+  </div>
+  <div id="app"><div class="state">Loading report...</div></div>
+</div>
+
+<script src="positions.js"></script>
+<script>
+const esc = s => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const initials = n => (n||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+const avg = o => { const v = Object.values(o||{}).map(Number).filter(n=>n>0); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+const tierColor = t => /P4|Power 4/.test(t||'') ? '#FF0000' : /G5|FCS/.test(t||'') ? '#F5F5F5' : '#A0A0A0';
+const fmtDate = d => { if(!d) return ''; const x = new Date(d); return isNaN(x) ? String(d) : x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+
+function gradeHTML(n){
+  n = parseInt(n,10) || 0;
+  return `<div class="grade">${[1,2,3,4,5].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}<span class="w">${n ? GRADE_LABELS[n-1] : '—'}</span></div>`;
+}
+function traitList(cfgList, grades, raws){
+  if(!cfgList || !cfgList.length) return '';
+  return cfgList.map(t=>{
+    const rv = raws && raws[t.id];
+    return `<div class="trait"><div><div class="name">${esc(t.name)}</div>${rv ? `<div class="metric">${esc(t.metric||'')} ${esc(rv)}</div>` : ''}</div>${gradeHTML(grades && grades[t.id])}</div>`;
+  }).join('');
+}
+
+function render(r){
+  const cfg = POSITIONS[(r.position||'').toUpperCase()] || null;
+  const raw = r.raw || {};
+  const film = raw.traitGrades || {}, ath = raw.athleticGrades || {}, prod = raw.productionGrades || {};
+  const gates = raw.gates || {};
+
+  /* Component display mirrors the locked formula: Film 50 / Athletic 25 / Character 15 / Production 10. */
+  const filmS = (avg(film)||0)*20, athS = (avg(ath)||0)*20, prodS = (avg(prod)||0)*20;
+  const gv = Object.values(gates);
+  const charS = gv.length ? gv.map(g=>g==='pass'?100:g==='concern'?60:0).reduce((a,b)=>a+b,0)/gv.length : 0;
+  const iq = Number(r.footballIQ) || null;
+  const ti = (iq && athS>0 && filmS>0) ? ((iq*filmS)/athS).toFixed(2) : '—';
+  const score = r.inhomeScore != null ? Number(r.inhomeScore).toFixed(1) : '—';
+
+  const gateRows = Object.keys(gates).length
+    ? (cfg ? cfg.gates : Object.keys(gates)).map(label=>{
+        const id = String(label).replace(/[^a-zA-Z0-9]/g,'');
+        const v = gates[id] || gates[label];
+        if(!v) return '';
+        return `<div class="gate"><span>${esc(label)}</span><span class="r ${v}">${v}</span></div>`;
+      }).join('')
+    : '';
+
+  const trk = raw.track || {};
+  const trkRows = Object.entries(trk.events||{}).map(([k,v])=>`<span class="chip">${esc(k.toUpperCase())}<small>${esc(v)}</small></span>`).join('');
+  const recs = (raw.recommendedPrograms||[]).map(p=>`<span class="chip">${esc(p.program)}${p.fit?`<small>${esc(p.fit)}</small>`:''}</span>`).join('');
+
+  document.title = `InHome | ${r.prospect || 'Scouting Report'}`;
+  document.getElementById('app').innerHTML = `
+    <div class="hero">
+      <div class="photo">${r.headshotUrl ? `<img src="${esc(r.headshotUrl)}" alt="" onerror="this.parentElement.textContent='${initials(r.prospect)}'">` : initials(r.prospect)}</div>
+      <div>
+        <h1>${esc(r.prospect||'Unnamed Prospect')}</h1>
+        <div class="sub"><b>${esc(r.positionLabel||r.position||'')}</b>${r.archetype?` &middot; ${esc(r.archetype)}`:''}<br>
+          ${esc(r.school||'')}${r.classYear?` &middot; Class of ${esc(r.classYear)}`:''}${(r.homeCity||r.homeState)?`<br>${esc([r.homeCity,r.homeState].filter(Boolean).join(', '))}`:''}</div>
+      </div>
+    </div>
+
+    <div class="scoreline">
+      <div class="stat"><div class="n red">${score}</div><div class="l">InHome Score</div></div>
+      <div class="stat"><div class="n">${ti}</div><div class="l">Translation Index</div></div>
+      <div class="stat"><div class="tier" style="color:${tierColor(r.recommendationTier)}">${esc(r.recommendationTier||'Ungraded')}</div><div class="l">Projection</div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-h">Score Composition</div>
+      <div class="comp">
+        <div class="comp-row"><span class="k">Film (50%)</span><div class="bar"><i style="width:${filmS}%"></i></div><span class="v">${filmS.toFixed(0)}</span></div>
+        <div class="comp-row"><span class="k">Athletic (25%)</span><div class="bar"><i style="width:${athS}%"></i></div><span class="v">${athS.toFixed(0)}</span></div>
+        <div class="comp-row"><span class="k">Character (15%)</span><div class="bar"><i style="width:${charS}%"></i></div><span class="v">${charS.toFixed(0)}</span></div>
+        <div class="comp-row"><span class="k">Production (10%)</span><div class="bar"><i style="width:${prodS}%"></i></div><span class="v">${prodS.toFixed(0)}</span></div>
+        ${iq ? `<div class="comp-row"><span class="k">Football IQ</span><div class="bar"><i style="width:${iq*10}%"></i></div><span class="v">${iq}</span></div>` : ''}
+      </div>
+    </div>
+
+    ${(r.height||r.weight||r.wingspan||r.evalCamp||r.filmLink) ? `
+    <div class="section">
+      <div class="sec-h">Measurables</div>
+      <div class="kv">
+        ${r.height?`<div><div class="k">Height</div><div class="v">${esc(r.height)}</div></div>`:''}
+        ${r.weight?`<div><div class="k">Weight</div><div class="v">${esc(r.weight)}</div></div>`:''}
+        ${r.wingspan?`<div><div class="k">Wingspan</div><div class="v">${esc(r.wingspan)}</div></div>`:''}
+        ${r.evalCamp?`<div><div class="k">Evaluated At</div><div class="v">${esc(r.evalCamp)}</div></div>`:''}
+        ${r.filmLink?`<div><div class="k">Film</div><div class="v"><a href="${esc(r.filmLink)}" target="_blank" rel="noopener" style="color:var(--red)">Watch</a></div></div>`:''}
+      </div>
+    </div>` : ''}
+
+    ${r.wingspanUrl ? `<div class="section"><div class="sec-h">Wingspan${r.wingspan?`<span>${esc(r.wingspan)}</span>`:''}</div><img src="${esc(r.wingspanUrl)}" alt="" style="width:100%; border-radius:12px; border:1px solid var(--line); display:block;" onerror="this.parentElement.style.display='none'"></div>` : ''}
+
+    ${cfg && Object.keys(film).length ? `<div class="section"><div class="sec-h">Film Traits<span>All-22 evaluation</span></div>${traitList(cfg.film, film)}</div>` : ''}
+    ${cfg && Object.keys(ath).length ? `<div class="section"><div class="sec-h">Athletic Traits</div>${traitList(cfg.athletic, ath, raw.athleticRaw)}</div>` : ''}
+    ${cfg && Object.keys(prod).length ? `<div class="section"><div class="sec-h">Production</div>${traitList(cfg.production, prod, raw.productionRaw)}</div>` : ''}
+    ${gateRows ? `<div class="section"><div class="sec-h">Character Gates</div><div class="gates">${gateRows}</div></div>` : ''}
+    ${trkRows ? `<div class="section"><div class="sec-h">Verified Track${trk.source?`<span>${esc(trk.source)}${trk.season?` &middot; ${esc(trk.season)}`:''}</span>`:''}</div><div class="chips">${trkRows}</div></div>` : ''}
+    ${r.narrative ? `<div class="section"><div class="sec-h">Scout Narrative</div><div class="narr">${esc(r.narrative)}</div></div>` : ''}
+    ${recs ? `<div class="section"><div class="sec-h">Program Fits</div><div class="chips">${recs}</div></div>` : ''}
+
+    <div class="foot">
+      Filed by <b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` &middot; ${esc(r.scoutRole)}`:''}${r.dateEvaluated||r.createdAt?` &middot; ${fmtDate(r.dateEvaluated||r.createdAt)}`:''}<br>
+      InHome Recruiting Intelligence &middot; Eye in the Sky film framework. Report #${r.id}. This link was shared directly by InHome; please do not redistribute.
+    </div>`;
+}
+
+(async function(){
+  const q = new URLSearchParams(location.search);
+  const id = q.get('id'), t = q.get('t');
+  const app = document.getElementById('app');
+  if(!id || !t){ app.innerHTML = '<div class="state">This link is missing its access key.</div>'; return; }
+  try{
+    const res = await fetch(`/.netlify/functions/share-report?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`);
+    if(res.status === 403){ app.innerHTML = '<div class="state">This share link is not valid.</div>'; return; }
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const r = Array.isArray(data) ? data[0] : data;
+    if(!r) throw new Error('empty');
+    render(r);
+  }catch(err){
+    app.innerHTML = '<div class="state">Could not load this report. Ask the sender for a fresh link.</div>';
+  }
+})();
+</script>
+</body>
+</html>

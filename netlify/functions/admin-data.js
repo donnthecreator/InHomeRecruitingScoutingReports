@@ -76,6 +76,19 @@ function verifyToken(event) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+/* Share links are signed with ADMIN_SECRET so a coach can open one
+   report without the link being guessable. share-report.js checks the
+   same signature. Keep this function in sync with that file. */
+function shareSig(reportId) {
+  return crypto.createHmac('sha256', process.env.ADMIN_SECRET).update('share:' + reportId).digest('hex').slice(0, 24);
+}
+function siteBase(event) {
+  const h = event.headers || {};
+  const host = h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com';
+  const proto = h['x-forwarded-proto'] || 'https';
+  return `${proto}://${host}`;
+}
+
 const ok   = (body) => ({ statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 const fail = (code, error) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) });
 
@@ -139,12 +152,14 @@ exports.handler = async (event) => {
         let reports = [];
         try {
           reports = await sql`
-            SELECT id, prospect_name AS prospect, position, position_label, school, class_year,
-                   home_city, home_state, latitude, longitude,
-                   inhome_score, recommendation_tier,
-                   scout_id, scout_name, date_evaluated, created_at, has_headshot
-            FROM reports
-            ORDER BY COALESCE(date_evaluated::timestamptz, created_at) DESC
+            SELECT r.id, r.prospect_name AS prospect, r.position, r.position_label, r.school, r.class_year,
+                   r.home_city, r.home_state, r.latitude, r.longitude,
+                   r.inhome_score, r.recommendation_tier,
+                   r.scout_id, r.scout_name, r.date_evaluated, r.created_at, r.has_headshot,
+                   r.prospect_id, p.headshot_key, p.wingspan_key, p.wingspan
+            FROM reports r
+            LEFT JOIN prospects p ON p.id = r.prospect_id
+            ORDER BY COALESCE(r.date_evaluated::timestamptz, r.created_at) DESC
             LIMIT 500`;
         } catch (e) {
           console.error('reports query failed, check column names:', e.message);
@@ -196,6 +211,24 @@ exports.handler = async (event) => {
              ${stat_line || null}, ${source_link || null}, ${performance_date || null})
           RETURNING *`;
         return ok({ performance: rows[0] });
+      }
+
+      case 'deleteReport': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const [row] = await sql`SELECT id, prospect_name FROM reports WHERE id = ${id}`;
+        if (!row) return fail(404, 'Report not found');
+        await sql`DELETE FROM reports WHERE id = ${id}`;
+        return ok({ success: true, deleted: id, prospect: row.prospect_name });
+      }
+
+      case 'shareLink': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const [row] = await sql`SELECT id FROM reports WHERE id = ${id}`;
+        if (!row) return fail(404, 'Report not found');
+        const url = `${siteBase(event)}/share.html?id=${id}&t=${shareSig(id)}`;
+        return ok({ url });
       }
 
       case 'deletePerformance': {

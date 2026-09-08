@@ -490,14 +490,22 @@ function demoScouts(){
   ];
 }
 
-/* Recruiting sites. Deep search URLs prefilled with the player name.
+/* Recruiting sites. Each site's own search box is site-wide and floods
+   results with forum threads, so these go through a Google search
+   scoped to the site's player-profile path only. Profile paths:
+     247Sports  247sports.com/player/<name-id>
+     On3        on3.com/db/<name-id>   (Rivals merged into On3 in 2025;
+                Rivals-branded profiles live at on3.com/rivals/<name-id>)
+     MaxPreps   maxpreps.com/<state>/<city>/<school>/athletes/<name>
    These are search links, not scrapes: nothing is pulled into this page.
-   If a site changes its search path, edit the url function here. */
+   If a site changes its profile path, edit the path here. */
+const profileSearch = (path, n) =>
+  'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
 const RECRUIT_SITES = [
-  { id:'247',      name:'247Sports', url:n => `https://247sports.com/Search/?query=${encodeURIComponent(n)}` },
-  { id:'on3',      name:'On3',       url:n => `https://www.on3.com/search/?q=${encodeURIComponent(n)}` },
-  { id:'rivals',   name:'Rivals',    url:n => `https://www.rivals.com/search?q=${encodeURIComponent(n)}` },
-  { id:'maxpreps', name:'MaxPreps',  url:n => `https://www.maxpreps.com/search/?q=${encodeURIComponent(n)}` }
+  { id:'247',      name:'247Sports', url:n => profileSearch('247sports.com/player/', n) },
+  { id:'on3',      name:'On3',       url:n => profileSearch('on3.com/db/', n) },
+  { id:'rivals',   name:'Rivals',    url:n => profileSearch('on3.com/rivals/', n) },
+  { id:'maxpreps', name:'MaxPreps',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') }
 ];
 
 let TOKEN = null;
@@ -698,6 +706,12 @@ function switchTab(t){
 
 /* ---------------- HELPERS ---------------- */
 function initials(n){ return (n||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase(); }
+/* Prospect photo first (prospects.headshot_key), legacy report-time headshot second. */
+function reportPhotoUrl(r){
+  if(r.headshot_key) return '/.netlify/functions/frame?key=' + encodeURIComponent(r.headshot_key);
+  if(r.has_headshot) return '/.netlify/functions/frame?key=headshot_' + r.id;
+  return null;
+}
 function fmtDate(d){ if(!d) return ''; const x=new Date(d); return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function scoutName(id){ const s = SCOUT_ROSTER.find(s=>s.id===id); return s ? s.name : (id||'Unassigned'); }
 function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -1832,7 +1846,7 @@ function renderReports(){
   el.innerHTML = list.map(r=>`
     <div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar">${r.has_headshot?`<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
+        <div class="rc-avatar">${reportPhotoUrl(r)?`<img src="${reportPhotoUrl(r)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(r.prospect)}</div>
           <div class="rc-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'—')} &middot; Class of ${esc(r.class_year||'—')}</div>
@@ -1845,7 +1859,101 @@ function renderReports(){
         </div>
       </div>
       ${railHTML(r.prospect, '')}
+      <div class="rail" style="border-top:none; padding-top:2px;">
+        <span class="rail-lbl">Manage</span>
+        <button type="button" class="mini-btn" onclick="shareReport(${r.id})">Share link</button>
+        ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'headshot')">Headshot</button>
+        <button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'wingspan')">Wingspan</button>` : ''}
+        <a class="mini-btn" href="report.html?reportId=${r.id}&position=${encodeURIComponent(r.position||'')}" target="_blank" rel="noopener">Open / Edit</a>
+        <button type="button" class="mini-btn danger" onclick="deleteReport(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">Delete</button>
+        <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
+      </div>
     </div>`).join('');
+}
+
+/* ---------------- REPORT ADMIN ACTIONS ---------------- */
+function repStatus(id, msg){ const el = document.getElementById('repStatus-' + id); if(el) el.textContent = msg || ''; }
+
+async function shareReport(id){
+  if(demoMode){ toast('Demo mode: nothing to share'); return; }
+  try{
+    repStatus(id, 'Creating link...');
+    const data = await api('shareLink', { id });
+    let copied = false;
+    try{ await navigator.clipboard.writeText(data.url); copied = true; }catch(e){}
+    repStatus(id, copied ? 'Link copied' : data.url);
+    if(!copied) prompt('Copy this share link:', data.url);
+    else toast('Share link copied');
+  }catch(err){ repStatus(id, ''); toast(err.message); }
+}
+
+async function deleteReport(id, name){
+  if(demoMode){ toast('Demo mode: nothing deleted'); return; }
+  if(!confirm(`Delete the report on ${name}? This cannot be undone.`)) return;
+  try{
+    await api('deleteReport', { id });
+    reports = reports.filter(r => r.id !== id);
+    renderReports();
+    if(typeof renderStats === 'function') renderStats();
+    toast('Report deleted');
+  }catch(err){ toast(err.message); }
+}
+
+/* Photo upload for any prospect, authenticated with the admin token.
+   Same endpoint and same resize-before-send as the scout dashboard. */
+let _photoTarget = null;
+function adminPhoto(prospectId, kind){
+  if(demoMode){ toast('Demo mode: uploads disabled'); return; }
+  _photoTarget = { prospectId, kind };
+  let input = document.getElementById('adminPhotoFile');
+  if(!input){
+    input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.id = 'adminPhotoFile'; input.style.display = 'none';
+    input.onchange = () => { if(input.files && input.files[0]) uploadAdminPhoto(input.files[0]); input.value = ''; };
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+function resizeImage(file, maxDim){
+  return new Promise(resolve => {
+    try{
+      const img = new Image(); const url = URL.createObjectURL(file);
+      img.onload = () => {
+        try{
+          let w = img.width, h = img.height;
+          if(Math.max(w,h) > maxDim){ const k = maxDim/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve({ base64: c.toDataURL('image/jpeg', 0.86).split(',')[1], contentType: 'image/jpeg' });
+        }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    }catch(e){ resolve(null); }
+  });
+}
+async function uploadAdminPhoto(file){
+  const t = _photoTarget; if(!t) return;
+  toast('Uploading ' + t.kind + '...');
+  let img = await resizeImage(file, 1200);
+  if(!img){
+    img = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res({ base64: String(r.result).split(',')[1], contentType: file.type || 'image/jpeg' }); r.onerror = rej; r.readAsDataURL(file); });
+  }
+  let wingspan;
+  if(t.kind === 'wingspan'){ wingspan = (prompt('Wingspan measurement (optional, e.g. 78.5")') || '').trim() || undefined; }
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: t.prospectId, kind: t.kind, dataBase64: img.base64, contentType: img.contentType, wingspan })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Upload failed');
+    reports.forEach(r => { if(r.prospect_id === t.prospectId){ if(t.kind === 'headshot') r.headshot_key = data.key; else { r.wingspan_key = data.key; if(wingspan) r.wingspan = wingspan; } } });
+    renderReports();
+    toast(t.kind === 'headshot' ? 'Headshot saved' : 'Wingspan photo saved');
+  }catch(err){ toast(err.message); }
 }
 
 /* ---------------- PERFORMANCE ---------------- */

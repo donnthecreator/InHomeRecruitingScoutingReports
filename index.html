@@ -523,7 +523,8 @@
       <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body" id="mBody"></div>
-    <div class="modal-foot">
+    <div class="modal-foot" style="display:flex; flex-direction:column; gap:8px;">
+      <a class="modal-open-btn" id="mEditBtn" href="#" style="border-color:var(--red);">Edit This Report</a>
       <a class="modal-open-btn" id="mOpenBtn" href="#">Open Full Report</a>
     </div>
   </div>
@@ -1137,6 +1138,15 @@ function tierColor(tier){
   return 'var(--warn)';
 }
 
+/* Photo for a report card. list-reports now returns headshotUrl (prospect
+   photo first, legacy report-time headshot second). Older cached payloads
+   without it fall back to the legacy key. */
+function reportPhoto(r){
+  if(r.headshotUrl) return r.headshotUrl;
+  if(r.headshotKey) return '/.netlify/functions/frame?key=' + encodeURIComponent(r.headshotKey);
+  if(r.hasHeadshot) return '/.netlify/functions/frame?key=headshot_' + r.id;
+  return null;
+}
 function renderReports(){
   const q = (document.getElementById('reportSearch').value||'').trim().toLowerCase();
   let list = reports.filter(r=>{
@@ -1157,7 +1167,7 @@ function renderReports(){
     + list.map(r => `
     <button type="button" class="p-card" onclick='openReportModal(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="p-avatar">
-        ${r.hasHeadshot ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">` : initials(r.prospect)}
+        ${reportPhoto(r) ? `<img src="${reportPhoto(r)}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">` : initials(r.prospect)}
       </div>
       <div class="p-mid">
         <div class="p-name">${r.prospect||'Unnamed Prospect'}</div>
@@ -1216,8 +1226,8 @@ function scoutLink(t){
 
 /* ---------------- REPORT DETAIL MODAL ---------------- */
 function openReportModal(r){
-  document.getElementById('mAvatar').innerHTML = r.hasHeadshot
-    ? `<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">`
+  document.getElementById('mAvatar').innerHTML = reportPhoto(r)
+    ? `<img src="${reportPhoto(r)}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(r.prospect)}';">`
     : initials(r.prospect);
   document.getElementById('mName').textContent = r.prospect || 'Unnamed Prospect';
   document.getElementById('mSub').textContent = `${r.positionLabel||r.position||''} \u00b7 ${r.school||'—'} \u00b7 Class of ${r.classYear||'—'}`;
@@ -1234,9 +1244,18 @@ function openReportModal(r){
     </div>
     ${r.narrative ? `<div class="m-narrative">${String(r.narrative).replace(/</g,'&lt;')}</div>` : ''}
   `;
+  document.getElementById('mEditBtn').href = editLink(r);
   document.getElementById('mOpenBtn').href = followUpLink(r);
   document.getElementById('mOpenBtn').textContent = 'File Follow-Up Report';
   document.getElementById('reportModal').classList.add('on');
+}
+/* Reopens the form with every field of this report loaded; submitting
+   updates the same row instead of filing a new one. */
+function editLink(r){
+  const params = new URLSearchParams();
+  params.set('reportId', r.id);
+  if(r.position) params.set('position', r.position);
+  return 'report.html?' + params.toString();
 }
 function followUpLink(r){
   const params = new URLSearchParams();

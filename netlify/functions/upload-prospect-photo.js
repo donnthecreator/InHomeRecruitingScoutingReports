@@ -20,6 +20,7 @@
 
    ENV: DATABASE_URL
 ===================================================================== */
+const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 const { getStore } = require('@netlify/blobs');
 const sql = neon(process.env.DATABASE_URL);
@@ -29,6 +30,21 @@ const fail = (code, msg) => ({ statusCode: code, headers: JSON_HEADERS, body: JS
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 4 * 1024 * 1024;
+
+/* Same token check as admin-data.js. Lets the admin panel upload photos
+   for any prospect without holding a scout access code. */
+function verifyAdmin(event) {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  const header = event.headers.authorization || event.headers.Authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  const [expiresStr, sig] = token.split('.');
+  if (!expiresStr || !sig) return false;
+  if (!Number(expiresStr) || Date.now() > Number(expiresStr)) return false;
+  const expected = crypto.createHmac('sha256', secret).update(expiresStr).digest('hex');
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
 async function resolveScout(accessCode) {
   if (!accessCode || !String(accessCode).trim()) return null;
@@ -54,7 +70,8 @@ exports.handler = async (event) => {
     return fail(400, 'kind must be headshot, wingspan, or measure');
   }
 
-  const scout = await resolveScout(payload.accessCode);
+  let scout = await resolveScout(payload.accessCode);
+  if (!scout && verifyAdmin(event)) scout = { scout_id: 'admin', name: 'Admin' };
   if (!scout) return fail(401, 'Invalid access code');
 
   try {

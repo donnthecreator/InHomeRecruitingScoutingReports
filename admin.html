@@ -698,6 +698,12 @@ function switchTab(t){
 
 /* ---------------- HELPERS ---------------- */
 function initials(n){ return (n||'?').split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase(); }
+/* Prospect photo first (prospects.headshot_key), legacy report-time headshot second. */
+function reportPhotoUrl(r){
+  if(r.headshot_key) return '/.netlify/functions/frame?key=' + encodeURIComponent(r.headshot_key);
+  if(r.has_headshot) return '/.netlify/functions/frame?key=headshot_' + r.id;
+  return null;
+}
 function fmtDate(d){ if(!d) return ''; const x=new Date(d); return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
 function scoutName(id){ const s = SCOUT_ROSTER.find(s=>s.id===id); return s ? s.name : (id||'Unassigned'); }
 function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -1832,7 +1838,7 @@ function renderReports(){
   el.innerHTML = list.map(r=>`
     <div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar">${r.has_headshot?`<img src="/.netlify/functions/frame?key=headshot_${r.id}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
+        <div class="rc-avatar">${reportPhotoUrl(r)?`<img src="${reportPhotoUrl(r)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(r.prospect)}</div>
           <div class="rc-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'—')} &middot; Class of ${esc(r.class_year||'—')}</div>

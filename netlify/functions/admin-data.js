@@ -139,12 +139,14 @@ exports.handler = async (event) => {
         let reports = [];
         try {
           reports = await sql`
-            SELECT id, prospect_name AS prospect, position, position_label, school, class_year,
-                   home_city, home_state, latitude, longitude,
-                   inhome_score, recommendation_tier,
-                   scout_id, scout_name, date_evaluated, created_at, has_headshot
-            FROM reports
-            ORDER BY COALESCE(date_evaluated::timestamptz, created_at) DESC
+            SELECT r.id, r.prospect_name AS prospect, r.position, r.position_label, r.school, r.class_year,
+                   r.home_city, r.home_state, r.latitude, r.longitude,
+                   r.inhome_score, r.recommendation_tier,
+                   r.scout_id, r.scout_name, r.date_evaluated, r.created_at, r.has_headshot,
+                   r.prospect_id, p.headshot_key, p.wingspan_key, p.wingspan
+            FROM reports r
+            LEFT JOIN prospects p ON p.id = r.prospect_id
+            ORDER BY COALESCE(r.date_evaluated::timestamptz, r.created_at) DESC
             LIMIT 500`;
         } catch (e) {
           console.error('reports query failed, check column names:', e.message);

@@ -1859,7 +1859,101 @@ function renderReports(){
         </div>
       </div>
       ${railHTML(r.prospect, '')}
+      <div class="rail" style="border-top:none; padding-top:2px;">
+        <span class="rail-lbl">Manage</span>
+        <button type="button" class="mini-btn" onclick="shareReport(${r.id})">Share link</button>
+        ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'headshot')">Headshot</button>
+        <button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'wingspan')">Wingspan</button>` : ''}
+        <a class="mini-btn" href="report.html?reportId=${r.id}&position=${encodeURIComponent(r.position||'')}" target="_blank" rel="noopener">Open / Edit</a>
+        <button type="button" class="mini-btn danger" onclick="deleteReport(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">Delete</button>
+        <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
+      </div>
     </div>`).join('');
+}
+
+/* ---------------- REPORT ADMIN ACTIONS ---------------- */
+function repStatus(id, msg){ const el = document.getElementById('repStatus-' + id); if(el) el.textContent = msg || ''; }
+
+async function shareReport(id){
+  if(demoMode){ toast('Demo mode: nothing to share'); return; }
+  try{
+    repStatus(id, 'Creating link...');
+    const data = await api('shareLink', { id });
+    let copied = false;
+    try{ await navigator.clipboard.writeText(data.url); copied = true; }catch(e){}
+    repStatus(id, copied ? 'Link copied' : data.url);
+    if(!copied) prompt('Copy this share link:', data.url);
+    else toast('Share link copied');
+  }catch(err){ repStatus(id, ''); toast(err.message); }
+}
+
+async function deleteReport(id, name){
+  if(demoMode){ toast('Demo mode: nothing deleted'); return; }
+  if(!confirm(`Delete the report on ${name}? This cannot be undone.`)) return;
+  try{
+    await api('deleteReport', { id });
+    reports = reports.filter(r => r.id !== id);
+    renderReports();
+    if(typeof renderStats === 'function') renderStats();
+    toast('Report deleted');
+  }catch(err){ toast(err.message); }
+}
+
+/* Photo upload for any prospect, authenticated with the admin token.
+   Same endpoint and same resize-before-send as the scout dashboard. */
+let _photoTarget = null;
+function adminPhoto(prospectId, kind){
+  if(demoMode){ toast('Demo mode: uploads disabled'); return; }
+  _photoTarget = { prospectId, kind };
+  let input = document.getElementById('adminPhotoFile');
+  if(!input){
+    input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*'; input.id = 'adminPhotoFile'; input.style.display = 'none';
+    input.onchange = () => { if(input.files && input.files[0]) uploadAdminPhoto(input.files[0]); input.value = ''; };
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+function resizeImage(file, maxDim){
+  return new Promise(resolve => {
+    try{
+      const img = new Image(); const url = URL.createObjectURL(file);
+      img.onload = () => {
+        try{
+          let w = img.width, h = img.height;
+          if(Math.max(w,h) > maxDim){ const k = maxDim/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve({ base64: c.toDataURL('image/jpeg', 0.86).split(',')[1], contentType: 'image/jpeg' });
+        }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    }catch(e){ resolve(null); }
+  });
+}
+async function uploadAdminPhoto(file){
+  const t = _photoTarget; if(!t) return;
+  toast('Uploading ' + t.kind + '...');
+  let img = await resizeImage(file, 1200);
+  if(!img){
+    img = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res({ base64: String(r.result).split(',')[1], contentType: file.type || 'image/jpeg' }); r.onerror = rej; r.readAsDataURL(file); });
+  }
+  let wingspan;
+  if(t.kind === 'wingspan'){ wingspan = (prompt('Wingspan measurement (optional, e.g. 78.5")') || '').trim() || undefined; }
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: t.prospectId, kind: t.kind, dataBase64: img.base64, contentType: img.contentType, wingspan })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Upload failed');
+    reports.forEach(r => { if(r.prospect_id === t.prospectId){ if(t.kind === 'headshot') r.headshot_key = data.key; else { r.wingspan_key = data.key; if(wingspan) r.wingspan = wingspan; } } });
+    renderReports();
+    toast(t.kind === 'headshot' ? 'Headshot saved' : 'Wingspan photo saved');
+  }catch(err){ toast(err.message); }
 }
 
 /* ---------------- PERFORMANCE ---------------- */

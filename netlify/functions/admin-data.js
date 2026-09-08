@@ -76,6 +76,19 @@ function verifyToken(event) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+/* Share links are signed with ADMIN_SECRET so a coach can open one
+   report without the link being guessable. share-report.js checks the
+   same signature. Keep this function in sync with that file. */
+function shareSig(reportId) {
+  return crypto.createHmac('sha256', process.env.ADMIN_SECRET).update('share:' + reportId).digest('hex').slice(0, 24);
+}
+function siteBase(event) {
+  const h = event.headers || {};
+  const host = h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com';
+  const proto = h['x-forwarded-proto'] || 'https';
+  return `${proto}://${host}`;
+}
+
 const ok   = (body) => ({ statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 const fail = (code, error) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) });
 
@@ -198,6 +211,24 @@ exports.handler = async (event) => {
              ${stat_line || null}, ${source_link || null}, ${performance_date || null})
           RETURNING *`;
         return ok({ performance: rows[0] });
+      }
+
+      case 'deleteReport': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const [row] = await sql`SELECT id, prospect_name FROM reports WHERE id = ${id}`;
+        if (!row) return fail(404, 'Report not found');
+        await sql`DELETE FROM reports WHERE id = ${id}`;
+        return ok({ success: true, deleted: id, prospect: row.prospect_name });
+      }
+
+      case 'shareLink': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const [row] = await sql`SELECT id FROM reports WHERE id = ${id}`;
+        if (!row) return fail(404, 'Report not found');
+        const url = `${siteBase(event)}/share.html?id=${id}&t=${shareSig(id)}`;
+        return ok({ url });
       }
 
       case 'deletePerformance': {

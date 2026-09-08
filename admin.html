@@ -490,14 +490,22 @@ function demoScouts(){
   ];
 }
 
-/* Recruiting sites. Deep search URLs prefilled with the player name.
+/* Recruiting sites. Each site's own search box is site-wide and floods
+   results with forum threads, so these go through a Google search
+   scoped to the site's player-profile path only. Profile paths:
+     247Sports  247sports.com/player/<name-id>
+     On3        on3.com/db/<name-id>   (Rivals merged into On3 in 2025;
+                Rivals-branded profiles live at on3.com/rivals/<name-id>)
+     MaxPreps   maxpreps.com/<state>/<city>/<school>/athletes/<name>
    These are search links, not scrapes: nothing is pulled into this page.
-   If a site changes its search path, edit the url function here. */
+   If a site changes its profile path, edit the path here. */
+const profileSearch = (path, n) =>
+  'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
 const RECRUIT_SITES = [
-  { id:'247',      name:'247Sports', url:n => `https://247sports.com/Search/?query=${encodeURIComponent(n)}` },
-  { id:'on3',      name:'On3',       url:n => `https://www.on3.com/search/?q=${encodeURIComponent(n)}` },
-  { id:'rivals',   name:'Rivals',    url:n => `https://www.rivals.com/search?q=${encodeURIComponent(n)}` },
-  { id:'maxpreps', name:'MaxPreps',  url:n => `https://www.maxpreps.com/search/?q=${encodeURIComponent(n)}` }
+  { id:'247',      name:'247Sports', url:n => profileSearch('247sports.com/player/', n) },
+  { id:'on3',      name:'On3',       url:n => profileSearch('on3.com/db/', n) },
+  { id:'rivals',   name:'Rivals',    url:n => profileSearch('on3.com/rivals/', n) },
+  { id:'maxpreps', name:'MaxPreps',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') }
 ];
 
 let TOKEN = null;

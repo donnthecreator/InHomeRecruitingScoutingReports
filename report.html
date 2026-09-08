@@ -1582,6 +1582,7 @@ async function submitReport(){
   btn.textContent = 'Submitting...';
 
   const payload = {
+    reportId: state.editingReportId || null,
     prospect: gv('fProspect'),
     position: state.position,
     positionLabel: POSITIONS[state.position].label,
@@ -1640,8 +1641,8 @@ async function submitReport(){
     const data = await res.json();
 
     if(res.ok && data.success){
-      showToast('Saved to database \u2014 report #' + data.reportId);
-      btn.textContent = 'Submitted \u2713';
+      showToast((data.updated ? 'Report updated \u2014 #' : 'Saved to database \u2014 report #') + data.reportId);
+      btn.textContent = data.updated ? 'Updated \u2713' : 'Submitted \u2713';
       /* Frames and headshot upload separately and only after the report
          is safely saved. If either fails, the report is already in
          the database. */
@@ -2288,6 +2289,123 @@ initPosSelect();
 loadPosition(state.position);
 if(!REQUIRE_SCOUT_CODE){ document.getElementById('gate').classList.add('hide'); }
 prefillFromURL();
+loadReportForEdit();
+
+/* =====================================================================
+   EDIT MODE
+   ?reportId=N reloads a filed report into the form. Every value goes
+   through the same setter the scout would click, so the UI and state
+   stay in sync and the score recomputes from the stored grades. Submit
+   then sends reportId and submit-report updates the row in place.
+   Anything that fails to load just leaves that field blank.
+===================================================================== */
+function setVal(id, v){ const el = document.getElementById(id); if(el && v != null && v !== '') el.value = v; }
+async function loadReportForEdit(){
+  const id = parseInt(new URLSearchParams(window.location.search).get('reportId'), 10);
+  if(!id) return;
+  let r;
+  try{
+    const res = await fetch('/.netlify/functions/list-reports?id=' + id);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    r = Array.isArray(data) ? data[0] : data;
+    if(!r) throw new Error('not found');
+  }catch(err){
+    showToast('Could not load report #' + id + ' for editing');
+    return;
+  }
+
+  /* Position drives which traits exist, so it must load first. */
+  const pos = (r.position || '').toUpperCase();
+  if(pos && POSITIONS[pos] && pos !== state.position) loadPosition(pos);
+
+  state.editingReportId = r.id;
+
+  setVal('fProspect', r.prospect);
+  setVal('fSchool', r.school);
+  setVal('fClass', r.classYear);
+  setVal('fHomeCity', r.homeCity);
+  setVal('fHomeState', r.homeState);
+  setVal('fHeight', r.height);
+  setVal('fWeight', r.weight);
+  setVal('fFilm', r.filmLink);
+  setVal('fCamp', r.evalCamp);
+  setVal('fDate', r.dateEvaluated);
+  setVal('fNarrative', r.narrative);
+  if(!SCOUT) setVal('fScout', r.scoutName);
+
+  if(r.archetype) try{ pickArche(r.archetype); }catch(e){}
+
+  const raw = r.raw || {};
+  const grades = [['film', raw.traitGrades], ['athletic', raw.athleticGrades], ['production', raw.productionGrades]];
+  grades.forEach(([group, obj]) => {
+    Object.entries(obj || {}).forEach(([tid, val]) => {
+      const n = parseInt(val, 10);
+      if(n >= 1 && n <= 5 && document.getElementById(`row-${group}-${tid}`)) setGrade(group, tid, n);
+    });
+  });
+  const raws = [['athletic', raw.athleticRaw], ['production', raw.productionRaw]];
+  raws.forEach(([group, obj]) => {
+    Object.entries(obj || {}).forEach(([tid, val]) => {
+      const row = document.getElementById(`row-${group}-${tid}`);
+      const input = row && row.parentElement.querySelector('.raw-metric input');
+      if(input && val != null){ input.value = val; setRaw(group, tid, String(val)); }
+    });
+  });
+  Object.entries(raw.gates || {}).forEach(([gid, val]) => {
+    if(['pass','concern','fail'].includes(val) && document.getElementById(`gate-${gid}`)) setGate(gid, val);
+  });
+
+  const iq = parseInt(r.footballIQ, 10);
+  if(iq >= 1 && iq <= 10){ setVal('iqSlider', iq); onIQ(iq); }
+
+  if(r.recommendationTier){
+    const tb = document.querySelector(`.tier-btn[data-tier="${r.recommendationTier}"]`);
+    if(tb){ state.tier = r.recommendationTier; document.querySelectorAll('.tier-btn').forEach(b=>b.classList.toggle('sel', b===tb)); }
+  }
+
+  const trk = raw.track || {};
+  Object.entries(trk.events || {}).forEach(([eid, val]) => { setVal('trk-' + eid, val); setTrack(eid, String(val)); });
+  if(trk.source){ setVal('trkSource', trk.source); setTrackSource(trk.source); }
+  if(trk.season){ setVal('trkSeason', trk.season); setTrackSeason(trk.season); }
+
+  const iv = raw.interview || {};
+  if(iv.learnStyle) try{ pickLearn(iv.learnStyle); }catch(e){}
+  const ig = parseInt(iv.impression, 10);
+  if(ig >= 1 && ig <= 5) setIntGrade(ig);
+  const tas = document.querySelectorAll('#interviewQs textarea');
+  INTERVIEW_QS.forEach((q, i) => {
+    const a = (iv.answers || {})[q.id];
+    if(a && tas[i]){ tas[i].value = a; setInterview(q.id, a); }
+  });
+
+  (raw.recommendedPrograms || []).forEach(rp => {
+    const prog = PROGRAMS.find(x => x.n === rp.program);
+    if(prog && !state.recs[prog.n]){
+      state.recs[prog.n] = { conf:prog.c, state:prog.s, primary:prog.p, secondary:prog.x, espnId:prog.i||null, fit:rp.fit||'' };
+    }
+  });
+  if(typeof recDraw === 'function'){ recDraw(); recPicked(); }
+
+  if(Array.isArray(raw.eisReps) && raw.eisReps.length){
+    state.eisReps = raw.eisReps.slice();
+    if(typeof feRender === 'function') feRender();
+  }
+
+  /* Existing photo shows as a preview; a new upload replaces it. */
+  if(r.headshotUrl){
+    const img = document.getElementById('headshotImg');
+    const wrap = document.getElementById('headshotPreview');
+    const icon = document.getElementById('headshotIcon');
+    if(img && wrap){ img.src = r.headshotUrl; img.style.display = 'block'; if(icon) icon.style.display = 'none'; wrap.classList.add('has-photo'); }
+  }
+
+  computeScores();
+  updateStatus();
+  document.getElementById('submitBtn').textContent = 'Update Report';
+  document.title = 'InHome | Edit Report #' + r.id;
+  showToast('Editing report #' + r.id);
+}
 
 /* Pre-fills the prospect name / school / class year when arriving from
    the Scout Home "Unscouted Players" list or a follow-up report link.

@@ -523,7 +523,8 @@
       <button type="button" class="modal-close" onclick="closeModal()">&times;</button>
     </div>
     <div class="modal-body" id="mBody"></div>
-    <div class="modal-foot">
+    <div class="modal-foot" style="display:flex; flex-direction:column; gap:8px;">
+      <a class="modal-open-btn" id="mEditBtn" href="#" style="border-color:var(--red);">Edit This Report</a>
       <a class="modal-open-btn" id="mOpenBtn" href="#">Open Full Report</a>
     </div>
   </div>
@@ -1243,9 +1244,18 @@ function openReportModal(r){
     </div>
     ${r.narrative ? `<div class="m-narrative">${String(r.narrative).replace(/</g,'&lt;')}</div>` : ''}
   `;
+  document.getElementById('mEditBtn').href = editLink(r);
   document.getElementById('mOpenBtn').href = followUpLink(r);
   document.getElementById('mOpenBtn').textContent = 'File Follow-Up Report';
   document.getElementById('reportModal').classList.add('on');
+}
+/* Reopens the form with every field of this report loaded; submitting
+   updates the same row instead of filing a new one. */
+function editLink(r){
+  const params = new URLSearchParams();
+  params.set('reportId', r.id);
+  if(r.position) params.set('position', r.position);
+  return 'report.html?' + params.toString();
 }
 function followUpLink(r){
   const params = new URLSearchParams();

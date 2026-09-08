@@ -122,6 +122,45 @@ exports.handler = async (event) => {
   }
 
   try {
+    /* ---------- EDIT: update an existing report in place ---------- */
+    const editId = parseInt(payload.reportId, 10) || null;
+    if (editId) {
+      const [existing] = await sql`SELECT id, scout_id, prospect_id, has_headshot FROM reports WHERE id = ${editId}`;
+      if (!existing) return fail(404, 'Report not found');
+      /* Only the filing scout can edit. With auth on, scoutId is trusted
+         from the DB; with it off, the browser-supplied id must still match. */
+      if (existing.scout_id && scoutId && existing.scout_id !== scoutId) {
+        return fail(403, 'This report belongs to another scout');
+      }
+      let prospectId = existing.prospect_id;
+      if (!prospectId) {
+        const pr = await findOrCreateProspect(payload);
+        prospectId = pr ? pr.id : null;
+      }
+      await sql`
+        UPDATE reports SET
+          prospect_id = ${prospectId},
+          prospect_name = ${payload.prospect}, position = ${payload.position || null},
+          position_label = ${payload.positionLabel || null}, archetype = ${payload.archetype || null},
+          class_year = ${payload.classYear || null}, school = ${payload.school || null},
+          home_city = ${payload.homeCity || null}, home_state = ${payload.homeState || null},
+          height = ${payload.height || null}, weight = ${payload.weight || null},
+          film_link = ${payload.filmLink || null}, eval_camp = ${payload.evalCamp || null},
+          scout_role = ${payload.scoutRole || null}, scout_region = ${payload.scoutRegion || null},
+          date_evaluated = ${payload.dateEvaluated || null},
+          football_iq = ${payload.footballIQ || null}, narrative = ${payload.narrative || null},
+          has_headshot = ${!!payload.hasHeadshot || !!existing.has_headshot},
+          recommendation_tier = ${payload.recommendationTier || null},
+          inhome_score = ${toNumeric(payload.inhomeScore)},
+          raw = ${JSON.stringify(payload.raw || {})}
+        WHERE id = ${editId}`;
+      return {
+        statusCode: 200,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ success: true, reportId: editId, prospectId, updated: true })
+      };
+    }
+
     const prospectRow = await findOrCreateProspect(payload);
     const prospectId  = prospectRow ? prospectRow.id : null;
 

@@ -12,10 +12,27 @@ function siteBase(event){
 const frameUrl = (base, key) => key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(key)}` : null;
 
 exports.handler = async (event) => {
-  const scoutId = (event.queryStringParameters || {}).scoutId;
+  const qs = event.queryStringParameters || {};
+  const scoutId = qs.scoutId;
+  const reportId = parseInt(qs.id, 10) || null;
   const base = siteBase(event);
   try {
-    const rows = scoutId
+    const rows = reportId
+      ? await sql`
+          SELECT r.id, r.prospect_name, r.position, r.position_label, r.archetype, r.class_year, r.school,
+                 r.home_city, r.home_state, r.latitude, r.longitude,
+                 r.height, r.weight, r.film_link, r.eval_camp,
+                 r.scout_name, r.scout_id, r.scout_role, r.scout_region, r.date_evaluated,
+                 r.football_iq, r.narrative, r.has_headshot, r.recommendation_tier, r.inhome_score,
+                 r.raw, r.track, r.film_grades, r.athletic_grades, r.athletic_raw,
+                 r.production_grades, r.production_raw, r.gates, r.interview_data,
+                 r.created_at, r.prospect_id,
+                 p.headshot_key, p.wingspan_key, p.wingspan
+          FROM reports r
+          LEFT JOIN prospects p ON p.id = r.prospect_id
+          WHERE r.id = ${reportId}
+          LIMIT 1`
+      : scoutId
       ? await sql`
           SELECT r.id, r.prospect_name, r.position, r.position_label, r.archetype, r.class_year, r.school,
                  r.home_city, r.home_state, r.latitude, r.longitude,

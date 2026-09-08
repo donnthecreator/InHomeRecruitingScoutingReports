@@ -465,6 +465,52 @@
     padding:13px; font-family:'Anton',sans-serif; font-weight:400; font-size:14.5px; letter-spacing:.04em;
     text-transform:uppercase; cursor:pointer;}
   .ca-save:disabled{opacity:.5;}
+
+  /* =====================================================================
+     MINIMAL SKIN (Sept 2026)
+     One selection state everywhere: white fill, black text. No traffic
+     light grade colors, no red tints on picked cards. Red is reserved for
+     the InHome Score, the logo, and the submit button. Delete this block
+     to return to the previous look; nothing in the JS depends on it.
+  ===================================================================== */
+  .step-num{background:transparent; border:1.5px solid var(--line); color:var(--mute);}
+  .badge{background:transparent; border:1px solid var(--line); color:var(--mute);}
+  .eis-tag{color:var(--dim);}
+
+  .arche-btn{background:transparent;}
+  .arche-btn.sel{border-color:var(--ink); background:var(--ink);}
+  .arche-btn.sel b{color:#000;}
+  .arche-btn.sel span{color:#444;}
+  .arche-desc{border-left-color:var(--line); background:transparent; padding-left:10px;}
+
+  .trait-card{background:transparent;}
+  .grade-btn{background:transparent; border-color:var(--line); color:var(--dim);}
+  .grade-btn:hover{border-color:var(--mute);}
+  .grade-btn.g1.sel, .grade-btn.g2.sel, .grade-btn.g3.sel, .grade-btn.g4.sel, .grade-btn.g5.sel{
+    background:var(--ink); border-color:var(--ink); color:#000;}
+  .grade-btn.sel small{color:#333;}
+
+  .gate-row{background:transparent;}
+  .gate-btn{background:transparent;}
+  .gate-btn.pass.sel, .gate-btn.concern.sel, .gate-btn.fail.sel{background:var(--ink); border-color:var(--ink); color:#000;}
+  .gate-btn.fail.sel{text-decoration:underline; text-decoration-color:var(--red); text-underline-offset:3px;}
+
+  .trk-key{background:transparent; border:1px solid var(--line); color:var(--mute);}
+  .trk-more{color:var(--mute);}
+  .iq-value{color:var(--ink);}
+  input[type=range]{accent-color:var(--ink);}
+
+  .tier-btn{background:transparent;}
+  .tier-btn.sel{border-color:var(--ink); background:var(--ink);}
+  .tier-btn.sel b{color:#000;}
+  .tier-btn.sel span{color:#444;}
+
+  .rec-card.on{border-color:var(--ink); background:transparent; box-shadow:inset 0 0 0 1px var(--ink);}
+  .fe-rep .pill.w{border-color:var(--mute); color:var(--ink);}
+  .fe-rep .pill.l{border-color:var(--line); color:var(--mute);}
+  .headshot-preview.has-photo{border-color:var(--line);}
+  .headshot-btn:hover{border-color:var(--mute);}
+  input[type=text]:focus, input[type=number]:focus, textarea:focus{border-color:var(--mute);}
 </style>
 </head>
 <body>

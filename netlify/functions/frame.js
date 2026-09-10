@@ -11,7 +11,7 @@
    relies on the browser's onerror to fall back to initials if it 404s.
 ===================================================================== */
 
-const { getStore } = require('@netlify/blobs');
+const { frameStore } = require('./lib/blobs');
 
 exports.handler = async (event) => {
   const key = (event.queryStringParameters || {}).key;
@@ -20,7 +20,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore('inhome-frames');
+    const store = frameStore();
     const result = await store.getWithMetadata(key, { type: 'arrayBuffer' });
 
     if (!result) {

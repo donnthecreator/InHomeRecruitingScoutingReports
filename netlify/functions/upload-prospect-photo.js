@@ -22,7 +22,7 @@
 ===================================================================== */
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
-const { getStore } = require('@netlify/blobs');
+const { frameStore } = require('./lib/blobs');
 const sql = neon(process.env.DATABASE_URL);
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
@@ -102,7 +102,7 @@ exports.handler = async (event) => {
     if (!buf.length) return fail(400, 'Empty image');
     if (buf.length > MAX_BYTES) return fail(413, 'Image too large — try again, the page should be resizing before upload');
 
-    const store = getStore('inhome-frames');
+    const store = frameStore();
     const key = `p${prospectId}_${kind}_${Date.now()}`;
     await store.set(key, buf, { metadata: { contentType } });
 

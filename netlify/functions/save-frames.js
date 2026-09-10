@@ -14,7 +14,7 @@
      npm install @netlify/blobs
 ===================================================================== */
 
-const { getStore } = require('@netlify/blobs');
+const { frameStore } = require('./lib/blobs');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -34,7 +34,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const store = getStore('inhome-frames');
+    const store = frameStore();
 
     for (const f of frames) {
       if (!f.key || !f.dataUrl) continue;

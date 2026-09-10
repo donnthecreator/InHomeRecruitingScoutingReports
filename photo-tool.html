@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome | Photo Tool</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0; background:#000; color:#F5F5F5; font-family:system-ui,-apple-system,sans-serif; padding:20px; max-width:620px; margin:0 auto;}
+  h1{font-size:20px; margin:0 0 4px;}
+  .sub{color:#888; font-size:13px; margin-bottom:20px;}
+  label{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#888; font-weight:700; margin:16px 0 6px;}
+  input,select,button{width:100%; padding:13px; border-radius:10px; border:1.5px solid #2A2A2A; background:#141414; color:#F5F5F5; font-size:16px; font-family:inherit;}
+  button{background:#F5F5F5; color:#000; font-weight:700; border-color:#F5F5F5; cursor:pointer; margin-top:16px;}
+  button:disabled{opacity:.5;}
+  button.ghost{background:transparent; color:#F5F5F5; border-color:#2A2A2A; font-weight:600;}
+  pre{background:#0D0D0D; border:1px solid #2A2A2A; border-radius:10px; padding:14px; font-size:12px; line-height:1.5;
+      white-space:pre-wrap; word-break:break-all; margin-top:16px; color:#CFCFCF; max-height:340px; overflow:auto;}
+  .ok{color:#35C759;} .bad{color:#FF5A5A;} .warn{color:#E0A419;}
+  .row{display:flex; gap:10px;} .row>*{flex:1;}
+  img#prev{width:100%; max-width:200px; border-radius:10px; border:1px solid #2A2A2A; margin-top:12px; display:none;}
+  .hide{display:none;}
+</style>
+</head>
+<body>
+
+<h1>Photo Tool</h1>
+<div class="sub">Standalone uploader. Bypasses the admin page. Prints everything.</div>
+
+<div id="loginBox">
+  <label>Admin code</label>
+  <input type="password" id="code" placeholder="Your admin code" autocomplete="off">
+  <button onclick="login()">Sign in</button>
+</div>
+
+<div id="mainBox" class="hide">
+  <label>Prospect</label>
+  <select id="prospect"><option>Loading...</option></select>
+
+  <label>Photo type</label>
+  <select id="kind">
+    <option value="headshot">Headshot</option>
+    <option value="wingspan">Wingspan</option>
+  </select>
+
+  <label>Image file</label>
+  <input type="file" id="file" accept="image/*">
+  <img id="prev" alt="">
+
+  <button id="goBtn" onclick="go()" disabled>Upload</button>
+  <div class="row" style="margin-top:10px;">
+    <button class="ghost" onclick="checkAll()">List all photos on file</button>
+  </div>
+</div>
+
+<pre id="log">Ready.</pre>
+
+<script>
+let TOKEN = null;
+const L = document.getElementById('log');
+function log(msg, cls){
+  const line = cls ? `<span class="${cls}">${msg}</span>` : msg;
+  L.innerHTML = line + "\n\n" + L.innerHTML;
+}
+function clearLog(){ L.innerHTML = ''; }
+
+async function login(){
+  const code = document.getElementById('code').value.trim();
+  if(!code){ log('Enter your admin code first.', 'bad'); return; }
+  clearLog();
+  log('Signing in...');
+  try{
+    const res = await fetch('/.netlify/functions/verify-admin', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code })
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){ log('Sign in failed. HTTP ' + res.status + ' — ' + (data.error||'no message'), 'bad'); return; }
+    TOKEN = data.token;
+    log('Signed in. Token expires ' + new Date(data.expires).toLocaleString(), 'ok');
+    document.getElementById('loginBox').classList.add('hide');
+    document.getElementById('mainBox').classList.remove('hide');
+    loadProspects();
+  }catch(err){ log('Sign in threw: ' + err.message, 'bad'); }
+}
+
+/* Reports carry prospectId, so the reports list doubles as a prospect list. */
+async function loadProspects(){
+  log('Loading prospects from list-reports...');
+  try{
+    const res = await fetch('/.netlify/functions/list-reports');
+    const data = await res.json();
+    if(!Array.isArray(data)){ log('list-reports did not return an array: ' + JSON.stringify(data).slice(0,300), 'bad'); return; }
+    log('Got ' + data.length + ' reports.', 'ok');
+    const seen = {};
+    data.forEach(r => { if(r.prospectId && !seen[r.prospectId]) seen[r.prospectId] = r; });
+    const ids = Object.keys(seen);
+    if(!ids.length){
+      log('None of the reports have a prospectId. Nothing to upload against.', 'bad');
+      document.getElementById('prospect').innerHTML = '<option value="">(none found)</option>';
+      return;
+    }
+    document.getElementById('prospect').innerHTML = ids.map(id => {
+      const r = seen[id];
+      const has = r.headshotUrl ? ' [has photo]' : '';
+      return `<option value="${id}">${r.prospect} — ${r.school||'?'} (id ${id})${has}</option>`;
+    }).join('');
+    log('Loaded ' + ids.length + ' distinct prospects.', 'ok');
+    document.getElementById('goBtn').disabled = false;
+  }catch(err){ log('loadProspects threw: ' + err.message, 'bad'); }
+}
+
+let PICKED = null;
+document.getElementById('file').addEventListener('change', async e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  clearLog();
+  log('File picked: ' + f.name + '\nType reported by browser: ' + (f.type || '(none)') + '\nSize: ' + Math.round(f.size/1024) + ' KB');
+  const out = await toJpeg(f, 1200);
+  if(!out){ log('Could not decode this image in the browser. If it is HEIC, take a screenshot of it and use that instead.', 'bad'); PICKED = null; return; }
+  PICKED = out;
+  log('Converted to JPEG. Payload size: ' + Math.round(out.base64.length*0.75/1024) + ' KB', 'ok');
+  const p = document.getElementById('prev');
+  p.src = 'data:image/jpeg;base64,' + out.base64; p.style.display = 'block';
+});
+
+function toJpeg(file, maxDim){
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try{
+        let w = img.width, h = img.height;
+        if(!w || !h){ URL.revokeObjectURL(url); return resolve(null); }
+        if(Math.max(w,h) > maxDim){ const k = maxDim/Math.max(w,h); w = Math.round(w*k); h = Math.round(h*k); }
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve({ base64: c.toDataURL('image/jpeg', 0.86).split(',')[1], contentType:'image/jpeg' });
+      }catch(e){ URL.revokeObjectURL(url); resolve(null); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+async function go(){
+  if(!PICKED){ log('Pick an image first.', 'bad'); return; }
+  const prospectId = parseInt(document.getElementById('prospect').value, 10);
+  const kind = document.getElementById('kind').value;
+  if(!prospectId){ log('No prospect selected.', 'bad'); return; }
+
+  log('POSTing to upload-prospect-photo...\nprospectId: ' + prospectId + '\nkind: ' + kind + '\ncontentType: image/jpeg');
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId, kind, dataBase64: PICKED.base64, contentType:'image/jpeg' })
+    });
+    const text = await res.text();
+    let data = {}; try{ data = JSON.parse(text); }catch(e){}
+    log('HTTP ' + res.status + '\nRaw response:\n' + text.slice(0, 800), res.ok ? 'ok' : 'bad');
+    if(res.ok && data.key){
+      const url = location.origin + '/.netlify/functions/frame?key=' + encodeURIComponent(data.key);
+      log('Saved key: ' + data.key + '\n\nVerifying the image reads back...', 'ok');
+      const check = await fetch(url);
+      log('frame.js returned HTTP ' + check.status + ' (' + (check.headers.get('content-type')||'no content-type') + ')', check.ok ? 'ok' : 'bad');
+      if(check.ok){
+        log('Photo is live. Open it here:\n' + url, 'ok');
+        const p = document.getElementById('prev'); p.src = url + '&cb=' + Date.now();
+      } else {
+        log('Blob was written but frame.js cannot read it back. That is a blob store problem, not a database problem.', 'bad');
+      }
+    }
+  }catch(err){ log('Upload threw: ' + err.message, 'bad'); }
+}
+
+async function checkAll(){
+  clearLog();
+  log('Checking which prospects have photos...');
+  try{
+    const res = await fetch('/.netlify/functions/list-reports');
+    const data = await res.json();
+    const withPhoto = data.filter(r => r.headshotUrl);
+    log('Total reports: ' + data.length + '\nWith a headshot URL: ' + withPhoto.length, withPhoto.length ? 'ok' : 'warn');
+    data.forEach(r => {
+      log(`${r.prospect} (report ${r.id}, prospectId ${r.prospectId || 'NULL'})\n  headshotKey: ${r.headshotKey || '—'}\n  hasHeadshot flag: ${r.hasHeadshot}`);
+    });
+  }catch(err){ log('checkAll threw: ' + err.message, 'bad'); }
+}
+</script>
+</body>
+</html>

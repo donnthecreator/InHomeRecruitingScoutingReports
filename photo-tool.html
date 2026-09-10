@@ -30,8 +30,10 @@
 
 <div id="loginBox">
   <label>Admin code</label>
-  <input type="password" id="code" placeholder="Your admin code" autocomplete="off">
+  <input type="password" id="code" placeholder="Your admin code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
   <button onclick="login()">Sign in</button>
+  <div class="sub" style="margin:14px 0 0;">Already signed into admin in this tab? It will be picked up automatically.
+  Otherwise open admin.html, sign in, then come back to this page <b>in the same tab</b>.</div>
 </div>
 
 <div id="mainBox" class="hide">
@@ -57,7 +59,9 @@
 <pre id="log">Ready.</pre>
 
 <script>
-let TOKEN = null;
+/* Reuse the admin session if this page was opened in the same tab as
+   admin.html. sessionStorage is per-tab, so a fresh tab still needs the code. */
+let TOKEN = sessionStorage.getItem('inhome_admin_token') || null;
 const L = document.getElementById('log');
 function log(msg, cls){
   const line = cls ? `<span class="${cls}">${msg}</span>` : msg;
@@ -65,6 +69,11 @@ function log(msg, cls){
 }
 function clearLog(){ L.innerHTML = ''; }
 
+function useToken(){
+  document.getElementById('loginBox').classList.add('hide');
+  document.getElementById('mainBox').classList.remove('hide');
+  loadProspects();
+}
 async function login(){
   const code = document.getElementById('code').value.trim();
   if(!code){ log('Enter your admin code first.', 'bad'); return; }
@@ -78,10 +87,9 @@ async function login(){
     const data = await res.json().catch(()=>({}));
     if(!res.ok){ log('Sign in failed. HTTP ' + res.status + ' — ' + (data.error||'no message'), 'bad'); return; }
     TOKEN = data.token;
+    sessionStorage.setItem('inhome_admin_token', TOKEN);
     log('Signed in. Token expires ' + new Date(data.expires).toLocaleString(), 'ok');
-    document.getElementById('loginBox').classList.add('hide');
-    document.getElementById('mainBox').classList.remove('hide');
-    loadProspects();
+    useToken();
   }catch(err){ log('Sign in threw: ' + err.message, 'bad'); }
 }
 
@@ -189,6 +197,8 @@ async function checkAll(){
     });
   }catch(err){ log('checkAll threw: ' + err.message, 'bad'); }
 }
+
+if(TOKEN){ log('Found an existing admin session in this tab.', 'ok'); useToken(); }
 </script>
 </body>
 </html>

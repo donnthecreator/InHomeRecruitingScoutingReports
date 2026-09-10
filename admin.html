@@ -1938,9 +1938,13 @@ function resizeImage(file, maxDim){
 async function uploadAdminPhoto(file){
   const t = _photoTarget; if(!t) return;
   toast('Uploading ' + t.kind + '...');
-  let img = await resizeImage(file, 1200);
+  /* Always go through the canvas so the server receives JPEG. Phone
+     photos are often HEIC, which the endpoint rejects; sending the raw
+     file as a fallback is what makes that failure look silent. */
+  const img = await resizeImage(file, 1200);
   if(!img){
-    img = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res({ base64: String(r.result).split(',')[1], contentType: file.type || 'image/jpeg' }); r.onerror = rej; r.readAsDataURL(file); });
+    alert('Could not read that image.\n\nIf it came from an iPhone photo library it may be HEIC. Screenshot it, or export as JPEG, then try again.');
+    return;
   }
   let wingspan;
   if(t.kind === 'wingspan'){ wingspan = (prompt('Wingspan measurement (optional, e.g. 78.5")') || '').trim() || undefined; }
@@ -1950,12 +1954,15 @@ async function uploadAdminPhoto(file){
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
       body: JSON.stringify({ prospectId: t.prospectId, kind: t.kind, dataBase64: img.base64, contentType: img.contentType, wingspan })
     });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error || 'Upload failed');
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok){
+      alert('Photo upload failed.\n\nHTTP ' + res.status + '\n' + (data.error || '(no error message returned)') + '\n\nprospectId: ' + t.prospectId + '\nkind: ' + t.kind);
+      return;
+    }
     reports.forEach(r => { if(r.prospect_id === t.prospectId){ if(t.kind === 'headshot') r.headshot_key = data.key; else { r.wingspan_key = data.key; if(wingspan) r.wingspan = wingspan; } } });
     renderReports();
-    toast(t.kind === 'headshot' ? 'Headshot saved' : 'Wingspan photo saved');
-  }catch(err){ toast(err.message); }
+    alert('Upload succeeded.\n\nKey: ' + data.key + '\n\nIf the photo still does not appear, open this URL directly:\n' + location.origin + '/.netlify/functions/frame?key=' + encodeURIComponent(data.key));
+  }catch(err){ alert('Photo upload error: ' + err.message); }
 }
 
 /* ---------------- PERFORMANCE ---------------- */

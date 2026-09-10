@@ -148,8 +148,12 @@ exports.handler = async (event) => {
         const performances = await sql`
           SELECT * FROM player_performances ORDER BY performance_date DESC`;
 
-        /* Adjust these column names if your reports table differs. */
+        /* Reports, with the prospects join for photos. If the join fails
+           for any reason, fall back to a plain reports query so the admin
+           list is never blank, and pass the error up so the UI can show it
+           instead of silently reading as "no reports". */
         let reports = [];
+        let reportsError = null;
         try {
           reports = await sql`
             SELECT r.id, r.prospect_name AS prospect, r.position, r.position_label, r.school, r.class_year,
@@ -162,10 +166,24 @@ exports.handler = async (event) => {
             ORDER BY COALESCE(r.date_evaluated::timestamptz, r.created_at) DESC
             LIMIT 500`;
         } catch (e) {
-          console.error('reports query failed, check column names:', e.message);
+          console.error('reports join query failed:', e.message);
+          reportsError = 'join: ' + e.message;
+          try {
+            reports = await sql`
+              SELECT id, prospect_name AS prospect, position, position_label, school, class_year,
+                     inhome_score, recommendation_tier,
+                     scout_id, scout_name, date_evaluated, created_at, has_headshot
+              FROM reports
+              ORDER BY created_at DESC
+              LIMIT 500`;
+            reportsError += ' (fell back to reports-only query)';
+          } catch (e2) {
+            console.error('reports fallback query failed:', e2.message);
+            reportsError += ' | fallback: ' + e2.message;
+          }
         }
 
-        return ok({ scouts, assignments, performances, reports });
+        return ok({ scouts, assignments, performances, reports, reportsError });
       }
 
       case 'createAssignment': {

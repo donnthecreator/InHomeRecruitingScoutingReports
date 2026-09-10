@@ -510,6 +510,7 @@ const RECRUIT_SITES = [
 
 let TOKEN = null;
 let assignments = [], reports = [], performances = [];
+let REPORTS_ERROR = null;
 let demoMode = false;
 let asgStatusFilter = 'open';
 let perfLevelFilter = 'All';
@@ -619,6 +620,7 @@ async function loadAll(){
     SCOUT_ROSTER = normalizeScouts(data.scouts);
     assignments  = data.assignments  || [];
     reports      = data.reports      || [];
+    REPORTS_ERROR = data.reportsError || null;
     performances = data.performances || [];
     demoMode = false;
   }catch(err){
@@ -1840,7 +1842,7 @@ function renderReports(){
 
   const el = document.getElementById('repList');
   if(!list.length){
-    el.innerHTML = `<div class="empty"><div class="t">No reports</div><div class="s">Nothing matches this filter.</div></div>`;
+    el.innerHTML = `<div class="empty"><div class="t">No reports</div><div class="s">${REPORTS_ERROR ? 'Query error: ' + esc(REPORTS_ERROR) : (reports.length ? 'Nothing matches this filter.' : 'The reports query returned nothing.')}</div></div>`;
     return;
   }
   el.innerHTML = list.map(r=>`

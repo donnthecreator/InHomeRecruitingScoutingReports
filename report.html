@@ -1878,9 +1878,9 @@ async function sharePdfFile(blob, fname, label){
 
 async function sendPDF(){
   const savedId = state.savedReportId || state.editingReportId || null;
-  const btn = document.getElementById('pdfBtn');
+  const pbtn = document.getElementById('pdfBtn');
   if(savedId && SCOUT_CODE){
-    btn.disabled = true; btn.textContent = 'Building PDF...';
+    pbtn.disabled = true; pbtn.textContent = 'Building PDF...';
     try{
       const res = await fetch('/.netlify/functions/report-pdf?id=' + savedId + '&code=' + encodeURIComponent(SCOUT_CODE) + '&dl=1');
       if(!res.ok) throw new Error('HTTP ' + res.status);
@@ -1891,7 +1891,7 @@ async function sendPDF(){
       console.error('server PDF:', err);
       showToast('Could not build the PDF. Try again in a moment.');
     }
-    btn.disabled = false; btn.textContent = 'Save & Send PDF';
+    pbtn.disabled = false; pbtn.textContent = 'Save & Send PDF';
     return;
   }
   showToast('Submit the report first, then send the PDF.');

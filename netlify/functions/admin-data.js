@@ -189,12 +189,48 @@ exports.handler = async (event) => {
       case 'createAssignment': {
         const { name, scout_id, position, class_year, level, school, priority, source_link, note } = body;
         if (!name || !scout_id) return fail(400, 'name and scout_id required');
+
+        /* Link (or create) the prospect row so commitments, offers, and
+           photos attach to the same record the report will use. Same
+           matching rules as submit-report.js. */
+        const nameKey = String(name).toLowerCase().replace(/[^a-z]/g, '');
+        let prospectId = null;
+        if (nameKey) {
+          const [exact] = await sql`
+            SELECT id FROM prospects
+            WHERE name_key = ${nameKey}
+              AND COALESCE(school,'') = ${school || ''}
+              AND COALESCE(class_year,'') = ${class_year || ''}
+            LIMIT 1`;
+          if (exact) prospectId = exact.id;
+          else {
+            const [blank] = await sql`
+              SELECT id FROM prospects
+              WHERE name_key = ${nameKey}
+                AND COALESCE(school,'') = ${school || ''}
+                AND COALESCE(class_year,'') = ''
+              LIMIT 1`;
+            if (blank) {
+              prospectId = blank.id;
+              if (class_year) await sql`UPDATE prospects SET class_year = ${class_year}, updated_at = now() WHERE id = ${blank.id}`;
+            } else {
+              const [created] = await sql`
+                INSERT INTO prospects (name, name_key, school, class_year, position, level)
+                VALUES (${name}, ${nameKey}, ${school || null}, ${class_year || null}, ${position || null}, ${level || 'HS'})
+                ON CONFLICT (name_key, COALESCE(school,''), COALESCE(class_year,''))
+                  DO UPDATE SET updated_at = now()
+                RETURNING id`;
+              prospectId = created ? created.id : null;
+            }
+          }
+        }
+
         const rows = await sql`
           INSERT INTO scout_assignments
-            (name, scout_id, position, class_year, level, school, priority, source_link, note, status)
+            (name, scout_id, position, class_year, level, school, priority, source_link, note, status, prospect_id)
           VALUES
             (${name}, ${scout_id}, ${position || null}, ${class_year || null}, ${level || 'HS'},
-             ${school || null}, ${priority || 'normal'}, ${source_link || null}, ${note || null}, 'open')
+             ${school || null}, ${priority || 'normal'}, ${source_link || null}, ${note || null}, 'open', ${prospectId})
           RETURNING *`;
         return ok({ assignment: rows[0] });
       }

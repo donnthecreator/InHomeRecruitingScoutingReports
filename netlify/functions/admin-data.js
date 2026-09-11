@@ -257,14 +257,43 @@ exports.handler = async (event) => {
       case 'createPerformance': {
         const { name, level, position, class_year, school, stat_line, source_link, performance_date } = body;
         if (!name) return fail(400, 'name required');
+        /* grade: 0-100 week grade that moves the Production Market. Column
+           is added on first use so no manual migration is needed. */
+        let grade = null;
+        if (body.grade !== undefined && body.grade !== null && String(body.grade).trim() !== '') {
+          const g = parseFloat(body.grade);
+          if (!Number.isFinite(g) || g < 0 || g > 100) return fail(400, 'grade must be 0-100');
+          grade = g;
+        }
+        await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`;
         const rows = await sql`
           INSERT INTO player_performances
-            (name, level, position, class_year, school, stat_line, source_link, performance_date)
+            (name, level, position, class_year, school, stat_line, source_link, performance_date, grade)
           VALUES
             (${name}, ${level || 'HS'}, ${position || null}, ${class_year || null}, ${school || null},
-             ${stat_line || null}, ${source_link || null}, ${performance_date || null})
+             ${stat_line || null}, ${source_link || null}, ${performance_date || null}, ${grade})
           RETURNING *`;
         return ok({ performance: rows[0] });
+      }
+
+      case 'updatePerformance': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`;
+        let grade = null;
+        if (body.grade !== undefined && body.grade !== null && String(body.grade).trim() !== '') {
+          const g = parseFloat(body.grade);
+          if (!Number.isFinite(g) || g < 0 || g > 100) return fail(400, 'grade must be 0-100');
+          grade = g;
+        }
+        const rows = await sql`
+          UPDATE player_performances SET
+            grade = ${grade},
+            stat_line = COALESCE(${body.stat_line || null}, stat_line),
+            source_link = COALESCE(${body.source_link || null}, source_link),
+            performance_date = COALESCE(${body.performance_date || null}, performance_date)
+          WHERE id = ${id} RETURNING *`;
+        return ok({ performance: rows[0] || null });
       }
 
       case 'deleteReport': {

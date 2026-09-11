@@ -358,6 +358,8 @@
         <div><label class="fl">Class / Grad Yr</label><input type="text" id="pClass" placeholder="2027"></div>
         <div><label class="fl">Date</label><input type="date" id="pDate"></div>
       </div>
+      <label class="fl">Week Grade (0-100) \u00b7 this is what moves him on the coach portal's Production Market</label>
+      <input type="number" id="pGrade" min="0" max="100" step="0.1" placeholder="e.g. 78.5 \u00b7 leave blank if you only want the stat line logged">
       <label class="fl">School</label>
       <input type="text" id="pSchool" placeholder="School name">
       <label class="fl">Stat Line</label>
@@ -2055,7 +2057,8 @@ async function createPerformance(){
     school:     document.getElementById('pSchool').value.trim(),
     stat_line:  document.getElementById('pStat').value.trim(),
     source_link:document.getElementById('pLink').value.trim(),
-    performance_date: document.getElementById('pDate').value
+    performance_date: document.getElementById('pDate').value,
+    grade: document.getElementById('pGrade').value.trim()
   };
   try{
     if(demoMode){
@@ -2064,7 +2067,7 @@ async function createPerformance(){
       const out = await api('createPerformance', rec);
       performances.unshift(out.performance);
     }
-    ['pName','pClass','pSchool','pStat','pLink'].forEach(id=>document.getElementById(id).value='');
+    ['pName','pClass','pSchool','pStat','pLink','pGrade'].forEach(id=>document.getElementById(id).value='');
     renderStats(); renderPerfChips(); renderPerf();
     toast('Performance logged');
   }catch(err){ toast(err.message); }
@@ -2123,6 +2126,7 @@ function renderPerf(){
           <div class="rc-name">${esc(p.name)}</div>
           <div class="rc-meta">${esc(p.position||'')} &middot; ${esc(p.school||'—')} &middot; Class of ${esc(p.class_year||'—')}</div>
           <span class="pill ${p.level==='JUCO'?'juco':'hs'}">${esc(p.level||'HS')}</span>
+          ${p.grade!=null && p.grade!=='' ? `<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${Number(p.grade).toFixed(1)}</span>` : `<span class="pill" style="color:var(--dim);">no grade</span>`}
         </div>
         <div class="rc-right"><div class="rc-sub">${fmtDate(p.performance_date)}</div></div>
       </div>

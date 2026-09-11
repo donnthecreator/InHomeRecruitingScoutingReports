@@ -1,0 +1,68 @@
+/* =====================================================================
+   list-performances.js
+   GET /.netlify/functions/list-performances
+
+   The Production Market feed for the coach portal. Every logged
+   performance (admin -> Log a Performance) grouped by player, in date
+   order, so the portal can draw a week-to-week line from the grades.
+   JUCO and HS both come through; the portal filters by level.
+
+   Public and CORS-open like list-reports.js. Nothing here is more
+   sensitive than a box score.
+
+   ENV: DATABASE_URL
+===================================================================== */
+const { neon } = require('@neondatabase/serverless');
+const sql = neon(process.env.DATABASE_URL);
+const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+const nameKey = (s) => String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+
+exports.handler = async () => {
+  try {
+    /* Column may not exist yet on a fresh table; harmless if it does. */
+    try { await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`; } catch (e) {}
+
+    const rows = await sql`
+      SELECT id, name, level, position, class_year, school, stat_line, source_link,
+             performance_date, grade, created_at
+      FROM player_performances
+      ORDER BY name, COALESCE(performance_date, created_at::date), created_at`;
+
+    /* Group by player. Key on name + school so two players with the same
+       name at different schools stay separate. */
+    const byPlayer = new Map();
+    for (const r of rows) {
+      const k = nameKey(r.name) + '|' + String(r.school || '').toLowerCase().trim();
+      if (!byPlayer.has(k)) {
+        byPlayer.set(k, {
+          key: k,
+          nameKey: nameKey(r.name),
+          name: r.name,
+          level: r.level || 'HS',
+          position: r.position || null,
+          classYear: r.class_year || null,
+          school: r.school || null,
+          entries: []
+        });
+      }
+      const p = byPlayer.get(k);
+      /* Later rows can fill in blanks from earlier ones. */
+      if (!p.position && r.position) p.position = r.position;
+      if (!p.classYear && r.class_year) p.classYear = r.class_year;
+      if (r.level === 'JUCO') p.level = 'JUCO';
+      p.entries.push({
+        id: r.id,
+        date: r.performance_date || (r.created_at ? String(r.created_at).slice(0, 10) : null),
+        statLine: r.stat_line || null,
+        link: r.source_link || null,
+        grade: r.grade != null ? Number(r.grade) : null
+      });
+    }
+
+    const players = [...byPlayer.values()];
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ count: players.length, players }) };
+  } catch (err) {
+    console.error('list-performances error:', err);
+    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: err.message }) };
+  }
+};

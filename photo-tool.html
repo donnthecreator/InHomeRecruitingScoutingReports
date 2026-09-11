@@ -66,8 +66,9 @@
     <button class="ghost" onclick="mergeDups()">Merge duplicates</button>
   </div>
   <label>Assign to</label>
-  <select id="assignScout"><option value="">Every scout</option></select>
+  <select id="assignScout"><option value="">Choose a scout...</option><option value="__all">Every scout (all of them)</option></select>
   <button onclick="assignBoard()">Put board on scout target lists</button>
+  <button class="ghost" onclick="unassignBoard()" style="margin-top:8px;">Remove board from scout target lists</button>
 </div>
 
 <pre id="log">Ready.</pre>
@@ -122,8 +123,23 @@ async function mergeDups(){
     boardStats(true);
   }catch(err){ log('Merge failed: ' + err.message, 'bad'); }
 }
+function pickScout(){
+  const v = document.getElementById('assignScout').value;
+  if(!v){ log('Pick a scout first, or choose "Every scout" on purpose.', 'bad'); return undefined; }
+  return v === '__all' ? null : v;
+}
+async function unassignBoard(){
+  const scoutId = pickScout(); if(scoutId===undefined) return;
+  const who = scoutId ? scoutId : 'every scout';
+  if(!confirm('Remove every OPEN ' + progCode() + ' board assignment from ' + who + '? Worked targets and filed reports are not touched.')) return;
+  try{
+    const d = await adminApi('unassignProgramBoard', { program: progCode(), scoutId });
+    log('Removed ' + d.removed + ' assignment(s) from ' + who + '.', 'ok');
+    boardStats(true);
+  }catch(err){ log('Remove failed: ' + err.message, 'bad'); }
+}
 async function assignBoard(){
-  const scoutId = document.getElementById('assignScout').value || null;
+  const scoutId = pickScout(); if(scoutId===undefined) return;
   const who = scoutId ? scoutId : 'every scout';
   if(!confirm('Add the ' + progCode() + ' board to ' + who + "'s target list?")) return;
   try{

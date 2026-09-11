@@ -424,6 +424,29 @@ exports.handler = async (event) => {
         return ok({ created: rows.length });
       }
 
+      /* Undo assignProgramBoard: removes OPEN assignments for a program's
+         board from one scout or every scout. Anything a scout already
+         worked (status not 'open') is left alone. */
+      case 'unassignProgramBoard': {
+        const program = String(body.program || '').trim().toUpperCase();
+        if (!program) return fail(400, 'program required');
+        const scoutId = body.scoutId ? String(body.scoutId) : null;
+        const rows = scoutId
+          ? await sql`
+              DELETE FROM scout_assignments a
+              USING program_prospects pp
+              WHERE pp.prospect_id = a.prospect_id AND upper(pp.program_code) = ${program}
+                AND a.scout_id = ${scoutId} AND a.status = 'open'
+              RETURNING a.id`
+          : await sql`
+              DELETE FROM scout_assignments a
+              USING program_prospects pp
+              WHERE pp.prospect_id = a.prospect_id AND upper(pp.program_code) = ${program}
+                AND a.status = 'open'
+              RETURNING a.id`;
+        return ok({ removed: rows.length });
+      }
+
       case 'deletePerformance': {
         const { id } = body;
         if (!id) return fail(400, 'id required');

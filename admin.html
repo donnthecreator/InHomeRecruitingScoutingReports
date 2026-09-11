@@ -2103,40 +2103,93 @@ function renderPerfChips(){
 }
 function setPerfLevel(l){ perfLevelFilter = l; renderPerfChips(); renderPerf(); }
 
+function perfKey(p){ return String(p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + String(p.school||'').toLowerCase().trim(); }
+
+/* One card per player, weeks stacked newest first inside it. "Add week"
+   prefills the form with the player's identity so a new game never gets
+   logged under a misspelled name. */
 function renderPerf(){
   const q = (document.getElementById('perfSearch').value||'').trim().toLowerCase();
-  let list = performances.filter(p=>{
+  const list = performances.filter(p=>{
     if(perfLevelFilter!=='All' && p.level!==perfLevelFilter) return false;
     if(!q) return true;
     return (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)
       || (p.stat_line||'').toLowerCase().includes(q);
   });
-  list = list.slice().sort((a,b)=> new Date(b.performance_date||0) - new Date(a.performance_date||0));
+
+  const groups = new Map();
+  list.forEach(p=>{
+    const k = perfKey(p);
+    if(!groups.has(k)) groups.set(k, { key:k, name:p.name, school:p.school, level:p.level, position:p.position, class_year:p.class_year, entries:[] });
+    const g = groups.get(k);
+    if(!g.position && p.position) g.position = p.position;
+    if(!g.class_year && p.class_year) g.class_year = p.class_year;
+    if(p.level==='JUCO') g.level = 'JUCO';
+    g.entries.push(p);
+  });
+  const players = [...groups.values()];
+  players.forEach(g => g.entries.sort((a,b)=> new Date(b.performance_date||0) - new Date(a.performance_date||0)));
+  players.sort((a,b)=> new Date(b.entries[0].performance_date||0) - new Date(a.entries[0].performance_date||0));
 
   const el = document.getElementById('perfList');
-  if(!list.length){
+  if(!players.length){
     el.innerHTML = `<div class="empty"><div class="t">No performances logged</div><div class="s">Add a stat line above with its source link.</div></div>`;
     return;
   }
-  el.innerHTML = list.map(p=>`
+  el.innerHTML = players.map(g=>{
+    const latest = g.entries[0];
+    const graded = g.entries.filter(e=>e.grade!=null && e.grade!=='');
+    const latestGrade = graded.length ? Number(graded[0].grade) : null;
+    const prevGrade = graded.length > 1 ? Number(graded[1].grade) : null;
+    const chg = (latestGrade!=null && prevGrade!=null) ? +(latestGrade-prevGrade).toFixed(1) : null;
+    const weeks = g.entries.map(e=>`
+      <div style="display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line);">
+        <div style="min-width:64px; font-size:11px; color:var(--dim); padding-top:2px;">${fmtDate(e.performance_date)}</div>
+        <div style="min-width:44px; font-family:'Anton',sans-serif; font-size:16px; color:${e.grade!=null && e.grade!=='' ? 'var(--ink)' : 'var(--dim)'};">${e.grade!=null && e.grade!=='' ? Number(e.grade).toFixed(1) : '\u2014'}</div>
+        <div style="flex:1; font-size:12.5px; color:#D6D6D6; line-height:1.45;">${e.stat_line ? esc(e.stat_line) : '<span style="color:var(--dim)">no stat line</span>'}${e.source_link ? ` <a href="${esc(e.source_link)}" target="_blank" rel="noopener" style="color:var(--mute); font-size:11px;">source</a>` : ''}</div>
+        <button type="button" class="mini-btn danger" style="padding:4px 8px; font-size:10px;" onclick="deletePerformance('${e.id}')">&times;</button>
+      </div>`).join('');
+    return `
     <div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar">${initials(p.name)}</div>
+        <div class="rc-avatar">${initials(g.name)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(p.name)}</div>
-          <div class="rc-meta">${esc(p.position||'')} &middot; ${esc(p.school||'—')} &middot; Class of ${esc(p.class_year||'—')}</div>
-          <span class="pill ${p.level==='JUCO'?'juco':'hs'}">${esc(p.level||'HS')}</span>
-          ${p.grade!=null && p.grade!=='' ? `<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${Number(p.grade).toFixed(1)}</span>` : `<span class="pill" style="color:var(--dim);">no grade</span>`}
+          <div class="rc-name">${esc(g.name)}</div>
+          <div class="rc-meta">${esc(g.position||'')} &middot; ${esc(g.school||'\u2014')} &middot; Class of ${esc(g.class_year||'\u2014')}</div>
+          <span class="pill ${g.level==='JUCO'?'juco':'hs'}">${esc(g.level||'HS')}</span>
+          <span class="pill">${g.entries.length} game${g.entries.length===1?'':'s'}</span>
+          ${latestGrade!=null ? `<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${latestGrade.toFixed(1)}${chg!=null ? ` <span style="font-weight:600;color:${chg>0?'#35C759':chg<0?'#FF5A5A':'var(--dim)'}">${chg>0?'\u25b2':chg<0?'\u25bc':'\u00b7'} ${chg>0?'+':''}${chg}</span>` : ''}</span>` : `<span class="pill" style="color:var(--dim);">no grade yet</span>`}
         </div>
-        <div class="rc-right"><div class="rc-sub">${fmtDate(p.performance_date)}</div></div>
+        <div class="rc-right"><div class="rc-sub">last ${fmtDate(latest.performance_date)}</div></div>
       </div>
-      ${p.stat_line?`<div style="font-size:13px;color:#D6D6D6;line-height:1.5;margin-top:9px;background:var(--card-2);border-left:2px solid var(--red);border-radius:0 8px 8px 0;padding:10px 12px;">${esc(p.stat_line)}</div>`:''}
-      ${railHTML(p.name, p.source_link)}
+      <div style="margin-top:8px;">${weeks}</div>
+      ${railHTML(g.name, latest.source_link)}
       <div class="rc-actions">
-        <button type="button" class="mini-btn go" onclick="assignFromPerf('${p.id}')">Assign to Scout</button>
-        <button type="button" class="mini-btn danger" onclick="deletePerformance('${p.id}')">Remove</button>
+        <button type="button" class="mini-btn go" onclick="addWeekFor('${esc(g.key)}')">+ Add week</button>
+        <button type="button" class="mini-btn" onclick="assignFromPerf('${latest.id}')">Assign to Scout</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+/* Prefill the log form with this player's identity; only date, stat
+   line, grade, and link are left to type. */
+function addWeekFor(key){
+  const p = performances.find(x=>perfKey(x)===key);
+  if(!p) return;
+  document.getElementById('pName').value   = p.name || '';
+  document.getElementById('pLevel').value  = p.level || 'HS';
+  document.getElementById('pSchool').value = p.school || '';
+  document.getElementById('pClass').value  = p.class_year || '';
+  const posSel = document.getElementById('pPos');
+  if(p.position && [...posSel.options].some(o=>o.value===p.position)) posSel.value = p.position;
+  document.getElementById('pDate').value = '';
+  document.getElementById('pStat').value = '';
+  document.getElementById('pLink').value = '';
+  document.getElementById('pGrade').value = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+  document.getElementById('pDate').focus();
+  toast('Logging a new week for ' + p.name + '. Enter date, stats, and grade.');
 }
 </script>
 

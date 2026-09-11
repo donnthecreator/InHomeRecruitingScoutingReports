@@ -8,10 +8,16 @@
    This helper tries the automatic path first, then falls back to explicit
    credentials from env vars.
 
-   REQUIRED ENV (set both in Site configuration -> Environment variables):
-     NETLIFY_SITE_ID     Site configuration -> General -> Site ID
-     NETLIFY_BLOBS_TOKEN Personal access token from
-                         User settings -> Applications -> Personal access tokens
+   REQUIRED ENV (set both in Site configuration -> Environment variables).
+   Netlify reserves the NETLIFY_ prefix and may refuse those names in the
+   UI, so non-reserved aliases are accepted too. Set ONE from each row:
+
+     site id:  INHOME_SITE_ID   or SITE_ID   or NETLIFY_SITE_ID
+               value = Site configuration -> General -> Site ID (a UUID)
+
+     token:    INHOME_BLOBS_TOKEN or BLOBS_TOKEN or NETLIFY_BLOBS_TOKEN
+               value = a personal access token from
+               User settings -> Applications -> Personal access tokens
 
    Living in lib/ keeps Netlify from treating this file as its own function.
 ===================================================================== */
@@ -23,10 +29,12 @@ function frameStore() {
   try {
     return getStore(STORE_NAME);
   } catch (autoErr) {
-    const siteID = process.env.NETLIFY_SITE_ID || process.env.SITE_ID;
-    const token  = process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
+    const siteID = process.env.INHOME_SITE_ID || process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
+    const token  = process.env.INHOME_BLOBS_TOKEN || process.env.BLOBS_TOKEN ||
+                   process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
     if (!siteID || !token) {
-      const missing = [!siteID && 'NETLIFY_SITE_ID', !token && 'NETLIFY_BLOBS_TOKEN'].filter(Boolean).join(' and ');
+      const missing = [!siteID && 'a site id (INHOME_SITE_ID or SITE_ID)',
+                       !token && 'a token (INHOME_BLOBS_TOKEN or BLOBS_TOKEN)'].filter(Boolean).join(' and ');
       throw new Error(
         `Netlify Blobs is not configured automatically and ${missing} ` +
         `is not set. Add it under Site configuration -> Environment variables. ` +

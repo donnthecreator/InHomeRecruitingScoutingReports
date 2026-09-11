@@ -183,10 +183,37 @@ function render(r){
     ${r.narrative ? `<div class="section"><div class="sec-h">Scout Narrative</div><div class="narr">${esc(r.narrative)}</div></div>` : ''}
     ${recs ? `<div class="section"><div class="sec-h">Program Fits</div><div class="chips">${recs}</div></div>` : ''}
 
+    <div style="margin-top:22px; display:flex; gap:10px;">
+      <button onclick="downloadPdf()" id="pdfBtn" style="flex:1; background:var(--ink); color:#000; border:none; border-radius:12px; padding:14px; font-weight:800; font-size:13px; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; font-family:inherit;">Download PDF</button>
+    </div>
+
     <div class="foot">
       Filed by <b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` &middot; ${esc(r.scoutRole)}`:''}${r.dateEvaluated||r.createdAt?` &middot; ${fmtDate(r.dateEvaluated||r.createdAt)}`:''}<br>
       InHome Recruiting Intelligence &middot; Eye in the Sky film framework. Report #${r.id}. This link was shared directly by InHome; please do not redistribute.
     </div>`;
+}
+
+async function downloadPdf(){
+  const q = new URLSearchParams(location.search);
+  const id = q.get('id'), t = q.get('t');
+  const btn = document.getElementById('pdfBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Building...'; }
+  try{
+    const res = await fetch(`/.netlify/functions/report-pdf?id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}&dl=1`);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const name = (document.querySelector('h1')||{}).textContent || 'report';
+    const fname = 'InHome_' + name.replace(/[^a-zA-Z0-9]/g,'_') + '.pdf';
+    const file = new File([blob], fname, {type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({ files:[file], title:'InHome Scouting Report', text:name }); return; }
+      catch(e){ if(e && e.name==='AbortError') return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }catch(err){ alert('Could not build the PDF: ' + err.message); }
+  finally{ if(btn){ btn.disabled = false; btn.textContent = 'Download PDF'; } }
 }
 
 (async function(){

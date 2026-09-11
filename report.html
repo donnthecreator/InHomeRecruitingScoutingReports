@@ -1006,6 +1006,7 @@ refreshScouts();
 const REQUIRE_SCOUT_CODE = true;
 
 let SCOUT = null;
+let SCOUT_CODE = '';   // access code entered at the gate; used to fetch server-built PDFs
 
 function tryGate(){
   const el = document.getElementById('gateCode');
@@ -1018,6 +1019,7 @@ function tryGate(){
     return;
   }
   SCOUT = found;
+  SCOUT_CODE = code;
   document.getElementById('gateErr').textContent = '';
   document.getElementById('gate').classList.add('hide');
   applyScout();
@@ -1692,6 +1694,7 @@ async function submitReport(){
       /* Frames and headshot upload separately and only after the report
          is safely saved. If either fails, the report is already in
          the database. */
+      state.savedReportId = data.reportId;
       uploadFrames(data.reportId);
       uploadHeadshot(data.reportId);
       if(typeof initCommitAfter === 'function') initCommitAfter(data.prospectId);
@@ -1857,7 +1860,43 @@ function buildPrintView(){
   </div>`;
 }
 
+/* Server-built PDF for a saved report. The phone never renders anything;
+   it just receives a finished file and hands it to the share sheet
+   (Messages, Mail, AirDrop). Falls back to the in-browser builder only
+   when the report has not been submitted yet. */
+async function sharePdfFile(blob, fname, label){
+  const file = new File([blob], fname, {type:'application/pdf'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({ files:[file], title:'InHome Scouting Report', text:label }); showToast('Shared \u2713'); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  showToast('PDF downloaded \u2713');
+}
+
 async function sendPDF(){
+  const savedId = state.savedReportId || state.editingReportId || null;
+  const btn = document.getElementById('pdfBtn');
+  if(savedId && SCOUT_CODE){
+    btn.disabled = true; btn.textContent = 'Building PDF...';
+    try{
+      const res = await fetch('/.netlify/functions/report-pdf?id=' + savedId + '&code=' + encodeURIComponent(SCOUT_CODE) + '&dl=1');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      const prospect = gv('fProspect') || 'prospect';
+      await sharePdfFile(blob, `InHome_${state.position}_${prospect.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`, `${prospect} (${state.position})`);
+    }catch(err){
+      console.error('server PDF:', err);
+      showToast('Could not build the PDF. Try again in a moment.');
+    }
+    btn.disabled = false; btn.textContent = 'Save & Send PDF';
+    return;
+  }
+  showToast('Submit the report first, then send the PDF.');
+  return;
+
   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
   await new Promise(r=>setTimeout(r, 100));
 

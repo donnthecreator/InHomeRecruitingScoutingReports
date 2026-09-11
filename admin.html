@@ -1966,6 +1966,7 @@ function renderReports(){
       <div class="rail" style="border-top:none; padding-top:2px;">
         <span class="rail-lbl">Manage</span>
         <button type="button" class="mini-btn" onclick="shareReport(${r.id})">Share link</button>
+        <button type="button" class="mini-btn" onclick="sharePdf(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">PDF</button>
         ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'headshot')">Headshot</button>
         <button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'wingspan')">Wingspan</button>` : ''}
         <a class="mini-btn" href="report.html?reportId=${r.id}&position=${encodeURIComponent(r.position||'')}" target="_blank" rel="noopener">Open / Edit</a>
@@ -1989,6 +1990,28 @@ async function shareReport(id){
     if(!copied) prompt('Copy this share link:', data.url);
     else toast('Share link copied');
   }catch(err){ repStatus(id, ''); toast(err.message); }
+}
+
+/* Server-built PDF, then the phone's share sheet (Messages, Mail, AirDrop).
+   Desktop browsers without a share sheet just download it. */
+async function sharePdf(id, name){
+  if(demoMode){ toast('Demo mode: no PDF'); return; }
+  try{
+    repStatus(id, 'Building PDF...');
+    const res = await fetch('/.netlify/functions/report-pdf?id=' + id + '&dl=1', { headers:{'Authorization':'Bearer '+TOKEN} });
+    if(!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const fname = 'InHome_' + String(name||'report').replace(/[^a-zA-Z0-9]/g,'_') + '.pdf';
+    const file = new File([blob], fname, {type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({ files:[file], title:'InHome Scouting Report', text:name }); repStatus(id, 'Shared'); return; }
+      catch(e){ if(e && e.name==='AbortError'){ repStatus(id,''); return; } }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    repStatus(id, 'PDF downloaded');
+  }catch(err){ repStatus(id, ''); toast('PDF failed: ' + err.message); }
 }
 
 async function deleteReport(id, name){

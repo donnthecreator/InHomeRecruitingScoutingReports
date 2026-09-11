@@ -56,6 +56,20 @@
   </div>
 </div>
 
+<div id="boardBox" class="hide" style="margin-top:28px; padding-top:18px; border-top:1px solid #2A2A2A;">
+  <h1 style="font-size:16px;">Program Boards</h1>
+  <div class="sub">Runs the database work for you. No SQL needed.</div>
+  <label>Program code</label>
+  <input type="text" id="progCode" value="MSST26" autocapitalize="characters" autocorrect="off" spellcheck="false">
+  <div class="row" style="margin-top:12px;">
+    <button class="ghost" onclick="boardStats()">Check board</button>
+    <button class="ghost" onclick="mergeDups()">Merge duplicates</button>
+  </div>
+  <label>Assign to</label>
+  <select id="assignScout"><option value="">Every scout</option></select>
+  <button onclick="assignBoard()">Put board on scout target lists</button>
+</div>
+
 <pre id="log">Ready.</pre>
 
 <script>
@@ -72,7 +86,51 @@ function clearLog(){ L.innerHTML = ''; }
 function useToken(){
   document.getElementById('loginBox').classList.add('hide');
   document.getElementById('mainBox').classList.remove('hide');
+  document.getElementById('boardBox').classList.remove('hide');
   loadProspects();
+  boardStats(true);
+}
+
+/* ---------------- program boards ---------------- */
+async function adminApi(action, body){
+  const res = await fetch('/.netlify/functions/admin-data', {
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+    body: JSON.stringify(Object.assign({ action }, body||{}))
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+const progCode = () => document.getElementById('progCode').value.trim().toUpperCase();
+async function boardStats(quiet){
+  try{
+    const d = await adminApi('programBoardStats', { program: progCode() });
+    const st = d.stats || {};
+    const sel = document.getElementById('assignScout');
+    if(sel.options.length <= 1 && d.scouts){
+      d.scouts.forEach(sc => { const o = document.createElement('option'); o.value = sc.scout_id; o.textContent = sc.name + ' (' + sc.scout_id + ')'; sel.appendChild(o); });
+    }
+    log(d.program + ' board\n  prospects on board: ' + st.prospects + (st.blank_year ? '  (' + st.blank_year + ' missing class year, likely duplicates)' : '')
+      + '\n  scout assignments: ' + st.assignments + '\n  scouted so far: ' + st.scouted, st.prospects ? 'ok' : 'warn');
+  }catch(err){ if(!quiet) log('Check failed: ' + err.message, 'bad'); }
+}
+async function mergeDups(){
+  if(!confirm('Merge duplicate players on the ' + progCode() + ' board? Keeps the copy with a class year.')) return;
+  try{
+    const d = await adminApi('mergeProgramDuplicates', { program: progCode() });
+    log('Merged ' + d.merged + ' duplicate(s). Board now has ' + d.remaining + ' prospects.', 'ok');
+    boardStats(true);
+  }catch(err){ log('Merge failed: ' + err.message, 'bad'); }
+}
+async function assignBoard(){
+  const scoutId = document.getElementById('assignScout').value || null;
+  const who = scoutId ? scoutId : 'every scout';
+  if(!confirm('Add the ' + progCode() + ' board to ' + who + "'s target list?")) return;
+  try{
+    const d = await adminApi('assignProgramBoard', { program: progCode(), scoutId });
+    log('Created ' + d.created + ' assignment(s) for ' + who + '.', 'ok');
+    boardStats(true);
+  }catch(err){ log('Assign failed: ' + err.message, 'bad'); }
 }
 async function login(){
   const code = document.getElementById('code').value.trim();

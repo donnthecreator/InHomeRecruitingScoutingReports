@@ -285,6 +285,97 @@ exports.handler = async (event) => {
         return ok({ url });
       }
 
+      /* ---------- PROGRAM BOARDS (the list a school hands us) ---------- */
+
+      case 'programBoardStats': {
+        const program = String(body.program || '').trim().toUpperCase();
+        if (!program) return fail(400, 'program required');
+        const [c] = await sql`
+          SELECT count(*)::int AS prospects,
+                 count(*) FILTER (WHERE p.class_year IS NULL)::int AS blank_year,
+                 (SELECT count(*)::int FROM scout_assignments a
+                    JOIN program_prospects x ON x.prospect_id = a.prospect_id AND upper(x.program_code) = ${program}) AS assignments,
+                 (SELECT count(DISTINCT r.prospect_id)::int FROM reports r
+                    JOIN program_prospects x ON x.prospect_id = r.prospect_id AND upper(x.program_code) = ${program}) AS scouted
+          FROM program_prospects pp JOIN prospects p ON p.id = pp.prospect_id
+          WHERE upper(pp.program_code) = ${program}`;
+        const scouts = await sql`SELECT scout_id, name FROM scouts WHERE access_code IS NOT NULL ORDER BY name`;
+        return ok({ program, stats: c, scouts });
+      }
+
+      /* Collapse rows that exist twice on a program board: a copy with a
+         class year and a copy without (typical after a spreadsheet import
+         lands on top of players entered by hand). Keeps the row with the
+         class year, copies labels over, never deletes a row with a report. */
+      case 'mergeProgramDuplicates': {
+        const program = String(body.program || '').trim().toUpperCase();
+        if (!program) return fail(400, 'program required');
+        await sql`
+          UPDATE prospects keep SET
+            position_label = COALESCE(keep.position_label, dup.position_label),
+            home_state     = COALESCE(keep.home_state,     dup.home_state),
+            level          = COALESCE(keep.level,          dup.level),
+            updated_at     = now()
+          FROM prospects dup
+          WHERE dup.name_key = keep.name_key
+            AND COALESCE(dup.school,'') = COALESCE(keep.school,'')
+            AND dup.class_year IS NULL AND keep.class_year IS NOT NULL
+            AND dup.id IN (SELECT prospect_id FROM program_prospects WHERE upper(program_code) = ${program})`;
+        const deleted = await sql`
+          DELETE FROM prospects dup
+          USING prospects keep
+          WHERE dup.name_key = keep.name_key
+            AND COALESCE(dup.school,'') = COALESCE(keep.school,'')
+            AND dup.class_year IS NULL AND keep.class_year IS NOT NULL
+            AND dup.id IN (SELECT prospect_id FROM program_prospects WHERE upper(program_code) = ${program})
+            AND NOT EXISTS (SELECT 1 FROM reports r WHERE r.prospect_id = dup.id)
+          RETURNING dup.id`;
+        /* Make sure every surviving twin is still on the board. */
+        await sql`
+          INSERT INTO program_prospects (program_code, prospect_id, source)
+          SELECT ${program}, keep.id, 'merge'
+          FROM prospects keep
+          WHERE keep.class_year IS NOT NULL
+            AND EXISTS (SELECT 1 FROM program_prospects x JOIN prospects d ON d.id = x.prospect_id
+                        WHERE upper(x.program_code) = ${program} AND d.name_key = keep.name_key
+                          AND COALESCE(d.school,'') = COALESCE(keep.school,''))
+          ON CONFLICT (program_code, prospect_id) DO NOTHING`;
+        const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;
+        return ok({ merged: deleted.length, remaining: c.n });
+      }
+
+      /* Put a program's board on scouts' target lists. scoutId = one scout,
+         omitted = every scout with an access code. Skips pairs that exist. */
+      case 'assignProgramBoard': {
+        const program = String(body.program || '').trim().toUpperCase();
+        if (!program) return fail(400, 'program required');
+        const scoutId = body.scoutId ? String(body.scoutId) : null;
+        const note = body.note || (program + ' prospect board');
+        const rows = scoutId
+          ? await sql`
+              INSERT INTO scout_assignments
+                (name, scout_id, position, class_year, level, school, priority, note, status, prospect_id, assigned_at)
+              SELECT p.name, ${scoutId}, p.position, p.class_year, COALESCE(p.level,'HS'), p.school,
+                     'normal', ${note}, 'open', p.id, now()
+              FROM program_prospects pp JOIN prospects p ON p.id = pp.prospect_id
+              WHERE upper(pp.program_code) = ${program}
+                AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = ${scoutId} AND a.prospect_id = p.id)
+              RETURNING id`
+          : await sql`
+              INSERT INTO scout_assignments
+                (name, scout_id, position, class_year, level, school, priority, note, status, prospect_id, assigned_at)
+              SELECT p.name, s.scout_id, p.position, p.class_year, COALESCE(p.level,'HS'), p.school,
+                     'normal', ${note}, 'open', p.id, now()
+              FROM program_prospects pp
+              JOIN prospects p ON p.id = pp.prospect_id
+              CROSS JOIN scouts s
+              WHERE upper(pp.program_code) = ${program}
+                AND s.access_code IS NOT NULL
+                AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = s.scout_id AND a.prospect_id = p.id)
+              RETURNING id`;
+        return ok({ created: rows.length });
+      }
+
       case 'deletePerformance': {
         const { id } = body;
         if (!id) return fail(400, 'id required');

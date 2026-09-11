@@ -1,0 +1,269 @@
+/* =====================================================================
+   import-boxscore.js
+   POST /.netlify/functions/import-boxscore   (admin token)
+   body: { text }   -- text layer of a PrestoSports "Official Football
+                       Box Score" PDF (the admin page extracts it with
+                       pdf.js), or the monospace box score page text.
+
+   Returns every player with production, one candidate performance each:
+     { name, team, level, position, statLine, grade, metrics, selected }
+   grade is an efficiency-based SUGGESTION (0-100) built from the stat
+   line, meant to be edited by a human before it is logged. The formula
+   is deliberately simple and printed in `why` so it can be argued with.
+
+   Nothing is written to the database here; the admin page logs the
+   rows the user ticks through the normal createPerformance action.
+
+   ENV: ADMIN_SECRET
+===================================================================== */
+const crypto = require('crypto');
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+const fail = (c, m) => ({ statusCode: c, headers: JSON_HEADERS, body: JSON.stringify({ error: m }) });
+
+function verifyAdmin(event) {
+  const secret = process.env.ADMIN_SECRET; if (!secret) return false;
+  const header = event.headers.authorization || event.headers.Authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  const [exp, sig] = token.split('.');
+  if (!exp || !sig || !Number(exp) || Date.now() > Number(exp)) return false;
+  const expected = crypto.createHmac('sha256', secret).update(exp).digest('hex');
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/* ---------- table definitions: header signature -> columns ---------- */
+const TABLES = [
+  { kind: 'pass', head: ['Player', 'Att', 'Cmp', 'Int', 'Yds', 'TD', 'Lg'], cols: ['att', 'cmp', 'int', 'yds', 'td', 'lg'] },
+  { kind: 'rush', head: ['Player', 'Att', 'Yds', 'Avg', 'TD', 'Lg'], cols: ['att', 'yds', 'avg', 'td', 'lg'] },
+  { kind: 'rcv',  head: ['Player', 'No', 'Yds', 'Avg', 'TD', 'Lg'], cols: ['no', 'yds', 'avg', 'td', 'lg'] },
+  { kind: 'kick', head: ['Player', 'FGA', 'FGM', 'Lg', 'PAT-A', 'PAT-M'], cols: ['fga', 'fgm', 'lg', 'pata', 'patm'] },
+  { kind: 'def',  head: ['Player', 'Solo', 'Ast', 'Total', 'TFL', 'Sacks', 'PD'], cols: ['solo', 'ast', 'total', 'x1', 'x2', 'x3'] },
+  { kind: 'sack', head: ['Player', 'Solo', 'Ast', 'Total', 'Yds'], cols: ['solo', 'ast', 'total', 'yds'] },
+  { kind: 'int',  head: ['Player', 'No', 'Yds', 'TD', 'Lg'], cols: ['no', 'yds', 'td', 'lg'] },
+  { kind: 'fum',  head: ['Player', 'No', 'Lost'], cols: ['no', 'lost'] }
+];
+const isNum = (t) => /^-?\d+(\.\d+)?$/.test(t);
+const isJersey = (t) => /^\d{1,2}[A-Z]?$/.test(t);
+const cleanTeam = (t) => String(t || '').replace(/^No\.\s*\d+\s*/i, '').replace(/\s+/g, ' ').trim();
+
+/* Split the whole text into tokens but keep line breaks as a token so
+   we can find headers and team names, which are always on their own line. */
+function parseText(text) {
+  const lines = String(text).replace(/\r/g, '').split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
+
+  /* game meta */
+  let date = null, teams = [];
+  for (const l of lines) {
+    const m = l.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+    if (m && !date) date = `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  }
+  const vsLine = lines.find(l => /\bvs\.?\s/i.test(l) && !/print version/i.test(l) && !/http/i.test(l));
+  if (vsLine) {
+    const mm = vsLine.match(/^(.*?)\s+vs\.?\s+(.*?)$/i);
+    if (mm) teams = [cleanTeam(mm[1]), cleanTeam(mm[2])];
+  }
+
+  /* walk lines: a header line starts a table; the line before it is the team */
+  const players = new Map(); // key -> record
+  const rec = (team, name) => {
+    const k = team + '|' + name.toLowerCase();
+    if (!players.has(k)) players.set(k, { name, team, pass: null, rush: null, rcv: null, kick: null, def: null, sack: null, int: null, fum: null });
+    return players.get(k);
+  };
+
+  const isHeader = (l) => TABLES.find(t => { const lt = l.split(' '); return t.head.length === lt.length && t.head.every((h, j) => h === lt[j]); });
+  const SECTION = /^(Individual|Passing|Rushing|Receiving|Kicking|Tackles|Sacks|Interceptions|Fumbles|Statistics|Official|Score by|Team Statistics)/;
+  const BANNER = /Print Version|\bvs\.?\s|Athletics|https?:|Page \d+ of|PrestoSports|informational purposes|official verification/i;
+  const looksLikeTeam = (l) => {
+    const lt = l.split(' ');
+    if (isHeader(l) || /^Totals\b/.test(l) || /^None\.?$/.test(l) || BANNER.test(l) || /^@@COL/.test(l)) return false;
+    if (isNum(lt[lt.length - 1])) return false;              // rows end in numbers
+    if (/^(Individual|Passing|Rushing|Receiving|Kicking|Tackles|Sacks|Interceptions|Fumbles|Statistics|Official)/.test(l)) return false;
+    return /[A-Za-z]{3,}/.test(l);
+  };
+
+  /* "@@COL L" / "@@COL R" markers come from the PDF column splitter so a
+     table whose team banner sits on the previous page still gets the
+     right team: we remember the last team seen in that column. */
+  const lastTeam = { L: '', R: '' };
+  let col = 'L';
+  let i = 0;
+  while (i < lines.length) {
+    const mk = lines[i].match(/^@@COL ([LR])$/);
+    if (mk) { col = mk[1]; i++; continue; }
+    const tdef = isHeader(lines[i]);
+    if (!tdef) {
+      if (looksLikeTeam(lines[i]) && !/^\d{1,2}[A-Z]?\s/.test(lines[i])) {
+        const t = cleanTeam(lines[i]);
+        /* a merged "Team A No. 13 Team B" line is a two-column banner; take the side we're on */
+        const two = t.match(/^(.*?)\s+(No\.\s*\d+\s+)?([A-Z][\w'.-]*(?:\s+[A-Z][\w'.-]*)*\s+(?:CC|Community College|College|University|HS|High School))$/);
+        lastTeam[col] = two && /\bCC\b|College/.test(two[1]) ? cleanTeam(col === 'L' ? two[1] : two[3]) : t;
+      }
+      i++; continue;
+    }
+    let team = '';
+    for (let b = i - 1; b >= 0 && b >= i - 4; b--) {
+      if (/^@@COL/.test(lines[b])) break;
+      if (looksLikeTeam(lines[b])) { team = cleanTeam(lines[b].replace(/^\d{1,2}\s+/, '')); break; }
+    }
+    if (!team || / vs /i.test(team)) team = lastTeam[col] || '';
+    else lastTeam[col] = team;
+    i++;
+    while (i < lines.length) {
+      const l = lines[i];
+      if (/^Totals\b/.test(l) || /^None\.?$/.test(l)) { i++; break; }
+      if (isHeader(l)) break;
+      if (/^@@COL/.test(l)) break;
+      if (BANNER.test(l) || SECTION.test(l)) { i++; continue; }
+      if (looksLikeTeam(l) && !/^\d{1,2}[A-Z]?\s/.test(l)) break;     // next team block without a header yet
+      i++;
+      const lt = l.split(' ');
+      if (lt.every(isNum)) continue;                             // totals row that lost its label
+      let p = 0;
+      if (isJersey(lt[0]) && lt.length > 1 && !isNum(lt[1])) p = 1; // optional jersey
+      const nameT = [];
+      while (p < lt.length && !isNum(lt[p])) nameT.push(lt[p++]);
+      const nums = [];
+      while (p < lt.length && isNum(lt[p])) nums.push(parseFloat(lt[p++]));
+      const tail = lt.slice(p).filter(t => !isNum(t) && !SECTION.test(t)); // wrapped last name after the numbers (drop glued section titles)
+      let name = nameT.join(' ');
+      if (tail.length) name = (name.endsWith('-') ? name + tail.join(' ') : name + ' ' + tail.join(' '));
+      name = name.replace(/\s+/g, ' ').trim();
+      if (!name || !nums.length || !/[A-Za-z]{2,}/.test(name)) continue;
+      const r = rec(team, name);
+      const stat = {};
+      if (tdef.kind === 'def') {
+        stat.solo = nums[0] || 0; stat.ast = nums[1] || 0; stat.total = nums[2] != null ? nums[2] : stat.solo + stat.ast;
+        stat.extra = nums.slice(3);
+      } else {
+        tdef.cols.forEach((c, j) => { stat[c] = nums[j] != null ? nums[j] : null; });
+      }
+      r[tdef.kind] = stat;
+    }
+  }
+
+  /* resolve defense extras with the sack + int tables */
+  const out = [];
+  for (const r of players.values()) {
+    const m = {};
+    let pos = null;
+    const parts = [];
+    if (r.pass && r.pass.att) {
+      pos = 'QB';
+      const cmp = r.pass.cmp || 0, att = r.pass.att || 0, yds = r.pass.yds || 0, td = r.pass.td || 0, int = r.pass.int || 0;
+      m.pass = { cmp, att, yds, td, int, pct: att ? +(cmp / att * 100).toFixed(1) : 0, ypa: att ? +(yds / att).toFixed(1) : 0 };
+      parts.push(`${cmp}/${att}, ${yds} pass yds, ${td} TD, ${int} INT (${m.pass.ypa} ypa)`);
+    }
+    if (r.rush && r.rush.att) {
+      const att = r.rush.att, yds = r.rush.yds || 0, td = r.rush.td || 0, ypc = att ? +(yds / att).toFixed(1) : 0;
+      m.rush = { att, yds, td, ypc, lg: r.rush.lg || null };
+      if (!pos) pos = 'RB';
+      parts.push(`${att} car, ${yds} yds, ${ypc} ypc${td ? ', ' + td + ' TD' : ''}${r.rush.lg ? ', long ' + r.rush.lg : ''}`);
+    }
+    if (r.rcv && r.rcv.no) {
+      const no = r.rcv.no, yds = r.rcv.yds || 0, td = r.rcv.td || 0, ypr = no ? +(yds / no).toFixed(1) : 0;
+      m.rcv = { no, yds, td, ypr, lg: r.rcv.lg || null };
+      if (!pos || (pos === 'RB' && (m.rush ? yds > m.rush.yds : true))) pos = pos === 'RB' ? 'RB' : 'WR';
+      parts.push(`${no} rec, ${yds} yds, ${ypr} ypr${td ? ', ' + td + ' TD' : ''}${r.rcv.lg ? ', long ' + r.rcv.lg : ''}`);
+    }
+    if (r.def && (r.def.total || r.def.solo)) {
+      const sacks = r.sack ? ((r.sack.solo || 0) + (r.sack.ast || 0) * 0.5) || (r.sack.total || 0) : 0;
+      const ints = r.int ? (r.int.no || 0) : 0;
+      const extra = r.def.extra || [];
+      /* extras: after removing what the sack table explains, the rest is TFL and/or PD */
+      let tfl = 0, pd = 0, unknown = 0;
+      const rest = extra.slice();
+      if (sacks && rest.length) { const idx = rest.findIndex(v => v === sacks); if (idx >= 0) rest.splice(idx, 1); }
+      if (rest.length === 1) { unknown = rest[0]; }
+      else if (rest.length >= 2) { tfl = rest[0]; pd = rest[1]; }
+      m.def = { solo: r.def.solo, ast: r.def.ast, total: r.def.total, tfl, sacks, pd, int: ints, unknown };
+      if (!pos) pos = 'DEF';
+      const bits = [`${r.def.total} tkl (${r.def.solo} solo)`];
+      if (tfl) bits.push(`${tfl} TFL`);
+      if (sacks) bits.push(`${sacks} sack${sacks === 1 ? '' : 's'}`);
+      if (ints) bits.push(`${ints} INT`);
+      if (pd) bits.push(`${pd} PD`);
+      if (unknown) bits.push(`${unknown} TFL/PD`);
+      parts.push(bits.join(', '));
+    } else if (r.int && r.int.no) {
+      m.def = { total: 0, int: r.int.no }; if (!pos) pos = 'DEF'; parts.push(`${r.int.no} INT`);
+    }
+    if (r.kick && (r.kick.fga || r.kick.pata)) {
+      m.kick = { fga: r.kick.fga || 0, fgm: r.kick.fgm || 0, lg: r.kick.lg || 0, pata: r.kick.pata || 0, patm: r.kick.patm || 0 };
+      if (!pos) pos = 'K';
+      parts.push(`FG ${m.kick.fgm}/${m.kick.fga}${m.kick.lg ? ' (long ' + m.kick.lg + ')' : ''}, PAT ${m.kick.patm}/${m.kick.pata}`);
+    }
+    if (r.fum && r.fum.lost) parts.push(`${r.fum.lost} fumble${r.fum.lost === 1 ? '' : 's'} lost`);
+    if (!parts.length) continue;
+
+    const { grade, why } = suggestGrade(pos, m);
+    const level = /community college|\bCC\b|juco|junior college/i.test(r.team) ? 'JUCO' : 'HS';
+    const notable = (m.rush && (m.rush.yds >= 50 || m.rush.td)) || (m.rcv && (m.rcv.yds >= 50 || m.rcv.td)) ||
+      (m.pass && m.pass.att >= 8) || (m.def && (m.def.total >= 5 || m.def.sacks || m.def.int || m.def.tfl >= 1)) || false;
+    out.push({ name: r.name, team: r.team, level, position: pos, statLine: parts.join(' | '), grade, why, metrics: m, selected: !!notable });
+  }
+  out.sort((a, b) => b.grade - a.grade);
+  return { date, teams, players: out };
+}
+
+/* Efficiency-first suggestion. Volume matters, but per-touch efficiency
+   moves the number more than raw totals, which is what "efficiency" means
+   to a coach reading a JUCO box score. Bounded 35-99. */
+function suggestGrade(pos, m) {
+  let g = null; const why = [];
+  const clamp = (v) => Math.max(35, Math.min(99, v));
+  const take = (v) => { g = g == null ? v : Math.max(g, v); };
+  if (m.pass) {
+    const p = m.pass;
+    take(40 + p.pct * 0.3 + p.ypa * 2.5 + p.td * 5 - p.int * 8);
+    why.push('QB: 40 + comp% x0.3 + ypa x2.5 + TD x5 - INT x8');
+  }
+  if (m.rush) {
+    const r = m.rush;
+    const eff = Math.max(-16, Math.min(16, (r.ypc - 4.0) * 4));   // 4.0 ypc neutral, capped either way
+    const vol = Math.min(25, r.yds / 6);                            // 150 yds caps volume credit
+    let rg = 45 + eff + vol + r.td * 5;
+    if (m.pass) rg -= 10;                                            // QB scrambles count, but less
+    if (r.att < 5) rg = Math.min(rg, 62);                            // tiny samples cannot post big grades
+    take(rg);
+    why.push('RB: 45 + (ypc-4) x4 [cap 16] + min(25, yds/6) + TD x5');
+  }
+  if (m.rcv) {
+    const c = m.rcv;
+    const eff = Math.max(-10, Math.min(15, (c.ypr - 10) * 1.0));   // 10 ypr neutral
+    const vol = Math.min(25, c.yds / 5);                            // 125 yds caps
+    let cg = 45 + eff + vol + c.no * 0.8 + c.td * 5;
+    if (c.no < 3) cg = Math.min(cg, 72);                             // one-catch games stay modest
+    take(cg);
+    why.push('WR: 45 + (ypr-10) x1 [cap 15] + min(25, yds/5) + rec x0.8 + TD x5');
+  }
+  if (m.def) {
+    const d = m.def;
+    take(40 + (d.total || 0) * 3 + (d.tfl || 0) * 5 + (d.sacks || 0) * 9 + (d.int || 0) * 9 + (d.pd || 0) * 3 + (d.unknown || 0) * 3);
+    why.push('DEF: 40 + tkl x3 + TFL x5 + sack x9 + INT x9 + PD x3');
+  }
+  if (m.kick && g == null) {
+    const k = m.kick;
+    take(55 + k.fgm * 7 - (k.fga - k.fgm) * 6 + (k.lg >= 40 ? 5 : 0) + (k.patm === k.pata ? 3 : -6));
+    why.push('K: 55 + FGM x7 - misses x6 + long>=40 +5 + perfect PAT +3');
+  }
+  return { grade: +clamp(g == null ? 50 : g).toFixed(1), why: why.join(' ; ') };
+}
+
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') return fail(405, 'Method not allowed');
+  if (!verifyAdmin(event)) return fail(401, 'Unauthorized');
+  let body; try { body = JSON.parse(event.body || '{}'); } catch { return fail(400, 'Bad request'); }
+  const text = String(body.text || '');
+  if (text.length < 200) return fail(400, 'No box score text found');
+  try {
+    const parsed = parseText(text);
+    if (!parsed.players.length) return fail(422, 'Could not find any player tables. Is this a PrestoSports box score?');
+    return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify(parsed) };
+  } catch (err) {
+    console.error('import-boxscore error:', err);
+    return fail(500, err.message);
+  }
+};
+
+exports._parseText = parseText;

@@ -228,6 +228,7 @@
   .gm-pop button{background:#C4001A; color:#fff; border:none; border-radius:6px; padding:6px 10px;
     font-size:10.5px; font-weight:700; cursor:pointer; margin-top:7px; font-family:'Inter',sans-serif;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -346,6 +347,27 @@
 
   <!-- ============ PERFORMANCE ============ -->
   <div class="pane" id="panePerf">
+    <div class="panel">
+      <h3>Import a Box Score</h3>
+      <div class="sub">Drop the PrestoSports "Official Football Box Score" PDF (the print version from any NJCAA / school site). Every player with production gets a stat line and a suggested efficiency grade. Tick who to log, edit anything, then Log selected.</div>
+      <div class="grid2" style="margin-top:10px;">
+        <div><label class="fl">Box score PDF</label><input type="file" id="bxFile" accept="application/pdf,.pdf" onchange="importBoxScore(this.files[0])"></div>
+        <div><label class="fl">Source link (optional, saved with every row)</label><input type="text" id="bxLink" placeholder="Paste the box score URL"></div>
+      </div>
+      <div class="grid3" style="margin-top:8px;">
+        <div><label class="fl">Game date</label><input type="date" id="bxDate"></div>
+        <div><label class="fl">Level for these rows</label><select id="bxLevel"><option value="JUCO">JUCO</option><option value="HS">High School</option></select></div>
+        <div><label class="fl">Focus on (name filter)</label><input type="text" id="bxFocus" placeholder="e.g. Benjamin" oninput="renderBoxRows()"></div>
+      </div>
+      <div id="bxStatus" class="sub" style="margin-top:8px;"></div>
+      <div id="bxRows" style="margin-top:10px;"></div>
+      <div class="rc-actions" id="bxActions" style="display:none; margin-top:10px;">
+        <button type="button" class="mini-btn" onclick="bxSelect(true)">Select all shown</button>
+        <button type="button" class="mini-btn" onclick="bxSelect(false)">Clear</button>
+        <button type="button" class="btn" onclick="logSelectedBox()">Log selected</button>
+      </div>
+    </div>
+
     <div class="panel">
       <h3>Log a Performance</h3>
       <div class="sub">JUCO stat lines and standout high school games. Paste the link so the numbers stay verifiable.</div>
@@ -2091,6 +2113,121 @@ async function uploadAdminPhoto(file){
 }
 
 /* ---------------- PERFORMANCE ---------------- */
+/* ---------------- BOX SCORE IMPORT ----------------
+   Reads the PDF's text layer with pdf.js, rebuilding the two-team
+   defense tables (they sit side by side) by splitting each page at the
+   midpoint whenever a table header appears in the right half. The
+   server (import-boxscore) parses the lines into per-player stat lines
+   and suggested grades; nothing is saved until Log selected. */
+let BX = { players: [], date: null, teams: [] };
+
+async function extractPdfLines(file){
+  if(typeof pdfjsLib === 'undefined') throw new Error('PDF reader did not load. Refresh and try again.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const out = [];
+  for(let n = 1; n <= pdf.numPages; n++){
+    const page = await pdf.getPage(n);
+    const vp = page.getViewport({ scale: 1 });
+    const mid = vp.width / 2;
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(it => it.str && it.str.trim()).map(it => ({ str: it.str.trim(), x: it.transform[4], y: it.transform[5] }));
+    const rows = {};
+    items.forEach(it => { const k = Math.round(it.y / 3); (rows[k] = rows[k] || []).push(it); });
+    const ordered = Object.keys(rows).map(Number).sort((a,b)=>b-a).map(k => rows[k].sort((a,b)=>a.x-b.x));
+    const twoCol = ordered.some(r => r.some(it => /^Player\b/.test(it.str) && it.x > mid));
+    const left = ['@@COL L'], right = ['@@COL R'];
+    ordered.forEach(r => {
+      if(!twoCol){ left.push(r.map(it=>it.str).join(' ')); return; }
+      const l = r.filter(it=>it.x < mid).map(it=>it.str), rr = r.filter(it=>it.x >= mid).map(it=>it.str);
+      if(l.length) left.push(l.join(' '));
+      if(rr.length) right.push(rr.join(' '));
+    });
+    out.push(...left); if(twoCol) out.push(...right);
+  }
+  /* a wrapped surname sits alone on the next line: fold it into the row above */
+  const merged = [];
+  out.forEach(l => {
+    const prev = merged[merged.length-1];
+    if(prev && !/\d/.test(l) && /^\d{1,2}[A-Z]?\s/.test(prev) && !/^(Player|Totals|None|@@)/.test(l)) merged[merged.length-1] = prev + ' ' + l;
+    else merged.push(l);
+  });
+  return merged.join('\n');
+}
+
+async function importBoxScore(file){
+  if(!file) return;
+  const st = document.getElementById('bxStatus');
+  st.textContent = 'Reading PDF...';
+  try{
+    const text = await extractPdfLines(file);
+    st.textContent = 'Parsing players...';
+    const data = await api('importBoxScore', { text });
+    BX = { players: (data.players||[]).map((p,i)=>({ ...p, i, grade: p.grade })), date: data.date, teams: data.teams||[] };
+    if(BX.date) document.getElementById('bxDate').value = BX.date;
+    const juco = BX.players.some(p=>p.level==='JUCO');
+    document.getElementById('bxLevel').value = juco ? 'JUCO' : 'HS';
+    st.textContent = `${BX.players.length} players found${BX.date ? ' \u00b7 ' + fmtDate(BX.date) : ''}. ${BX.players.filter(p=>p.selected).length} preselected as notable. Grades are suggestions, edit before logging.`;
+    document.getElementById('bxActions').style.display = '';
+    renderBoxRows();
+  }catch(err){ st.textContent = 'Import failed: ' + err.message; }
+  document.getElementById('bxFile').value = '';
+}
+
+function bxVisible(){
+  const q = (document.getElementById('bxFocus').value||'').trim().toLowerCase();
+  return BX.players.filter(p => !q || p.name.toLowerCase().includes(q) || (p.team||'').toLowerCase().includes(q));
+}
+function renderBoxRows(){
+  const el = document.getElementById('bxRows');
+  const list = bxVisible();
+  if(!BX.players.length){ el.innerHTML=''; return; }
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No match</div></div>'; return; }
+  el.innerHTML = list.map(p => `
+    <div class="row-card" style="padding:10px 12px; ${p.selected?'':'opacity:.7;'}">
+      <div style="display:flex; gap:10px; align-items:flex-start;">
+        <input type="checkbox" ${p.selected?'checked':''} onchange="BX.players[${p.i}].selected=this.checked; renderBoxRows();" style="margin-top:4px; width:auto;">
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; gap:8px; align-items:baseline; flex-wrap:wrap;">
+            <span class="rc-name" style="font-size:14px;">${esc(p.name)}</span>
+            <span class="rc-meta">${esc(p.team||'')}</span>
+            <select onchange="BX.players[${p.i}].position=this.value" style="width:auto; padding:3px 6px; font-size:11px;">
+              ${['QB','RB','WR','TE','OL','DL','DE','EDGE','LB','CB','S','DEF','K','ATH'].map(x=>`<option ${p.position===x?'selected':''}>${x}</option>`).join('')}
+            </select>
+          </div>
+          <input type="text" value="${esc(p.statLine)}" oninput="BX.players[${p.i}].statLine=this.value" style="margin-top:6px; font-size:12px; padding:7px 9px;">
+        </div>
+        <div style="width:78px; flex:0 0 auto; text-align:center;">
+          <input type="number" min="0" max="100" step="0.5" value="${p.grade}" oninput="BX.players[${p.i}].grade=this.value" title="${esc(p.why||'')}" style="font-family:'Anton',sans-serif; font-size:18px; text-align:center; padding:6px 4px;">
+          <div class="rc-meta" style="font-size:9px; margin-top:3px;">grade</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function bxSelect(on){ bxVisible().forEach(p => { p.selected = on; }); renderBoxRows(); }
+
+async function logSelectedBox(){
+  const rows = BX.players.filter(p=>p.selected);
+  if(!rows.length){ toast('Nothing selected'); return; }
+  const date = document.getElementById('bxDate').value;
+  const level = document.getElementById('bxLevel').value;
+  const link = document.getElementById('bxLink').value.trim();
+  if(!date){ toast('Set the game date first'); return; }
+  if(!confirm(`Log ${rows.length} performance${rows.length===1?'':'s'} dated ${fmtDate(date)}?`)) return;
+  let ok = 0, bad = 0;
+  for(const p of rows){
+    const rec = { name: p.name, level, position: p.position, class_year: '', school: p.team || '', stat_line: p.statLine, source_link: link, performance_date: date, grade: p.grade };
+    try{
+      if(demoMode){ performances.unshift({ id:'demo_'+Date.now()+Math.random(), ...rec }); }
+      else { const out = await api('createPerformance', rec); performances.unshift(out.performance); }
+      ok++; p.selected = false;
+    }catch(err){ bad++; console.error(p.name, err.message); }
+  }
+  renderStats(); renderPerfChips(); renderPerf(); renderBoxRows();
+  toast(`Logged ${ok}${bad ? ', ' + bad + ' failed' : ''}`);
+}
+
 async function createPerformance(){
   const name = document.getElementById('pName').value.trim();
   if(!name){ toast('Player name required'); return; }

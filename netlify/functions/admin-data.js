@@ -316,6 +316,15 @@ exports.handler = async (event) => {
 
       /* ---------- PROGRAM BOARDS (the list a school hands us) ---------- */
 
+      case 'importBoxScore': {
+        const parse = require('./import-boxscore')._parseText;
+        const text = String(body.text || '');
+        if (text.length < 200) return fail(400, 'No box score text found');
+        const parsed = parse(text);
+        if (!parsed.players.length) return fail(422, 'Could not find any player tables. Is this a PrestoSports box score PDF?');
+        return ok(parsed);
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

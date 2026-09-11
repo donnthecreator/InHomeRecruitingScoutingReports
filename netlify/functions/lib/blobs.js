@@ -29,8 +29,12 @@ function frameStore() {
   try {
     return getStore(STORE_NAME);
   } catch (autoErr) {
-    const siteID = process.env.INHOME_SITE_ID || process.env.SITE_ID || process.env.NETLIFY_SITE_ID;
-    const token  = process.env.INHOME_BLOBS_TOKEN || process.env.BLOBS_TOKEN ||
+    /* Env var keys are case-sensitive; accept whatever case the value
+       actually got saved under in the Netlify UI. */
+    const siteID = process.env.INHOME_SITE_ID || process.env.inhome_site_id ||
+                   process.env.SITE_ID || process.env.site_id || process.env.NETLIFY_SITE_ID;
+    const token  = process.env.INHOME_BLOBS_TOKEN || process.env.inhome_blobs_token ||
+                   process.env.BLOBS_TOKEN || process.env.blobs_token ||
                    process.env.NETLIFY_BLOBS_TOKEN || process.env.NETLIFY_API_TOKEN;
     if (!siteID || !token) {
       const missing = [!siteID && 'a site id (INHOME_SITE_ID or SITE_ID)',

@@ -82,6 +82,23 @@ async function findOrCreateProspect(p) {
 
   if (found) return found;
 
+  /* Imported program lists (e.g. a school's spreadsheet) often arrive
+     without a class year. If the same player at the same school exists
+     with a blank class year, treat that as the match and fill it in,
+     rather than creating a second prospect row. */
+  if (p.classYear) {
+    const [blank] = await sql`
+      SELECT id, latitude, longitude FROM prospects
+      WHERE name_key = ${key}
+        AND COALESCE(school,'') = ${p.school || ''}
+        AND COALESCE(class_year,'') = ''
+      LIMIT 1`;
+    if (blank) {
+      await sql`UPDATE prospects SET class_year = ${p.classYear}, updated_at = now() WHERE id = ${blank.id}`;
+      return blank;
+    }
+  }
+
   const [created] = await sql`
     INSERT INTO prospects
       (name, name_key, school, class_year, position, position_label, level,

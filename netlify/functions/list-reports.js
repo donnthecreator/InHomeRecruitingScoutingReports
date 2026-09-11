@@ -112,7 +112,13 @@ exports.handler = async (event) => {
           gates:            raw.gates            || r.gates             || {},
           interview:        raw.interview        || r.interview_data    || {},
           track:            raw.track            || r.track             || null,
-          eisReps:          raw.eisReps          || [],
+          /* A rep with hasClip has a real playable video stored under
+             clip_<repId> via save-frames.js; the portal plays it directly
+             instead of falling back to a Hudl deep link. */
+          eisReps: (raw.eisReps || []).map(rep => ({
+            ...rep,
+            clipUrl: rep.hasClip ? frameUrl(base, 'clip_' + rep.id) : null
+          })),
           recommendedPrograms: raw.recommendedPrograms || []
         }
       };

@@ -38,11 +38,13 @@ exports.handler = async (event) => {
 
     for (const f of frames) {
       if (!f.key || !f.dataUrl) continue;
-      // dataUrl looks like "data:image/jpeg;base64,AAAA..." — strip the header.
-      const match = f.dataUrl.match(/^data:(image\/\w+);base64,(.+)$/);
+      // dataUrl looks like "data:image/jpeg;base64,AAAA..." or
+      // "data:video/webm;base64,AAAA..." (a recorded EIS clip) — strip the header.
+      const match = f.dataUrl.match(/^data:((?:image|video)\/[\w.+-]+);base64,(.+)$/);
       if (!match) continue;
       const [, contentType, base64Data] = match;
       const buffer = Buffer.from(base64Data, 'base64');
+      if (buffer.length > 4 * 1024 * 1024) continue; // one oversized clip should not sink the whole batch
       await store.set(f.key, buffer, { metadata: { contentType } });
     }
 

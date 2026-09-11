@@ -911,7 +911,7 @@
       <textarea id="feProse" style="min-height:80px" placeholder="Say it the way you would in the film room. If the film does not show it, do not claim it."></textarea>
 
       <div class="fe-ctl" style="margin-top:12px">
-        <button onclick="feSaveRep()" style="background:var(--red); border-color:var(--red); color:#fff; font-weight:700; padding:11px 18px">Save rep</button>
+        <button id="feSaveBtn" onclick="feSaveRep()" style="background:var(--red); border-color:var(--red); color:#fff; font-weight:700; padding:11px 18px">Save rep</button>
         <button onclick="feExport()">Export JSON</button>
       </div>
 
@@ -1672,7 +1672,7 @@ async function submitReport(){
         program:n, conference:state.recs[n].conf, state:state.recs[n].state, espnId:state.recs[n].espnId, fit:state.recs[n].fit || null
       })),
       eisReps: SEND_REPS_WITH_REPORT
-        ? state.eisReps.map(r=>{ const {frame, ...rest} = r; return rest; })
+        ? state.eisReps.map(r=>{ const {frame, clipData, ...rest} = r; return rest; })
         : []
     }
   };
@@ -2075,7 +2075,71 @@ function feBuildGates(){
   const cov = document.getElementById('feCov');
   if(!cov.options.length) cov.innerHTML = FE_COV.map(v=>`<option>${v}</option>`).join('');
 }
-function feSaveRep(){
+/* Records the exact clip_in -> clip_out range as a small, real video file
+   so the coach portal can actually press play instead of only seeing a
+   still frame. Draws the source video onto a scaled-down canvas and
+   records THAT with MediaRecorder (video only, no audio) so the file
+   stays well under the upload size limit — a few seconds at 420px wide
+   is typically under 300KB. Capped at 12s; longer ranges just skip the
+   clip and keep the still frame + Hudl deep link, so nothing breaks.
+   Any failure here (unsupported browser, decode error) resolves null
+   rather than blocking the rep from saving. */
+function recordClip(inS, outS){
+  return new Promise(resolve => {
+    if(!feVid.src || !feVid.videoWidth || inS==null || outS==null || outS<=inS || (outS-inS)>12){
+      resolve(null); return;
+    }
+    if(typeof MediaRecorder==='undefined' || !feVid.captureStream && !feVid.mozCaptureStream){
+      resolve(null); return;
+    }
+    try{
+      const c = document.createElement('canvas');
+      c.width = 420; c.height = Math.round(420*feVid.videoHeight/feVid.videoWidth);
+      const ctx = c.getContext('2d');
+      const stream = c.captureStream(24);
+      const mime = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm']
+        .find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || 'video/webm';
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 350000 });
+      const chunks = [];
+      let done = false;
+      const finish = (result) => { if(done) return; done = true; try{ rec.stream.getTracks().forEach(t=>t.stop()); }catch(e){} resolve(result); };
+      rec.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        if(!chunks.length){ finish(null); return; }
+        const blob = new Blob(chunks, { type: mime.split(';')[0] });
+        if(blob.size > 3.5*1024*1024){ finish(null); return; } // safety margin under the function payload limit
+        const r = new FileReader();
+        r.onload = () => finish(r.result);
+        r.onerror = () => finish(null);
+        r.readAsDataURL(blob);
+      };
+      rec.onerror = () => finish(null);
+
+      let raf = null;
+      const draw = () => { ctx.drawImage(feVid,0,0,c.width,c.height); raf = requestAnimationFrame(draw); };
+      const stopAt = () => {
+        if(feVid.currentTime >= outS || feVid.paused || feVid.ended){
+          feVid.removeEventListener('timeupdate', stopAt);
+          if(raf) cancelAnimationFrame(raf);
+          feVid.pause();
+          if(rec.state !== 'inactive') rec.stop();
+        }
+      };
+      feVid.currentTime = inS;
+      feVid.onseeked = () => {
+        feVid.onseeked = null;
+        rec.start();
+        draw();
+        feVid.play();
+        feVid.addEventListener('timeupdate', stopAt);
+      };
+      // Hard stop in case timeupdate never fires (e.g. very short range).
+      setTimeout(() => { if(rec.state!=='inactive'){ feVid.pause(); rec.stop(); } }, (outS-inS)*1000 + 2500);
+    }catch(e){ resolve(null); }
+  });
+}
+
+async function feSaveRep(){
   const prose = document.getElementById('feProse').value.trim();
   const num = document.getElementById('feNum').value.trim();
   if(feG===null){ showToast('Grade the rep'); return; }
@@ -2089,6 +2153,16 @@ function feSaveRep(){
       frame=c.toDataURL('image/jpeg',0.65);
     }catch(e){}
   }
+
+  const btn = document.getElementById('feSaveBtn');
+  let clipData = null;
+  if(feIO.in!=null && feIO.out!=null && feIO.out>feIO.in){
+    if(btn){ btn.disabled = true; btn.textContent = 'Recording clip...'; }
+    showToast('Recording clip \u2014 do not close this tab');
+    clipData = await recordClip(feIO.in, feIO.out);
+    if(btn){ btn.disabled = false; btn.textContent = 'Save rep'; }
+  }
+
   state.eisReps.push({
     id:'rep_'+Date.now(),
     tagged_at:new Date().toISOString(),
@@ -2104,7 +2178,9 @@ function feSaveRep(){
     grade:feG,
     traits:[...fePicked],
     evaluation:prose,
-    frame:frame
+    frame:frame,
+    clipData:clipData,
+    hasClip:!!clipData
   });
   document.getElementById('feProse').value='';
   fePicked.clear();
@@ -2112,7 +2188,7 @@ function feSaveRep(){
   document.querySelectorAll('#feGradeRow .grade-btn').forEach(b=>b.classList.remove('sel'));
   feG=null;
   feRender();
-  showToast('Rep saved. '+state.eisReps.length+' attached.');
+  showToast(clipData ? 'Rep saved with playable clip. '+state.eisReps.length+' attached.' : 'Rep saved. '+state.eisReps.length+' attached.');
 }
 const FE_GL = {2:['Win','w'],1:['Slight win','w'],0:['Neutral',''],'-1':['Slight loss','l'],'-2':['Loss','l']};
 function feRender(){
@@ -2128,6 +2204,7 @@ function feRender(){
         <span class="pill ${FE_GL[r.grade][1]}">${FE_GL[r.grade][0]}</span>
         <span class="pill">${r.coverage}</span>
         <span class="pill">${r.observed_action}</span>
+        ${r.hasClip ? '<span class="pill" style="color:var(--red);border-color:var(--red)">▶ clip</span>' : ''}
         <button class="del" type="button" onclick="feDel('${r.id}')">&times;</button>
       </div>
       <div class="ev">${r.evaluation.replace(/</g,'&lt;')}</div>
@@ -2176,6 +2253,9 @@ async function uploadFrames(reportId){
   const frames = state.eisReps
     .filter(r => r.frame)
     .map(r => ({ key: r.id, dataUrl: r.frame }));
+  /* Playable clips ride the same batch, keyed clip_<repId> so frame.js
+     (already content-type agnostic) serves them straight to <video src>. */
+  state.eisReps.filter(r => r.clipData).forEach(r => frames.push({ key: 'clip_' + r.id, dataUrl: r.clipData }));
   if(!frames.length) return;
 
   try{

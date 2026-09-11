@@ -287,6 +287,19 @@ exports.handler = async (event) => {
 
       /* ---------- PROGRAM BOARDS (the list a school hands us) ---------- */
 
+      case 'listProgramBoards': {
+        const boards = await sql`
+          SELECT pp.program_code,
+                 count(*)::int AS prospects,
+                 count(DISTINCT r.prospect_id)::int AS scouted,
+                 min(pp.added_at) AS added_at
+          FROM program_prospects pp
+          LEFT JOIN reports r ON r.prospect_id = pp.prospect_id
+          GROUP BY pp.program_code
+          ORDER BY min(pp.added_at) DESC`;
+        return ok({ boards });
+      }
+
       case 'programBoardStats': {
         const program = String(body.program || '').trim().toUpperCase();
         if (!program) return fail(400, 'program required');

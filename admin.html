@@ -377,8 +377,13 @@
   <!-- ============ RECRUITING BOARD ============ -->
   <div class="pane" id="paneBoard">
     <div class="panel">
-      <h3>Offense Recruiting Board</h3>
-      <div class="sub">284 receivers off the Samford board. These names run on most staffs' lists, so it's a working start. Check guys off as you get through them. Progress saves in this browser.</div>
+      <h3 id="boardTitle">Recruiting Boards</h3>
+      <div class="sub" id="boardSub">Every list a program has handed us, plus the Samford receiver board. Pick a board, check guys off as you work them, assign any player or the whole board to a scout.</div>
+      <div class="tools" style="margin-top:12px;">
+        <select id="boardProgram" onchange="switchBoard(this.value)"><option value="__samford">Samford WR board (static)</option></select>
+        <select id="boardAssignScout"><option value="">Every scout</option></select>
+        <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign whole board</button>
+      </div>
       <div class="board-progress">
         <div class="bp-row">
           <span><b id="bpDone">0</b> worked</span>
@@ -663,6 +668,7 @@ function renderAll(){
   renderReports();
   renderPerf();
   initBoard();
+  loadProgramBoards();
 }
 function initBoard(){
   loadBoardStatus();
@@ -1140,6 +1146,70 @@ const BOARD_DATA = [
 ["Kaden Grigsby","H","Nashville Christian HS","TN","5' 11\"","175"]
 ];
 
+/* ---------------- PROGRAM BOARDS (live) ----------------
+   Board tab can show either the static Samford list or any program's
+   board from program_prospects (loaded from list-program-prospects).
+   Live rows use the same array shape as BOARD_DATA so every board
+   function works on both: [name, pos, school, state, height, weight, extra]
+   where extra carries prospectId / status / score for live boards. */
+let LIVE_BOARD = null;      // null = static Samford list
+let LIVE_BOARD_CODE = '';
+function boardRows(){ return LIVE_BOARD || BOARD_DATA; }
+
+async function loadProgramBoards(){
+  if(demoMode) return;
+  try{
+    const data = await api('listProgramBoards', {});
+    const sel = document.getElementById('boardProgram');
+    const keep = sel.value;
+    sel.innerHTML = '<option value="__samford">Samford WR board (static)</option>' +
+      (data.boards||[]).map(b => `<option value="${esc(b.program_code)}">${esc(b.program_code)} board \u00b7 ${b.scouted}/${b.prospects} scouted</option>`).join('');
+    const ss = document.getElementById('boardAssignScout');
+    if(ss.options.length <= 1) (SCOUT_ROSTER||[]).filter(sc=>sc.active!==false).forEach(sc => { const o=document.createElement('option'); o.value=sc.id; o.textContent=sc.name; ss.appendChild(o); });
+    /* Default to the most recent program board if one exists. */
+    if(keep && keep !== '__samford' && [...sel.options].some(o=>o.value===keep)) sel.value = keep;
+    else if(data.boards && data.boards.length){ sel.value = data.boards[0].program_code; switchBoard(sel.value); }
+  }catch(err){ console.error('loadProgramBoards:', err.message); }
+}
+
+async function switchBoard(code){
+  boardPosFilter = 'All'; boardStatusFilter = 'All';
+  const sel = document.getElementById('boardState'); if(sel) sel.innerHTML = '';
+  if(!code || code === '__samford'){
+    LIVE_BOARD = null; LIVE_BOARD_CODE = '';
+    document.getElementById('boardTitle').textContent = 'Samford WR Board';
+    document.getElementById('boardAssignAll').style.display = 'none';
+    initBoard(); return;
+  }
+  LIVE_BOARD_CODE = code;
+  document.getElementById('boardTitle').textContent = code + ' Prospect Board';
+  document.getElementById('boardList').innerHTML = '<div class="b-empty"><div class="t">Loading...</div></div>';
+  try{
+    const res = await fetch('/.netlify/functions/list-program-prospects?program=' + encodeURIComponent(code), { cache:'no-store' });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    LIVE_BOARD = (data.board||[]).map(x => [x.prospect, x.position||'ATH', x.school||'', x.homeState||'', x.height||'', x.weight||'',
+      { prospectId:x.prospectId, status:x.status, score:x.inhomeScore, tier:x.recommendationTier, classYear:x.classYear, reportId:x.reportId, headshotUrl:x.headshotUrl }]);
+    document.getElementById('boardAssignAll').style.display = '';
+    initBoard();
+  }catch(err){
+    LIVE_BOARD = [];
+    document.getElementById('boardList').innerHTML = `<div class="b-empty"><div class="t">Could not load board</div><div class="s">${esc(err.message)}</div></div>`;
+  }
+}
+
+async function assignWholeBoard(){
+  if(!LIVE_BOARD_CODE) return;
+  const scoutId = document.getElementById('boardAssignScout').value || null;
+  const who = scoutId ? ((SCOUT_ROSTER||[]).find(s=>s.id===scoutId)||{}).name || scoutId : 'every scout';
+  if(!confirm(`Put the entire ${LIVE_BOARD_CODE} board (${boardRows().length} players) on ${who}'s target list?`)) return;
+  try{
+    const d = await api('assignProgramBoard', { program: LIVE_BOARD_CODE, scoutId });
+    toast(`Created ${d.created} assignment(s) for ${who}`);
+    loadAll();
+  }catch(err){ toast(err.message); }
+}
+
 const BOARD_KEY = 'inhome_board_status_v1';
 let boardStatus = {};
 let boardPosFilter = 'All';
@@ -1166,16 +1236,16 @@ function setBoardStatus(key, status){
 function renderBoardProgress(){
   const done = Object.values(boardStatus).filter(v=>v==='done').length;
   const flag = Object.values(boardStatus).filter(v=>v==='flag').length;
-  const left = BOARD_DATA.length - done;
+  const left = boardRows().length - done;
   document.getElementById('bpDone').textContent = done;
   document.getElementById('bpFlag').textContent = flag;
   document.getElementById('bpLeft').textContent = left;
-  document.getElementById('bpBar').style.width = Math.round(done/BOARD_DATA.length*100) + '%';
+  document.getElementById('bpBar').style.width = (boardRows().length ? Math.round(done/boardRows().length*100) : 0) + '%';
   document.getElementById('cntBoard').textContent = left + ' left';
 }
 
 function buildBoardFilters(){
-  const positions = ['All', ...new Set(BOARD_DATA.map(p=>p[1]))];
+  const positions = ['All', ...new Set(boardRows().map(p=>p[1]))];
   document.getElementById('boardPosChips').innerHTML = positions.map(p=>
     `<button type="button" class="chip ${p===boardPosFilter?'on':''}" onclick="setBoardPos('${p}')">${p==='All'?'All positions':p}</button>`).join('');
 
@@ -1183,7 +1253,7 @@ function buildBoardFilters(){
   document.getElementById('boardStatusChips').innerHTML = statuses.map(([k,l])=>
     `<button type="button" class="chip ${k===boardStatusFilter?'on':''}" onclick="setBoardStatusFilter('${k}')">${l}</button>`).join('');
 
-  const states = [...new Set(BOARD_DATA.map(p=>p[3]).filter(Boolean))].sort();
+  const states = [...new Set(boardRows().map(p=>p[3]).filter(Boolean))].sort();
   const sel = document.getElementById('boardState');
   if(!sel.options.length){
     sel.innerHTML = '<option value="All">All states</option>' +
@@ -1197,7 +1267,7 @@ function renderBoard(){
   const q = (document.getElementById('boardSearch').value||'').trim().toLowerCase();
   const st = document.getElementById('boardState').value;
 
-  const list = BOARD_DATA.filter(p=>{
+  const list = boardRows().filter(p=>{
     if(boardPosFilter !== 'All' && p[1] !== boardPosFilter) return false;
     if(st !== 'All' && p[3] !== st) return false;
     const status = boardStatus[boardKey(p)] || 'open';
@@ -1217,13 +1287,18 @@ function renderBoard(){
   el.innerHTML = list.map((p,i)=>{
     const key = boardKey(p);
     const status = boardStatus[key] || 'open';
-    const meta = [p[2], p[3], [p[4],p[5]].filter(Boolean).join(' / ')].filter(Boolean).join(' \u00b7 ');
+    const live = p[6] || null;
+    const meta = [p[2], p[3], live && live.classYear ? 'Class of ' + live.classYear : '', [p[4],p[5]].filter(Boolean).join(' / ')].filter(Boolean).join(' \u00b7 ');
+    const scouted = live && live.status === 'scouted'
+      ? `<div class="b-meta" style="color:var(--ink);font-weight:700;">Scouted \u00b7 ${live.score!=null ? Number(live.score).toFixed(1) : '\u2014'}${live.tier ? ' \u00b7 ' + esc(live.tier) : ''}</div>`
+      : (live ? '<div class="b-meta">Not yet scouted</div>' : '');
     return `<div class="b-card ${status==='done'?'done':''} ${status==='flag'?'flag':''}">
       <div class="b-top">
         <div class="b-num">${i+1}</div>
         <div class="b-mid">
           <div class="b-name">${esc(p[0])}</div>
           <div class="b-meta">${esc(meta)}</div>
+          ${scouted}
         </div>
         <div class="b-pos">${esc(p[1])}</div>
       </div>
@@ -1239,13 +1314,16 @@ function renderBoard(){
 
 /* Pushes a board player into the assign form, prefilled. */
 function assignFromBoard(key){
-  const p = BOARD_DATA.find(x=>boardKey(x)===key);
+  const p = boardRows().find(x=>boardKey(x)===key);
   if(!p) return;
   document.getElementById('aName').value   = p[0];
   document.getElementById('aSchool').value = p[2];
   document.getElementById('aLevel').value  = 'HS';
-  document.getElementById('aPos').value    = 'WR';
-  document.getElementById('aNote').value   = `Off the offense board (${p[1]})${p[4]?' \u00b7 '+p[4]:''}${p[5]?' / '+p[5]:''}`;
+  const live = p[6] || null;
+  const posSel = document.getElementById('aPos');
+  if(live){ if([...posSel.options].some(o=>o.value===p[1])) posSel.value = p[1]; if(live.classYear) document.getElementById('aClass').value = live.classYear; }
+  else posSel.value = 'WR';
+  document.getElementById('aNote').value   = live ? `${LIVE_BOARD_CODE} prospect board` : `Off the offense board (${p[1]})${p[4]?' \u00b7 '+p[4]:''}${p[5]?' / '+p[5]:''}`;
   switchTab('assign');
   window.scrollTo({top:0, behavior:'smooth'});
   toast('Loaded into assign form. Pick a scout.');

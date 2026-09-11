@@ -315,6 +315,12 @@ exports.handler = async (event) => {
             position_label = COALESCE(keep.position_label, dup.position_label),
             home_state     = COALESCE(keep.home_state,     dup.home_state),
             level          = COALESCE(keep.level,          dup.level),
+            headshot_key   = COALESCE(keep.headshot_key,   dup.headshot_key),
+            wingspan_key   = COALESCE(keep.wingspan_key,   dup.wingspan_key),
+            wingspan       = COALESCE(keep.wingspan,       dup.wingspan),
+            height         = COALESCE(keep.height,         dup.height),
+            weight         = COALESCE(keep.weight,         dup.weight),
+            film_link      = COALESCE(keep.film_link,      dup.film_link),
             updated_at     = now()
           FROM prospects dup
           WHERE dup.name_key = keep.name_key

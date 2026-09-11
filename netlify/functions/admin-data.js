@@ -325,6 +325,17 @@ exports.handler = async (event) => {
         return ok(parsed);
       }
 
+      case 'listProspects': {
+        const rows = await sql`
+          SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
+                 p.headshot_key, p.wingspan_key,
+                 (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
+                 (SELECT string_agg(DISTINCT upper(pp.program_code), ', ') FROM program_prospects pp WHERE pp.prospect_id = p.id) AS boards
+          FROM prospects p
+          ORDER BY p.name`;
+        return ok({ prospects: rows });
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

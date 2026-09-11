@@ -37,7 +37,8 @@
 </div>
 
 <div id="mainBox" class="hide">
-  <label>Prospect</label>
+  <label>Prospect <span style="color:#666;font-weight:500;letter-spacing:0;text-transform:none;">(\u25cf has headshot, \u25cb none yet)</span></label>
+  <input type="text" id="prospectSearch" placeholder="Search name, school, or board code (MSST26)" oninput="renderProspectOptions()" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-bottom:8px;">
   <select id="prospect"><option>Loading...</option></select>
 
   <label>Photo type</label>
@@ -167,30 +168,30 @@ async function login(){
   }catch(err){ log('Sign in threw: ' + err.message, 'bad'); }
 }
 
-/* Reports carry prospectId, so the reports list doubles as a prospect list. */
+/* Every prospect in the system, whether or not a report exists yet
+   (program boards, admin-added targets, scouted players all included). */
+let ALL_PROSPECTS = [];
 async function loadProspects(){
-  log('Loading prospects from list-reports...');
+  log('Loading every prospect...');
   try{
-    const res = await fetch('/.netlify/functions/list-reports');
-    const data = await res.json();
-    if(!Array.isArray(data)){ log('list-reports did not return an array: ' + JSON.stringify(data).slice(0,300), 'bad'); return; }
-    log('Got ' + data.length + ' reports.', 'ok');
-    const seen = {};
-    data.forEach(r => { if(r.prospectId && !seen[r.prospectId]) seen[r.prospectId] = r; });
-    const ids = Object.keys(seen);
-    if(!ids.length){
-      log('None of the reports have a prospectId. Nothing to upload against.', 'bad');
-      document.getElementById('prospect').innerHTML = '<option value="">(none found)</option>';
-      return;
-    }
-    document.getElementById('prospect').innerHTML = ids.map(id => {
-      const r = seen[id];
-      const has = r.headshotUrl ? ' [has photo]' : '';
-      return `<option value="${id}">${r.prospect} — ${r.school||'?'} (id ${id})${has}</option>`;
-    }).join('');
-    log('Loaded ' + ids.length + ' distinct prospects.', 'ok');
+    const data = await adminApi('listProspects', {});
+    ALL_PROSPECTS = data.prospects || [];
+    if(!ALL_PROSPECTS.length){ log('No prospects in the database yet.', 'bad'); document.getElementById('prospect').innerHTML = '<option value="">(none)</option>'; return; }
+    renderProspectOptions();
+    log('Loaded ' + ALL_PROSPECTS.length + ' prospects (' + ALL_PROSPECTS.filter(p=>p.headshot_key).length + ' with a headshot).', 'ok');
     document.getElementById('goBtn').disabled = false;
-  }catch(err){ log('loadProspects threw: ' + err.message, 'bad'); }
+  }catch(err){ log('loadProspects failed: ' + err.message, 'bad'); }
+}
+function renderProspectOptions(){
+  const q = (document.getElementById('prospectSearch').value||'').trim().toLowerCase();
+  const sel = document.getElementById('prospect');
+  const keep = sel.value;
+  const list = ALL_PROSPECTS.filter(p => !q || (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q) || (p.boards||'').toLowerCase().includes(q));
+  sel.innerHTML = list.map(p => {
+    const tag = [p.position, p.school, p.class_year ? 'Class of ' + p.class_year : '', p.boards ? p.boards : '', p.reports ? p.reports + ' rpt' : ''].filter(Boolean).join(' \u00b7 ');
+    return `<option value="${p.id}">${p.headshot_key ? '\u25cf ' : '\u25cb '}${p.name} \u2014 ${tag} (id ${p.id})</option>`;
+  }).join('') || '<option value="">(no match)</option>';
+  if(keep && [...sel.options].some(o=>o.value===keep)) sel.value = keep;
 }
 
 let PICKED = null;
@@ -250,6 +251,7 @@ async function go(){
       log('frame.js returned HTTP ' + check.status + ' (' + (check.headers.get('content-type')||'no content-type') + ')', check.ok ? 'ok' : 'bad');
       if(check.ok){
         log('Photo is live. Open it here:\n' + url, 'ok');
+      const pr = ALL_PROSPECTS.find(p => String(p.id) === String(prospectId)); if(pr){ if(kind==='headshot') pr.headshot_key = data.key; else pr.wingspan_key = data.key; renderProspectOptions(); }
         const p = document.getElementById('prev'); p.src = url + '&cb=' + Date.now();
       } else {
         log('Blob was written but frame.js cannot read it back. That is a blob store problem, not a database problem.', 'bad');

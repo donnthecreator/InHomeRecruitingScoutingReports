@@ -729,6 +729,7 @@ function renderAll(){
   renderPerf();
   initBoard();
   loadProgramBoards();
+  buildKnownNames();
 }
 function initBoard(){
   loadBoardStatus();
@@ -2365,6 +2366,7 @@ async function importBoxScore(file){
   try{
     const text = await extractPdfLines(file);
     st.textContent = 'Parsing players...';
+    if(!KNOWN_PROSPECTS.length) await loadKnownProspects(); else buildKnownNames();
     const data = await api('importBoxScore', { text });
     BX = { players: (data.players||[]).map((p,i)=>({ ...p, i, grade: p.grade })), date: data.date, teams: data.teams||[] };
     if(BX.date) document.getElementById('bxDate').value = BX.date;
@@ -2384,6 +2386,53 @@ function bxVisible(){
 /* PDFs built with ligature fonts often drop a letter: Ruffin -> Rufn,
    Jefferson -> Jeferson, Huff -> Huf, Griffin -> Grifn. Flag those so
    they get fixed before they become a player's permanent spelling. */
+/* Every name we already track: logged performances first, then prospects.
+   Used to offer "did you mean" on an imported misspelling. */
+let KNOWN_NAMES = [];
+let KNOWN_PROSPECTS = [];
+function buildKnownNames(){
+  const seen = new Map();
+  (performances||[]).forEach(p => { if(p.name) seen.set(p.name.toLowerCase(), { name:p.name, school:p.school||'', src:'logged' }); });
+  (KNOWN_PROSPECTS||[]).forEach(p => { if(p.name && !seen.has(p.name.toLowerCase())) seen.set(p.name.toLowerCase(), { name:p.name, school:p.school||'', src:'prospect' }); });
+  KNOWN_NAMES = [...seen.values()];
+}
+async function loadKnownProspects(){
+  try{ const d = await api('listProspects', {}); KNOWN_PROSPECTS = d.prospects || []; }catch(e){}
+  buildKnownNames();
+}
+const nkey = (s) => String(s||'').toLowerCase().replace(/[^a-z]/g,'');
+function editDistance(a, b){
+  if(a === b) return 0;
+  if(Math.abs(a.length - b.length) > 3) return 99;
+  const prev = Array(b.length + 1).fill(0).map((_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    let last = prev[0]; prev[0] = i;
+    for(let j=1;j<=b.length;j++){
+      const tmp = prev[j];
+      prev[j] = Math.min(prev[j] + 1, prev[j-1] + 1, last + (a[i-1]===b[j-1] ? 0 : 1));
+      last = tmp;
+    }
+  }
+  return prev[b.length];
+}
+/* A dropped ligature letter is an insertion: "rufn" -> "ruffin" is 2.
+   Same first letter and a tight distance limit, so a genuinely different
+   player is never suggested. */
+function suggestName(raw){
+  const k = nkey(raw);
+  if(k.length < 4) return null;
+  let best = null, bestD = 99;
+  for(const c of KNOWN_NAMES){
+    const ck = nkey(c.name);
+    if(ck === k){ return null; }
+    if(ck[0] !== k[0]) continue;
+    const d = editDistance(k, ck);
+    const limit = k.length <= 8 ? 1 : k.length <= 14 ? 2 : 3;
+    if(d <= limit && d < bestD){ bestD = d; best = c; }
+  }
+  return best ? Object.assign({}, best, { distance: bestD }) : null;
+}
+
 function suspectName(n){
   return /f(?:n|t|l)\b/i.test(n) || /\b\w*[aeiou]f\b/i.test(n) || /\bJeferson\b|\bRufn\b|\bGrifn\b|\bHuf\b|\bStaford\b|\bClifon\b/i.test(n);
 }
@@ -2397,7 +2446,7 @@ function renderBoxRows(){
       <div style="display:flex; gap:10px; align-items:flex-start;">
         <input type="checkbox" ${p.selected?'checked':''} onchange="BX.players[${p.i}].selected=this.checked; renderBoxRows();" style="margin-top:4px; width:auto;">
         <div style="flex:1; min-width:0;">
-        ${suspectName(p.name) ? '<div class="rc-meta" style="color:var(--warn); margin-bottom:4px;">Check this spelling \u2014 the PDF may have dropped a letter</div>' : ''}
+        ${bxNameHint(p)}
           <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
             <input type="text" value="${esc(p.name)}" oninput="BX.players[${p.i}].name=this.value" title="Fix the spelling before logging. PDFs often drop a letter in ff/fi names (Ruffin, Jefferson, Huff)."
                    style="flex:1; min-width:150px; font-weight:700; font-size:14px; padding:6px 8px;">
@@ -2418,7 +2467,30 @@ function renderBoxRows(){
       </div>
     </div>`).join('');
 }
+function bxNameHint(p){
+  const sug = suggestName(p.name);
+  if(sug){
+    return '<div class="rc-meta" style="color:var(--warn); margin-bottom:4px;">Close to <b style="color:var(--ink)">' + esc(sug.name) + '</b>'
+      + (sug.school ? ' (' + esc(sug.school) + ')' : '') + ' that we already track. '
+      + '<a href="#" data-merge="' + p.i + '" style="color:var(--ink); font-weight:700;">Merge into that profile</a></div>';
+  }
+  if(suspectName(p.name)) return '<div class="rc-meta" style="color:var(--warn); margin-bottom:4px;">Check this spelling, the PDF may have dropped a letter</div>';
+  return '';
+}
+function useSuggested(i){
+  const sug = suggestName(BX.players[i].name);
+  if(!sug) return;
+  BX.players[i].name = sug.name;
+  if(sug.school) BX.players[i].team = sug.school;
+  BX.players[i].selected = true;
+  renderBoxRows();
+  toast('Will log under ' + sug.name);
+}
 function bxSelect(on){ bxVisible().forEach(p => { p.selected = on; }); renderBoxRows(); }
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[data-merge]');
+  if(a){ e.preventDefault(); useSuggested(Number(a.dataset.merge)); }
+});
 
 let BX_BUSY = false;
 async function logSelectedBox(){
@@ -2591,8 +2663,10 @@ function renderPerf(){
       <div style="margin-top:8px;">${weeks}</div>
       ${railHTML(g.name, latest.source_link)}
       ${g.dupes ? `<div class="rc-meta" style="margin-top:6px;color:var(--warn)">${g.dupes} duplicate log${g.dupes===1?'':'s'} hidden (same date + stats). <a href="#" onclick="removeDupes('${esc(g.key)}'); return false;" style="color:var(--ink)">Remove them</a></div>` : ''}
+      ${perfNameHint(g)}
       <div class="rc-actions">
         <button type="button" class="mini-btn go" onclick="addWeekFor('${esc(g.key)}')">+ Add week</button>
+        <button type="button" class="mini-btn" onclick="renamePlayer('${esc(g.key)}')">Fix name</button>
         <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:g.name||'', school:g.school||'', class:g.class_year||'', position:(g.position && POS_MAP[g.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
         <button type="button" class="mini-btn" onclick="assignFromPerf('${latest.id}')">Assign to Scout</button>
       </div>
@@ -2602,6 +2676,40 @@ function renderPerf(){
 
 /* Prefill the log form with this player's identity; only date, stat
    line, grade, and link are left to type. */
+function perfNameHint(g){
+  const sug = suggestName(g.name);
+  if(!sug) return '';
+  return '<div class="rc-meta" style="margin-top:6px;color:var(--warn)">Close to <b style="color:var(--ink)">' + esc(sug.name)
+    + '</b>. <a href="#" data-mergeperf="' + esc(g.key) + '" data-to="' + esc(sug.name) + '" style="color:var(--ink)">Merge these two</a></div>';
+}
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[data-mergeperf]');
+  if(!a) return;
+  e.preventDefault();
+  const g = performances.find(x => perfKey(x) === a.dataset.mergeperf);
+  if(!g) return;
+  if(!confirm('Move every game logged under "' + g.name + '" onto "' + a.dataset.to + '"?')) return;
+  doRename(g.name, a.dataset.to, g.school || '');
+});
+
+/* Rename every logged game for a player. If the new name matches someone
+   already tracked, the two cards become one. */
+async function renamePlayer(key){
+  const p = performances.find(x=>perfKey(x)===key); if(!p) return;
+  const to = prompt('Correct name for this player:', p.name);
+  if(!to || to.trim() === p.name) return;
+  await doRename(p.name, to.trim(), p.school || '');
+}
+async function doRename(fromName, toName, school){
+  try{
+    const d = await api('renamePerformancePlayer', { fromName, toName, school });
+    performances.forEach(x => { if(nkey(x.name)===nkey(fromName) && (!school || (x.school||'')===school)) x.name = toName; });
+    buildKnownNames();
+    renderPerf(); MK = null;
+    toast('Updated ' + d.updated + ' game' + (d.updated===1?'':'s') + ' to ' + toName);
+  }catch(err){ toast(err.message); }
+}
+
 async function removeDupes(key){
   const groups = {};
   performances.filter(p=>perfKey(p)===key).forEach(p=>{ const k = dateOnly(p.performance_date)+'|'+(p.stat_line||''); (groups[k]=groups[k]||[]).push(p); });

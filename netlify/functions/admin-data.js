@@ -422,6 +422,27 @@ exports.handler = async (event) => {
         return ok({ prospectId, assignmentId });
       }
 
+      /* Rename every performance row for one player, so a misspelling
+         imported from a PDF merges into the profile already tracked. */
+      case 'renamePerformancePlayer': {
+        const from = String(body.fromName || '').trim();
+        const to = String(body.toName || '').trim();
+        if (!from || !to) return fail(400, 'fromName and toName required');
+        const fromKey = from.toLowerCase().replace(/[^a-z]/g, '');
+        const school = (body.school !== undefined && body.school !== null && body.school !== '') ? String(body.school) : null;
+        const rows = school
+          ? await sql`
+              UPDATE player_performances SET name = ${to}
+              WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${fromKey}
+                AND COALESCE(school,'') = ${school}
+              RETURNING id`
+          : await sql`
+              UPDATE player_performances SET name = ${to}
+              WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${fromKey}
+              RETURNING id`;
+        return ok({ updated: rows.length });
+      }
+
       case 'listProspects': {
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,

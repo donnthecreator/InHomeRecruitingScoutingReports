@@ -275,6 +275,7 @@
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbPerf" onclick="switchTab('perf')">Performance<span class="cnt" id="cntPerf">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbMarket" onclick="switchTab('market')">Market<span class="cnt" id="cntMarket">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbBoard" onclick="switchTab('board')">Board<span class="cnt" id="cntBoard">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbMap" onclick="switchTab('map')">Map<span class="cnt" id="cntMap">&mdash;</span></button>
   </div>
@@ -399,6 +400,22 @@
   </div>
 
   <!-- ============ RECRUITING BOARD ============ -->
+  <div class="pane" id="paneMarket">
+    <div class="panel">
+      <h3>Prospect Market</h3>
+      <div class="sub">Every player on the Production Market, JUCO and transfer candidates included, exactly as coaches see it. Price is the latest game grade, change is versus the game before. Built from the Performance log; nothing to enter here.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="mkSearch" placeholder="Search name or school" oninput="renderMarket()">
+        <select id="mkLevel" onchange="renderMarket()"><option value="">JUCO + HS + transfer</option><option value="JUCO">JUCO only</option><option value="HS">High school only</option></select>
+        <select id="mkPos" onchange="renderMarket()"><option value="">All positions</option></select>
+        <select id="mkSort" onchange="renderMarket()"><option value="price">Highest grade</option><option value="up">Biggest riser</option><option value="down">Biggest faller</option><option value="games">Most games</option><option value="name">Name</option></select>
+        <button type="button" class="mini-btn" onclick="MK=null; renderMarket()">Refresh</button>
+      </div>
+      <div id="mkStats" class="sub" style="margin-top:8px;"></div>
+      <div id="mkList" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
   <div class="pane" id="paneBoard">
     <div class="panel">
       <h3 id="boardTitle">Recruiting Boards</h3>
@@ -724,10 +741,11 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     document.getElementById('tb'+cap).classList.toggle('on', k===t);
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
+  if(t==='market') renderMarket();
   /* Google Maps renders at zero size if it initialized while hidden. */
   if(t==='map' && window.gmap){
     setTimeout(()=>{
@@ -2004,6 +2022,79 @@ function renderReports(){
         <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
       </div>
     </div>`).join('');
+}
+
+/* ---------------- PROSPECT MARKET (admin view of the portal market) ---------------- */
+let MK = null;
+function mkSpark(vals, w, h){
+  if(vals.length < 2) return `<svg width="${w}" height="${h}"><line x1="3" y1="${h/2}" x2="${w-3}" y2="${h/2}" stroke="#333" stroke-width="2" stroke-dasharray="2 4"/></svg>`;
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max-min)||1, pad = 3, step = (w-pad*2)/(vals.length-1);
+  const pts = vals.map((v,i)=>`${(pad+i*step).toFixed(1)},${(pad+(1-(v-min)/span)*(h-pad*2)).toFixed(1)}`);
+  const col = vals[vals.length-1] > vals[vals.length-2] ? '#35C759' : vals[vals.length-1] < vals[vals.length-2] ? '#FF5A5A' : '#888';
+  return `<svg width="${w}" height="${h}"><polyline fill="none" stroke="${col}" stroke-width="2" points="${pts.join(' ')}"/></svg>`;
+}
+async function renderMarket(){
+  const el = document.getElementById('mkList'), st = document.getElementById('mkStats');
+  if(MK === null){
+    el.innerHTML = '<div class="empty"><div class="t">Loading market...</div></div>';
+    try{
+      const res = await fetch('/.netlify/functions/list-performances', { cache:'no-store' });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      MK = (data.players||[]).map(p=>{
+        const graded = (p.entries||[]).filter(e=>e.grade!=null && e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+        const vals = graded.map(e=>+Number(e.grade).toFixed(1));
+        const price = vals.length ? vals[vals.length-1] : null;
+        const prev = vals.length > 1 ? vals[vals.length-2] : null;
+        const chg = (price!=null && prev!=null) ? +(price-prev).toFixed(1) : null;
+        return { ...p, graded, vals, price, chg, games:(p.entries||[]).length };
+      }).filter(p=>p.price!=null);
+      const posSel = document.getElementById('mkPos');
+      if(posSel.options.length <= 1) [...new Set(MK.map(p=>p.position).filter(Boolean))].sort().forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; posSel.appendChild(o); });
+      document.getElementById('cntMarket').textContent = MK.length;
+    }catch(err){ el.innerHTML = `<div class="empty"><div class="t">Could not load</div><div class="s">${esc(err.message)}</div></div>`; return; }
+  }
+  const q = (document.getElementById('mkSearch').value||'').trim().toLowerCase();
+  const lvl = document.getElementById('mkLevel').value, pos = document.getElementById('mkPos').value, sort = document.getElementById('mkSort').value;
+  let list = MK.filter(p => (!lvl || p.level===lvl) && (!pos || p.position===pos) && (!q || (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)));
+  const sorters = {
+    price:(a,b)=>b.price-a.price,
+    up:(a,b)=>(b.chg==null?-999:b.chg)-(a.chg==null?-999:a.chg),
+    down:(a,b)=>(a.chg==null?999:a.chg)-(b.chg==null?999:b.chg),
+    games:(a,b)=>b.games-a.games,
+    name:(a,b)=>a.name.localeCompare(b.name)
+  };
+  list.sort(sorters[sort] || sorters.price);
+  const up = list.filter(p=>p.chg>0).length, down = list.filter(p=>p.chg<0).length, one = list.filter(p=>p.chg==null).length;
+  const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length).toFixed(1) : '\u2014';
+  st.textContent = `${list.length} tracked \u00b7 index ${idx} \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`;
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No graded games yet</div><div class="s">Log a performance with a grade and he shows up here.</div></div>'; return; }
+  el.innerHTML = list.map(p=>{
+    const col = p.chg==null ? 'var(--dim)' : p.chg>0 ? '#35C759' : p.chg<0 ? '#FF5A5A' : 'var(--dim)';
+    const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'')+p.chg;
+    const key = (p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + schoolKey(p.school);
+    const log = p.graded.slice().reverse().map(e=>`<div style="display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;"><span style="min-width:60px;color:var(--dim)">${fmtDate(e.date)}</span><span style="min-width:40px;font-family:'Anton',sans-serif;font-size:15px;">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#D6D6D6">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--mute)">source</a>`:''}</span></div>`).join('');
+    return `<div class="row-card" style="padding:10px 12px;">
+      <div style="display:flex;gap:12px;align-items:center;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        <div style="flex:1;min-width:0;">
+          <div class="rc-name" style="font-size:14px;">${esc(p.name)} <span class="rc-meta">${esc(p.position||'')}</span></div>
+          <div class="rc-meta">${esc(p.school||'')} \u00b7 ${esc(p.level||'')}${p.classYear?' \u00b7 Class of '+esc(p.classYear):''} \u00b7 ${p.games} game${p.games===1?'':'s'}</div>
+        </div>
+        ${mkSpark(p.vals, 90, 26)}
+        <div style="text-align:right;min-width:64px;">
+          <div style="font-family:'Anton',sans-serif;font-size:20px;line-height:1;">${p.price.toFixed(1)}</div>
+          <div style="font-size:11px;font-weight:700;color:${col};margin-top:3px;">${chgTxt}</div>
+        </div>
+      </div>
+      <div style="display:none;margin-top:8px;">
+        ${log}
+        <div class="rc-actions" style="margin-top:8px;">
+          <button type="button" class="mini-btn go" onclick="switchTab('perf'); addWeekFor('${esc(key)}')">+ Add week</button>
+          <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 /* ---------------- REPORT ADMIN ACTIONS ---------------- */

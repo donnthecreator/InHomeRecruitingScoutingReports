@@ -424,6 +424,16 @@ exports.handler = async (event) => {
 
       /* Rename every performance row for one player, so a misspelling
          imported from a PDF merges into the profile already tracked. */
+      /* Wipe every logged game filed under a bad school name (e.g. a
+         player name the old parser mistook for a team), so the box score
+         can be re-imported cleanly with the school confirmed. */
+      case 'deletePerformancesBySchool': {
+        const school = String(body.school || '').trim();
+        if (!school) return fail(400, 'school required');
+        const rows = await sql`DELETE FROM player_performances WHERE COALESCE(school,'') = ${school} RETURNING id, name`;
+        return ok({ deleted: rows.length, names: [...new Set(rows.map(r => r.name))] });
+      }
+
       case 'renamePerformancePlayer': {
         const from = String(body.fromName || '').trim();
         const to = String(body.toName || '').trim();

@@ -427,6 +427,14 @@
       </div>
       <div id="bxStatus" class="sub" style="margin-top:8px;"></div>
       <div id="bxTeams" style="margin-top:10px;"></div>
+      <details style="margin-top:10px;">
+        <summary class="rc-meta" style="cursor:pointer;">Clean up a bad school name</summary>
+        <div class="rc-meta" style="margin:8px 0;">Deletes every logged game filed under that exact school so you can re-import the box score with the schools confirmed. Type it exactly as it appears on the cards.</div>
+        <div style="display:flex; gap:8px;">
+          <select id="badSchool" style="flex:1;"></select>
+          <button type="button" class="mini-btn danger" onclick="deleteBadSchool()">Delete all games under it</button>
+        </div>
+      </details>
       <div id="bxRows" style="margin-top:10px;"></div>
       <div class="rc-actions" id="bxActions" style="display:none; margin-top:10px;">
         <button type="button" class="mini-btn" onclick="bxSelect(true)">Select all shown</button>
@@ -795,6 +803,7 @@ function renderAll(){
   initBoard();
   loadProgramBoards();
   buildKnownNames();
+  fillBadSchools();
 }
 function initBoard(){
   loadBoardStatus();
@@ -2540,6 +2549,29 @@ async function importBoxScore(file){
 /* Confirm the school names the parser found. Editing one renames every
    row from that team, so a bad guess (a wrapped player name read as a
    team) is fixed in one place instead of 30. */
+function fillBadSchools(){
+  const sel = document.getElementById('badSchool'); if(!sel) return;
+  const counts = {};
+  performances.forEach(p => { const k = p.school || '(no school)'; counts[k] = (counts[k]||0) + 1; });
+  const looksLikePerson = (t) => t && t !== '(no school)' && !/\b(College|CC|JC|University|High|School|HS|Academy|Prep|State|Tech)\b/i.test(t);
+  sel.innerHTML = Object.keys(counts).sort((a,b)=> (looksLikePerson(b)?1:0)-(looksLikePerson(a)?1:0) || a.localeCompare(b))
+    .map(k => `<option value="${esc(k==='(no school)'?'':k)}">${esc(k)} \u00b7 ${counts[k]} game${counts[k]===1?'':'s'}${looksLikePerson(k)?' \u00b7 looks like a person':''}</option>`).join('');
+}
+async function deleteBadSchool(){
+  const sel = document.getElementById('badSchool');
+  const school = sel ? sel.value : '';
+  const label = sel && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : school;
+  if(!school){ toast('Pick a school first'); return; }
+  const n = performances.filter(p => (p.school||'') === school).length;
+  if(!confirm(`Delete ALL ${n} logged game${n===1?'':'s'} filed under "${school}"? This cannot be undone. You will re-import those games afterward.`)) return;
+  try{
+    const d = await api('deletePerformancesBySchool', { school });
+    performances = performances.filter(p => (p.school||'') !== school);
+    buildKnownNames(); MK = null;
+    renderStats(); renderPerfChips(); renderPerf(); fillBadSchools();
+    alert(`Deleted ${d.deleted} game${d.deleted===1?'':'s'} under "${school}"` + (d.names && d.names.length ? `:\n${d.names.join(', ')}` : '') + '\n\nNow re-import the box score and confirm the two schools at the top.');
+  }catch(err){ toast(err.message); }
+}
 function renderBoxTeams(){
   const el = document.getElementById('bxTeams');
   const keys = [...new Set(BX.players.map(p=>p.teamKey))];

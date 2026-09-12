@@ -49,6 +49,14 @@ const cleanTeam = (t) => String(t || '').replace(/^No\.\s*\d+\s*/i, '').replace(
 /* Split the whole text into tokens but keep line breaks as a token so
    we can find headers and team names, which are always on their own line. */
 function parseText(text) {
+  if (looksNarrative(text)) {
+    const { date, teams, playerMap } = parseNarrative(text);
+    return { date, teams, players: summarize(playerMap) };
+  }
+  return parseColumns(text);
+}
+
+function parseColumns(text) {
   const lines = String(text).replace(/\r/g, '').split('\n').map(l => l.replace(/\s+/g, ' ').trim()).filter(Boolean);
 
   /* game meta */
@@ -142,7 +150,11 @@ function parseText(text) {
     }
   }
 
-  /* resolve defense extras with the sack + int tables */
+  return { date, teams, players: summarize(players) };
+}
+
+/* Shared: turn per-player raw stat objects into stat lines + grades. */
+function summarize(players) {
   const out = [];
   for (const r of players.values()) {
     const m = {};
@@ -203,7 +215,7 @@ function parseText(text) {
     out.push({ name: r.name, team: r.team, level, position: pos, statLine: parts.join(' | '), grade, why, metrics: m, selected: !!notable });
   }
   out.sort((a, b) => b.grade - a.grade);
-  return { date, teams, players: out };
+  return out;
 }
 
 /* Efficiency-first suggestion. Volume matters, but per-touch efficiency
@@ -248,6 +260,126 @@ function suggestGrade(pos, m) {
     why.push('K: 55 + FGM x7 - misses x6 + long>=40 +5 + perfect PAT +3');
   }
   return { grade: +clamp(g == null ? 50 : g).toFixed(1), why: why.join(' ; ') };
+}
+
+/* =====================================================================
+   NARRATIVE FORMAT
+   The other common NCAA/Presto layout, used by MGCCC among others:
+
+     RUSHING: Team A - Name 17-82; Name 4-22. Team B - Name 18-181; ...
+     PASSING: Team A - Name 29-20-0-296. ...
+     TACKLES (UA-A): Team A - Name 3-1; Name 0-2. ...
+
+   Everything is prose, wrapped across lines, both teams on one line.
+   Per-player touchdowns are not in these lists at all, so they are
+   recovered from the scoring summary above them.
+===================================================================== */
+const CATS = ['RUSHING', 'PASSING', 'RECEIVING', 'INTERCEPTIONS', 'FUMBLES', 'SACKS', 'TACKLES'];
+
+function looksNarrative(text) {
+  return /\bRUSHING:\s/.test(text) && /\bRECEIVING:\s/.test(text);
+}
+
+/* "Name 17-82" / "Name 29-20-0-296" / "Name 1--14" (negative yards) */
+function parseEntry(chunk) {
+  const m = String(chunk).trim().match(/^(.+?)\s+(\d+)-(-?\d+)(?:-(-?\d+))?(?:-(-?\d+))?\.?$/);
+  if (!m) return null;
+  const nums = [m[2], m[3], m[4], m[5]].filter(v => v !== undefined).map(Number);
+  return { name: m[1].replace(/\s+/g, ' ').trim(), nums };
+}
+
+function parseNarrative(text) {
+  const flat = String(text).replace(/\r/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+  /* teams + date from the "A vs. B (M/D/YYYY ...)" header */
+  let teams = [], date = null;
+  const hdr = flat.match(/([A-Z][^()]{3,80}?)\s+vs\.\s+([A-Z][^()]{3,80}?)\s*\((\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (hdr) {
+    teams = [hdr[1].trim(), hdr[2].trim()];
+    date = `${hdr[5]}-${String(hdr[3]).padStart(2, '0')}-${String(hdr[4]).padStart(2, '0')}`;
+  } else {
+    const d = flat.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+    if (d) date = `${d[3]}-${d[1].padStart(2, '0')}-${d[2].padStart(2, '0')}`;
+  }
+
+  const players = new Map();
+  const rec = (team, name) => {
+    const k = team + '|' + name.toLowerCase();
+    if (!players.has(k)) players.set(k, { name, team, pass: null, rush: null, rcv: null, kick: null, def: null, sack: null, int: null, fum: null, td: {} });
+    return players.get(k);
+  };
+
+  /* ---- touchdowns from the scoring summary ---- */
+  const scoreZone = flat.split(/FIRST DOWNS/)[0];
+  const tdRe = /([A-Z][A-Za-z'’.\- ]{2,60}?)\s+(\d{1,2})\s*yd\s+(run|pass|interception return|fumble return|punt return|kickof+ return)(?:\s+from\s+([A-Z][A-Za-z'’.\- ]{2,60}?))?\s*\./gi;
+  /* Keyed by name only. Which team a scoring play belongs to is
+     ambiguous in this layout, and a name collision across two rosters in
+     one game is far less likely than mis-attributing the team. */
+  const tdByName = new Map();
+  const addTd = (name, kind) => {
+    const k = String(name).toLowerCase().replace(/[^a-z]/g, '');
+    if (!k) return;
+    const e = tdByName.get(k) || { rush: 0, rcv: 0, pass: 0 };
+    e[kind]++; tdByName.set(k, e);
+  };
+  let tm;
+  while ((tm = tdRe.exec(scoreZone))) {
+    const scorer = tm[1].replace(/^.*?\s-\s/, '').trim();
+    const kind = tm[3].toLowerCase();
+    const passer = tm[4] ? tm[4].trim() : null;
+    if (kind === 'run') addTd(scorer, 'rush');
+    else if (kind === 'pass') { addTd(scorer, 'rcv'); if (passer) addTd(passer, 'pass'); }
+  }
+
+  /* ---- category lists ---- */
+  const catRe = new RegExp('\\b(' + CATS.join('|') + ')\\b[^:]{0,12}:\\s', 'g');
+  const marks = [];
+  let cm;
+  while ((cm = catRe.exec(flat))) marks.push({ cat: cm[1], idx: cm.index, start: cm.index + cm[0].length });
+  marks.forEach((mk, i) => {
+    const body = flat.slice(mk.start, i + 1 < marks.length ? marks[i + 1].idx : undefined)
+      .replace(/\s*(Game Starters|Score by Quarters)[\s\S]*$/i, '');
+    /* split the body by team name */
+    const segs = [];
+    const found = teams.map(t => ({ t, i: body.indexOf(t + ' - ') })).filter(x => x.i >= 0).sort((a, b) => a.i - b.i);
+    if (!found.length) segs.push({ team: teams[0] || '', body });
+    else found.forEach((f, j) => {
+      const from = f.i + f.t.length + 3;
+      const to = j + 1 < found.length ? found[j + 1].i : body.length;
+      segs.push({ team: f.t, body: body.slice(from, to) });
+    });
+
+    segs.forEach(seg => {
+      if (/^\s*None\b/i.test(seg.body)) return;
+      seg.body.split(';').forEach(chunk => {
+        const e = parseEntry(chunk.replace(/\.$/, ''));
+        if (!e || !/[A-Za-z]{2,}/.test(e.name)) return;
+        const r = rec(seg.team, e.name);
+        const n = e.nums;
+        switch (mk.cat) {
+          case 'RUSHING':   r.rush = { att: n[0], yds: n[1], td: 0, lg: null }; break;
+          case 'PASSING':   r.pass = { att: n[0], cmp: n[1], int: n[2] || 0, yds: n[3] != null ? n[3] : 0, td: 0 }; break;
+          case 'RECEIVING': r.rcv  = { no: n[0], yds: n[1], td: 0, lg: null }; break;
+          case 'TACKLES':   r.def  = { solo: n[0], ast: n[1], total: (n[0] || 0) + (n[1] || 0), extra: [] }; break;
+          case 'SACKS':     r.sack = { solo: n[0], ast: n[1], total: (n[0] || 0) + (n[1] || 0) * 0.5 }; break;
+          case 'INTERCEPTIONS': r.int = { no: n[0], yds: n[1] != null ? n[1] : 0 }; break;
+          case 'FUMBLES':   r.fum = { no: n[0], lost: n[1] || 0 }; break;
+        }
+      });
+    });
+  });
+
+  /* fold the touchdowns in */
+  for (const r of players.values()) {
+    const td = tdByName.get(String(r.name).toLowerCase().replace(/[^a-z]/g, ''));
+    if (!td) continue;
+    if (r.rush && td.rush) r.rush.td = td.rush;
+    if (r.rcv && td.rcv) r.rcv.td = td.rcv;
+    if (r.pass && td.pass) r.pass.td = td.pass;
+    /* a scorer who never shows up in a stat list still gets credited */
+    if (!r.rush && td.rush) r.rush = { att: 0, yds: 0, td: td.rush, lg: null };
+  }
+  return { date, teams, playerMap: players };
 }
 
 exports.handler = async (event) => {

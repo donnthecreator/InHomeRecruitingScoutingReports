@@ -2574,23 +2574,45 @@ async function deleteBadSchool(){
 }
 function renderBoxTeams(){
   const el = document.getElementById('bxTeams');
-  const keys = [...new Set(BX.players.map(p=>p.teamKey))];
-  if(!keys.length){ el.innerHTML=''; return; }
+  if(!BX.players.length){ el.innerHTML=''; return; }
+  /* The two schools: from the box score header first, then anything the
+     parser assigned that isn't one of those. */
+  const hdr = (BX.teams||[]).filter(Boolean);
+  const assigned = [...new Set(BX.players.map(p=>p.team).filter(Boolean))];
+  const schools = [...hdr];
+  assigned.forEach(t => { if(!schools.some(h => schoolKey(h)===schoolKey(t))) schools.push(t); });
+  if(schools.length < 2) schools.push('');
+  BX.schools = schools;
   const looksLikePerson = (t) => t && !/\b(College|CC|JC|University|High|School|HS|Academy|Prep|State|Tech)\b/i.test(t);
-  el.innerHTML = `<div class="rc-meta" style="margin-bottom:6px;">Schools in this box score. Fix any that are wrong before logging; every player from that team updates.</div>` +
-    keys.map(k => {
-      const n = BX.players.filter(p=>p.teamKey===k).length;
-      const cur = (BX.players.find(p=>p.teamKey===k)||{}).team || k;
-      const known = schoolDisplay(schoolKey(cur));
+  const counts = {}; BX.players.forEach(p => { counts[schoolKey(p.team)] = (counts[schoolKey(p.team)]||0)+1; });
+  el.innerHTML = `<div class="rc-meta" style="margin-bottom:6px;">Confirm the two schools in this box score. Every player is tagged A or B; tap the letter on a row to move him to the other school.</div>` +
+    schools.map((sc, i) => {
+      const n = counts[schoolKey(sc)] || 0;
+      const known = sc ? schoolDisplay(schoolKey(sc)) : '';
       return `<div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
-        <input type="text" value="${esc(cur)}" data-teamkey="${esc(k)}" oninput="setBoxTeam(this.dataset.teamkey, this.value)" style="flex:1; ${looksLikePerson(cur)?'border-color:var(--warn);':''}">
-        <span class="rc-meta" style="flex:0 0 auto;">${n} player${n===1?'':'s'}${looksLikePerson(cur) ? ' \u00b7 <span style="color:var(--warn)">does this look like a school?</span>' : ''}${known && known!==cur ? ` \u00b7 on file as <a href="#" onclick="setBoxTeam('${esc(k).replace(/'/g,"\\'")}','${esc(known).replace(/'/g,"\\'")}'); renderBoxTeams(); return false;" style="color:var(--ink)">${esc(known)}</a>` : ''}</span>
+        <span class="pill" style="min-width:26px; text-align:center; font-weight:800;">${String.fromCharCode(65+i)}</span>
+        <input type="text" value="${esc(sc)}" placeholder="School ${String.fromCharCode(65+i)}" data-si="${i}" oninput="setBoxSchool(${i}, this.value)" style="flex:1; ${looksLikePerson(sc)?'border-color:var(--warn);':''}">
+        <span class="rc-meta" style="flex:0 0 auto;">${n} player${n===1?'':'s'}${looksLikePerson(sc) ? ' \u00b7 <span style="color:var(--warn)">does this look like a school?</span>' : ''}${known && known!==sc ? ` \u00b7 on file as <a href="#" onclick="setBoxSchool(${i}, '${esc(known).replace(/'/g,"\\'")}'); renderBoxTeams(); return false;" style="color:var(--ink)">${esc(known)}</a>` : ''}</span>
       </div>`;
-    }).join('');
+    }).join('') +
+    (counts[schoolKey(schools[1]||'')] ? '' : `<div class="rc-meta" style="color:var(--warn); margin-top:4px;">Every player is currently under school A. If both teams played, tap the A badge on the school-B players to flip them.</div>`);
 }
-function setBoxTeam(key, value){
-  BX.players.forEach(p => { if(p.teamKey===key) p.team = value; });
+function setBoxSchool(i, value){
+  const old = BX.schools[i];
+  BX.schools[i] = value;
+  BX.players.forEach(p => { if(schoolKey(p.team)===schoolKey(old) || (!old && !p.team)) p.team = value; });
   renderBoxRows();
+}
+function boxSchoolIndex(team){
+  const i = (BX.schools||[]).findIndex(sc => sc && schoolKey(sc)===schoolKey(team));
+  return i < 0 ? 0 : i;
+}
+function flipBoxTeam(i){
+  const p = BX.players[i];
+  const cur = boxSchoolIndex(p.team);
+  const next = (cur + 1) % Math.max(2, (BX.schools||[]).length);
+  p.team = BX.schools[next] || '';
+  renderBoxTeams(); renderBoxRows();
 }
 function bxVisible(){
   const q = (document.getElementById('bxFocus').value||'').trim().toLowerCase();
@@ -2668,8 +2690,8 @@ function renderBoxRows(){
             </select>
           </div>
           <div style="display:flex; gap:6px; align-items:center; margin-top:5px;">
-            <span class="rc-meta" style="flex:0 0 auto;">Team</span>
-            <input type="text" value="${esc(p.team||'')}" oninput="BX.players[${p.i}].team=this.value" style="flex:1; font-size:11.5px; padding:5px 8px; color:var(--mute);">
+            <button type="button" class="pill" onclick="flipBoxTeam(${p.i})" title="Tap to move to the other school" style="cursor:pointer; font-weight:800; min-width:26px; text-align:center;">${String.fromCharCode(65 + boxSchoolIndex(p.team))}</button>
+            <span class="rc-meta">${esc(p.team||'(no school)')}</span>
           </div>
           <input type="text" value="${esc(p.statLine)}" oninput="BX.players[${p.i}].statLine=this.value" style="margin-top:6px; font-size:12px; padding:7px 9px;">
         </div>

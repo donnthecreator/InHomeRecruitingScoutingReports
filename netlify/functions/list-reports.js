@@ -1,4 +1,5 @@
 const { neon } = require('@neondatabase/serverless');
+const { logoMap, schoolKey } = require('./lib/logos');
 const sql = neon(process.env.DATABASE_URL);
 
 /* Absolute URL base so the coach portal (different domain, no functions
@@ -63,9 +64,11 @@ exports.handler = async (event) => {
           ORDER BY r.created_at DESC
           LIMIT 500`;
 
+    const logos = await logoMap(sql, base);
     const reports = rows.map(r => {
       const raw = r.raw || {};
       return {
+        logoUrl: logos[schoolKey(r.school)] || null,
         id: r.id,
         prospect: r.prospect_name,
         position: r.position,

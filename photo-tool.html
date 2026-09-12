@@ -57,6 +57,19 @@
   </div>
 </div>
 
+<div id="logoBox" class="hide" style="margin-top:28px; padding-top:18px; border-top:1px solid #2A2A2A;">
+  <h1 style="font-size:16px;">School Logos</h1>
+  <div class="sub">Upload a school's mark once and it shows next to that school everywhere (market, boards, reports, portal). PNG with a transparent background looks best.</div>
+  <label>School</label>
+  <input type="text" id="logoSchoolSearch" placeholder="Search schools on file" oninput="renderLogoSchools()" autocapitalize="off" autocorrect="off" spellcheck="false" style="margin-bottom:8px;">
+  <select id="logoSchool"><option>Loading...</option></select>
+  <label>Or type a school not on file yet</label>
+  <input type="text" id="logoSchoolNew" placeholder="e.g. Jones College" autocorrect="off">
+  <label>Logo image</label>
+  <input type="file" id="logoFile" accept="image/*">
+  <button onclick="uploadLogo()">Upload logo</button>
+</div>
+
 <div id="boardBox" class="hide" style="margin-top:28px; padding-top:18px; border-top:1px solid #2A2A2A;">
   <h1 style="font-size:16px;">Program Boards</h1>
   <div class="sub">Runs the database work for you. No SQL needed.</div>
@@ -89,6 +102,7 @@ function useToken(){
   document.getElementById('loginBox').classList.add('hide');
   document.getElementById('mainBox').classList.remove('hide');
   document.getElementById('boardBox').classList.remove('hide');
+  document.getElementById('logoBox').classList.remove('hide');
   loadProspects();
   boardStats(true);
 }
@@ -178,9 +192,34 @@ async function loadProspects(){
     ALL_PROSPECTS = (data.prospects || []).concat((data.pending || []).map(p => Object.assign({}, p, { id: 'new:' + encodeURIComponent(p.name) + '|' + encodeURIComponent(p.school||''), pending: true })));
     if(!ALL_PROSPECTS.length){ log('No prospects in the database yet.', 'bad'); document.getElementById('prospect').innerHTML = '<option value="">(none)</option>'; return; }
     renderProspectOptions();
+    SCHOOLS = [...new Set(ALL_PROSPECTS.map(p => p.school).filter(Boolean))].sort();
+    renderLogoSchools();
     log('Loaded ' + ALL_PROSPECTS.length + ' prospects (' + ALL_PROSPECTS.filter(p=>p.headshot_key).length + ' with a headshot).', 'ok');
     document.getElementById('goBtn').disabled = false;
   }catch(err){ log('loadProspects failed: ' + err.message, 'bad'); }
+}
+let SCHOOLS = [];
+function renderLogoSchools(){
+  const q = (document.getElementById('logoSchoolSearch').value||'').trim().toLowerCase();
+  const sel = document.getElementById('logoSchool');
+  sel.innerHTML = SCHOOLS.filter(x => !q || x.toLowerCase().includes(q)).map(x => `<option value="${x.replace(/"/g,'&quot;')}">${x}</option>`).join('') || '<option value="">(no match)</option>';
+}
+async function uploadLogo(){
+  const f = document.getElementById('logoFile').files[0];
+  const school = (document.getElementById('logoSchoolNew').value || '').trim() || document.getElementById('logoSchool').value;
+  if(!school){ log('Pick or type a school.', 'bad'); return; }
+  if(!f){ log('Pick a logo image.', 'bad'); return; }
+  const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(f); });
+  const ct = f.type && /^image\/(png|jpeg|webp)$/.test(f.type) ? f.type : 'image/png';
+  log('Uploading logo for ' + school + '...');
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ kind:'schoollogo', school, dataBase64: b64, contentType: ct }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    log('Logo saved for ' + school + '. It appears everywhere that school is shown on the next load.\n' + location.origin + data.url, 'ok');
+    document.getElementById('logoFile').value = '';
+  }catch(err){ log('Logo upload failed: ' + err.message, 'bad'); }
 }
 function renderProspectOptions(){
   const q = (document.getElementById('prospectSearch').value||'').trim().toLowerCase();

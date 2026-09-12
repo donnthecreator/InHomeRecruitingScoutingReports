@@ -62,17 +62,42 @@ exports.handler = async (event) => {
   try { payload = JSON.parse(event.body || '{}'); }
   catch { return fail(400, 'Bad request'); }
 
-  const prospectId = parseInt(payload.prospectId, 10);
-  if (!prospectId) return fail(400, 'prospectId required');
-
   const kind = payload.kind;
-  if (!['headshot', 'wingspan', 'measure'].includes(kind)) {
-    return fail(400, 'kind must be headshot, wingspan, or measure');
+  if (!['headshot', 'wingspan', 'measure', 'schoollogo'].includes(kind)) {
+    return fail(400, 'kind must be headshot, wingspan, measure, or schoollogo');
   }
 
   let scout = await resolveScout(payload.accessCode);
   if (!scout && verifyAdmin(event)) scout = { scout_id: 'admin', name: 'Admin' };
   if (!scout) return fail(401, 'Invalid access code');
+
+  /* ------- school logo (admin) ------- */
+  if (kind === 'schoollogo') {
+    if (scout.scout_id !== 'admin') return fail(403, 'Admin only');
+    const logos = require('./lib/logos');
+    const school = String(payload.school || '').trim();
+    const sk = logos.schoolKey(school);
+    if (!sk) return fail(400, 'school required');
+    const contentType = payload.contentType || 'image/png';
+    if (!ALLOWED_TYPES.includes(contentType)) return fail(400, 'Only JPEG, PNG, or WebP images');
+    if (!payload.dataBase64) return fail(400, 'dataBase64 required');
+    let buf; try { buf = Buffer.from(payload.dataBase64, 'base64'); } catch { return fail(400, 'Bad image data'); }
+    if (!buf.length || buf.length > MAX_BYTES) return fail(413, 'Image too large');
+    try {
+      await logos.ensureTable(sql);
+      const store = frameStore();
+      const key = `logo_${sk}_${Date.now()}`;
+      await store.set(key, buf, { metadata: { contentType } });
+      const [old] = await sql`SELECT blob_key FROM school_logos WHERE school_key = ${sk}`;
+      await sql`INSERT INTO school_logos (school_key, display_name, blob_key, updated_at) VALUES (${sk}, ${school}, ${key}, now())
+                ON CONFLICT (school_key) DO UPDATE SET display_name = EXCLUDED.display_name, blob_key = EXCLUDED.blob_key, updated_at = now()`;
+      if (old && old.blob_key) { try { await store.delete(old.blob_key); } catch (e) {} }
+      return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, schoolKey: sk, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
+    } catch (err) { console.error('school logo error:', err); return fail(500, err.message); }
+  }
+
+  const prospectId = parseInt(payload.prospectId, 10);
+  if (!prospectId) return fail(400, 'prospectId required');
 
   try {
     const [prospect] = await sql`

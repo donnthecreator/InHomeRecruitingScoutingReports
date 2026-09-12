@@ -15,6 +15,7 @@
    ENV: DATABASE_URL
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
+const { logoMap, schoolKey } = require('./lib/logos');
 const sql = neon(process.env.DATABASE_URL);
 
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -53,7 +54,9 @@ exports.handler = async (event) => {
       WHERE upper(pp.program_code) = ${program}
       ORDER BY p.position, p.name`;
 
+    const logos = await logoMap(sql, base);
     const board = rows.map(x => ({
+      logoUrl: logos[schoolKey(x.school)] || null,
       prospectId: x.prospect_id,
       prospect: x.name,
       school: x.school,

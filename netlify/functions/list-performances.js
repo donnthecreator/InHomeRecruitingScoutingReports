@@ -13,8 +13,13 @@
    ENV: DATABASE_URL
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
+const { logoMap } = require('./lib/logos');
 const sql = neon(process.env.DATABASE_URL);
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+function siteBase(event){
+  const h = event.headers || {};
+  return `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
+}
 const nameKey = (s) => String(s || '').toLowerCase().replace(/[^a-z]/g, '');
 /* "No. 13 Itawamba CC", "Itawamba Community College", "ITAWAMBA CC" are one school. */
 const schoolKey = (s) => String(s || '').toLowerCase()
@@ -23,10 +28,18 @@ const schoolKey = (s) => String(s || '').toLowerCase()
   .replace(/high school/g, 'hs')
   .replace(/[^a-z0-9]/g, '');
 
-exports.handler = async () => {
+exports.handler = async (event) => {
   try {
+    const base = siteBase(event || {});
     /* Column may not exist yet on a fresh table; harmless if it does. */
     try { await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`; } catch (e) {}
+    const logos = await logoMap(sql, base);
+    /* headshots live on the prospect record; match by name + school */
+    const heads = {};
+    try {
+      const pr = await sql`SELECT name_key, COALESCE(school,'') AS school, headshot_key, id FROM prospects WHERE headshot_key IS NOT NULL`;
+      pr.forEach(x => { heads[x.name_key + '|' + schoolKey(x.school)] = { key: x.headshot_key, id: x.id }; });
+    } catch (e) {}
 
     const rows = await sql`
       SELECT id, name, level, position, class_year, school, stat_line, source_link,
@@ -68,7 +81,14 @@ exports.handler = async () => {
       });
     }
 
-    const players = [...byPlayer.values()];
+    const players = [...byPlayer.values()].map(p => {
+      const h = heads[p.nameKey + '|' + schoolKey(p.school)];
+      return Object.assign(p, {
+        prospectId: h ? h.id : null,
+        headshotUrl: h ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(h.key)}` : null,
+        logoUrl: logos[schoolKey(p.school)] || null
+      });
+    });
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ count: players.length, players }) };
   } catch (err) {
     console.error('list-performances error:', err);

@@ -290,6 +290,10 @@
   .pp-rank{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin:12px 0;}
   .rank-num{font-family:'Anton',sans-serif; font-size:18px; color:var(--dim); min-width:34px; text-align:center;}
   .rank-num.top{color:var(--ink);}
+
+  .mk-face{width:32px; height:32px; border-radius:8px; object-fit:cover; background:#1B1E27; border:1px solid #212430; flex:0 0 auto;}
+  .mk-logo{width:16px; height:16px; object-fit:contain; vertical-align:-3px; margin-right:4px;}
+  .rc-avatar img{width:100%; height:100%; object-fit:cover; border-radius:inherit;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -834,6 +838,8 @@ function renderAll(){
   loadProgramBoards();
   buildKnownNames();
   fillBadSchools();
+  if(!KNOWN_PROSPECTS.length) loadKnownProspects().then(()=>renderPerf());
+  loadLogos().then(()=>renderPerf());
 }
 function initBoard(){
   loadBoardStatus();
@@ -2356,7 +2362,7 @@ function marketMovers(list){
       ${rows.length ? rows.map((p,i)=>`
         <div class="xg-mv-row">
           <span class="xg-mv-rank">${i+1}</span>
-          <span class="xg-mv-name"><b>${esc(p.name)}</b><span>${esc(p.position||'')} \u00b7 ${esc(p.school||'')}</span></span>
+          <span class="xg-mv-name" style="display:flex;align-items:center;gap:8px;">${p.headshotUrl ? `<img class="mk-face" style="width:26px;height:26px;" src="${esc(p.headshotUrl)}" alt="" onerror="this.style.visibility='hidden'">` : ''}<span style="min-width:0;"><b>${esc(p.name)}</b><span>${p.logoUrl?`<img class="mk-logo" src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}${esc(p.position||'')} \u00b7 ${esc(p.school||'')}</span></span></span>
           <span class="xg-mv-price">${p.price.toFixed(1)}</span>
           <span class="xg-pct ${cls}">${p.chg>0?'\u25b2':'\u25bc'} ${p.chg>0?'+':''}${p.chg}</span>
         </div>`).join('') : '<div class="why">Nobody has two graded games yet.</div>'}
@@ -2404,7 +2410,10 @@ function marketRowHTML(p, i){
   const log = p.graded.slice().reverse().map(e=>`<div class="lg"><span style="min-width:58px;color:#7A8094">${fmtDate(e.date)}</span><span style="min-width:38px;font-family:ui-monospace,monospace;color:#EDEFF4">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#9AA0AA">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:#7A8094">source</a>`:''}</span></div>`).join('');
   const story = whyHeMoved(p);
   return `<div class="xg-row ${p.dir}" data-mk="${i}">
-      <div class="xg-sym"><b>${esc(p.sym)}</b><span>${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
+      <div class="xg-sym" style="flex-direction:row; align-items:center; gap:9px;">
+        ${p.headshotUrl ? `<img class="mk-face" src="${esc(p.headshotUrl)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="mk-face" style="display:grid;place-items:center;font-size:10px;color:#7A8094;font-weight:700;">${initials(p.name)}</div>`}
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0;"><b>${esc(p.sym)}</b><span>${p.logoUrl?`<img class="mk-logo" src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
+      </div>
       <div class="xg-pos">${esc(p.position||'')}</div>
       <div class="xg-price">${p.price.toFixed(1)}</div>
       <div><span class="xg-pct ${p.dir}">${arrow} ${chgTxt}</span></div>
@@ -2752,6 +2761,14 @@ function bxVisible(){
    Used to offer "did you mean" on an imported misspelling. */
 let KNOWN_NAMES = [];
 let KNOWN_PROSPECTS = [];
+let LOGOS = {};
+async function loadLogos(){
+  try{
+    const res = await fetch('/.netlify/functions/list-performances', { cache:'no-store' });
+    const d = await res.json();
+    (d.players||[]).forEach(p => { if(p.logoUrl) LOGOS[schoolKey(p.school)] = p.logoUrl; });
+  }catch(e){}
+}
 function buildKnownNames(){
   const seen = new Map();
   (performances||[]).forEach(p => { if(p.name) seen.set(p.name.toLowerCase(), { name:p.name, school:p.school||'', src:'logged' }); });
@@ -3033,10 +3050,10 @@ function renderPerf(){
     <div class="row-card">
       <div class="rc-top">
         <div class="rank-num ${rank<3?'top':''}">${rankVal==null ? '\u2014' : (rank+1)}</div>
-        <div class="rc-avatar">${initials(g.name)}</div>
+        <div class="rc-avatar">${(()=>{ const pr = (KNOWN_PROSPECTS||[]).find(x => nkey(x.name)===nkey(g.name) && x.headshot_key); return pr ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(pr.headshot_key)}" alt="" onerror="this.remove()">` : initials(g.name); })()}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(g.name)}${g.avg!=null ? ` <span class="rc-meta">avg ${g.avg.toFixed(1)} \u00b7 best ${g.best.toFixed(1)}</span>` : ''}</div>
-          <div class="rc-meta">${esc(g.position||'')} &middot; ${esc(g.school||'\u2014')} &middot; Class of ${esc(g.class_year||'\u2014')}</div>
+          <div class="rc-meta">${esc(g.position||'')} &middot; ${LOGOS[schoolKey(g.school)]?`<img class="mk-logo" src="${esc(LOGOS[schoolKey(g.school)])}" alt="" onerror="this.remove()">`:''}${esc(g.school||'\u2014')} &middot; Class of ${esc(g.class_year||'\u2014')}</div>
           <span class="pill ${g.level==='JUCO'?'juco':'hs'}">${esc(g.level||'HS')}</span>
           <span class="pill">${g.entries.length} game${g.entries.length===1?'':'s'}</span>
           ${latestGrade!=null ? `<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${latestGrade.toFixed(1)}${chg!=null ? ` <span style="font-weight:600;color:${chg>0?'#35C759':chg<0?'#FF5A5A':'var(--dim)'}">${chg>0?'\u25b2':chg<0?'\u25bc':'\u00b7'} ${chg>0?'+':''}${chg}</span>` : ''}</span>` : `<span class="pill" style="color:var(--dim);">no grade yet</span>`}

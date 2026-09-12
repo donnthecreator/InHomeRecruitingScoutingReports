@@ -454,15 +454,76 @@ exports.handler = async (event) => {
         return ok({ updated: rows.length });
       }
 
+      /* Edit a prospect's card fields. Only whitelisted columns. */
+      case 'updateProspect': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const f = body.fields || {};
+        /* blank = leave as is (the form sends every field; COALESCE keeps the old value for blanks) */
+        const val = (k, max) => { const v = f[k]; return (v === undefined || v === null || String(v).trim() === '') ? null : String(v).trim().slice(0, max); };
+        const name = val('name', 120), school = val('school', 160), position = val('position', 20), position_label = val('position_label', 60),
+              class_year = val('class_year', 12), level = val('level', 12), home_city = val('home_city', 80), home_state = val('home_state', 4),
+              height = val('height', 12), weight = val('weight', 12), film_link = val('film_link', 500), wingspan = val('wingspan', 20);
+        const nameKey = name ? name.toLowerCase().replace(/[^a-z]/g, '') : null;
+        const rows = await sql`
+          UPDATE prospects SET
+            name = COALESCE(${name}, name), name_key = COALESCE(${nameKey}, name_key),
+            school = COALESCE(${school}, school), position = COALESCE(${position}, position),
+            position_label = COALESCE(${position_label}, position_label), class_year = COALESCE(${class_year}, class_year),
+            level = COALESCE(${level}, level), home_city = COALESCE(${home_city}, home_city), home_state = COALESCE(${home_state}, home_state),
+            height = COALESCE(${height}, height), weight = COALESCE(${weight}, weight), film_link = COALESCE(${film_link}, film_link),
+            wingspan = COALESCE(${wingspan}, wingspan), updated_at = now()
+          WHERE id = ${id} RETURNING *`;
+        if (!rows.length) return fail(404, 'Prospect not found');
+        /* keep the performance log in step when the name or school changed */
+        const prev = body.prev || {};
+        if (prev.name && ((name && name !== prev.name) || (school && school !== (prev.school || '')))) {
+          const fromKey = String(prev.name).toLowerCase().replace(/[^a-z]/g, '');
+          await sql`UPDATE player_performances SET name = COALESCE(${name}, name), school = COALESCE(${school}, school)
+                    WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${fromKey} AND COALESCE(school,'') = ${prev.school || ''}`;
+        }
+        return ok({ prospect: rows[0] });
+      }
+
+      /* Make a prospect out of a performance-log player who isn't one yet. */
+      case 'createProspectFromPerformance': {
+        const name = String(body.name || '').trim();
+        if (!name) return fail(400, 'name required');
+        const nameKey = name.toLowerCase().replace(/[^a-z]/g, '');
+        const school = body.school ? String(body.school).trim() : null;
+        const [exact] = await sql`SELECT id FROM prospects WHERE name_key = ${nameKey} AND COALESCE(school,'') = ${school || ''} LIMIT 1`;
+        if (exact) return ok({ prospectId: exact.id, existed: true });
+        const [row] = await sql`
+          INSERT INTO prospects (name, name_key, school, position, class_year, level)
+          VALUES (${name}, ${nameKey}, ${school}, ${body.position || null}, ${body.class_year || null}, ${body.level || 'HS'})
+          ON CONFLICT (name_key, COALESCE(school,''), COALESCE(class_year,'')) DO UPDATE SET updated_at = now()
+          RETURNING id`;
+        return ok({ prospectId: row.id, existed: false });
+      }
+
       case 'listProspects': {
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
+                 p.home_city, p.height, p.weight, p.wingspan, p.film_link,
                  p.headshot_key, p.wingspan_key,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
                  (SELECT string_agg(DISTINCT upper(pp.program_code), ', ') FROM program_prospects pp WHERE pp.prospect_id = p.id) AS boards
           FROM prospects p
           ORDER BY p.name`;
-        return ok({ prospects: rows });
+        /* players who only exist in the performance log so far */
+        let pending = [];
+        try {
+          pending = await sql`
+            SELECT DISTINCT ON (lower(regexp_replace(name, '[^A-Za-z]', '', 'g')), COALESCE(school,''))
+                   name, school, position, class_year, level
+            FROM player_performances pp
+            WHERE NOT EXISTS (
+              SELECT 1 FROM prospects p
+              WHERE p.name_key = lower(regexp_replace(pp.name, '[^A-Za-z]', '', 'g'))
+                AND COALESCE(p.school,'') = COALESCE(pp.school,''))
+            ORDER BY lower(regexp_replace(name, '[^A-Za-z]', '', 'g')), COALESCE(school,''), created_at DESC`;
+        } catch (e) { pending = []; }
+        return ok({ prospects: rows, pending });
       }
 
       case 'listProgramBoards': {

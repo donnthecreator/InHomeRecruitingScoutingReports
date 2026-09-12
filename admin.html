@@ -272,12 +272,33 @@
   .xg-detail{background:#0B0C10; border-bottom:1px solid #212430; padding:12px 14px;}
   .xg-detail .lg{display:flex; gap:10px; padding:6px 0; border-top:1px solid #1B1E27; font-size:12px;}
   .xg-detail .lg:first-child{border-top:0;}
+
+  /* ---------- PLAYER PROFILE MODAL ---------- */
+  .pp-overlay{position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:9000; display:none; align-items:flex-end; justify-content:center; padding:0;}
+  .pp-overlay.on{display:flex;}
+  .pp{background:#0D0D0D; border:1px solid var(--line); border-radius:16px 16px 0 0; width:100%; max-width:640px; max-height:92vh; overflow:auto; padding:18px 16px 28px;}
+  @media(min-width:700px){ .pp-overlay{align-items:center; padding:20px;} .pp{border-radius:16px;} }
+  .pp-head{display:flex; gap:14px; align-items:center; margin-bottom:14px;}
+  .pp-photo{width:72px; height:72px; border-radius:14px; background:var(--card-2); border:1px solid var(--line); overflow:hidden; display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:24px; color:var(--dim); flex:0 0 auto; position:relative;}
+  .pp-photo img{width:100%; height:100%; object-fit:cover;}
+  .pp-photo button{position:absolute; inset:auto 0 0 0; background:rgba(0,0,0,.7); color:#fff; border:none; font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:4px; cursor:pointer;}
+  .pp-name{font-family:'Anton',sans-serif; font-size:24px; line-height:1;}
+  .pp-sub{color:var(--mute); font-size:12px; margin-top:4px;}
+  .pp-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px;}
+  .pp-grid .full{grid-column:1/-1;}
+  .pp label.fl{margin-top:8px;}
+  .pp-rank{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin:12px 0;}
+  .rank-num{font-family:'Anton',sans-serif; font-size:18px; color:var(--dim); min-width:34px; text-align:center;}
+  .rank-num.top{color:var(--ink);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 <!-- INHOME INTRO: black screen, logo, one line, fades out. Shown once per
      browser session so it never gets in the way of reloads. -->
+<div class="pp-overlay" id="ppOverlay" onclick="if(event.target===this) closeProfile()">
+  <div class="pp" id="ppCard"></div>
+</div>
 <div id="ihSplash" style="position:fixed; inset:0; z-index:99999; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; opacity:1; transition:opacity .55s ease;">
   <img src="inhome-logo.png" alt="InHome Recruiting Intelligence" style="width:min(64vw,420px); height:auto; opacity:0; transform:translateY(8px); animation:ihIn .7s ease .1s forwards;">
   <div style="font-family:'Inter',system-ui,sans-serif; font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#8A8A8A; opacity:0; animation:ihIn .7s ease .55s forwards;">Eye in the Sky. Every rep, every week.</div>
@@ -469,6 +490,14 @@
 
     <div class="tools">
       <input type="text" id="perfSearch" placeholder="Search performances..." oninput="renderPerf()">
+      <select id="perfSort" onchange="renderPerf()">
+        <option value="latest">Rank: latest grade</option>
+        <option value="avg">Rank: season average</option>
+        <option value="best">Rank: best game</option>
+        <option value="riser">Rank: biggest riser</option>
+        <option value="games">Most games</option>
+        <option value="recent">Most recent</option>
+      </select>
     </div>
     <div class="chip-row" id="perfLevelChips"></div>
     <div id="perfList" class="list"></div>
@@ -2110,6 +2139,7 @@ function renderReports(){
         <span class="rail-lbl">Manage</span>
         <button type="button" class="mini-btn" onclick="shareReport(${r.id})">Share link</button>
         <button type="button" class="mini-btn" onclick="sharePdf(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">PDF</button>
+        ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="openProfile(${r.prospect_id})">Profile</button>` : ''}
         ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'headshot')">Headshot</button>
         <button type="button" class="mini-btn" onclick="adminPhoto(${r.prospect_id}, 'wingspan')">Wingspan</button>` : ''}
         <a class="mini-btn" href="report.html?reportId=${r.id}&position=${encodeURIComponent(r.position||'')}" target="_blank" rel="noopener">Open / Edit</a>
@@ -2117,6 +2147,100 @@ function renderReports(){
         <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
       </div>
     </div>`).join('');
+}
+
+/* ---------------- PLAYER PROFILE (edit any prospect from anywhere) ---------------- */
+let PP = null;
+async function openProfileByName(name, school, extra){
+  /* performance-log players may not be prospects yet: create on the fly */
+  try{
+    const d = await api('createProspectFromPerformance', Object.assign({ name, school }, extra||{}));
+    openProfile(d.prospectId);
+  }catch(err){ toast(err.message); }
+}
+async function openProfile(id){
+  const ov = document.getElementById('ppOverlay'), card = document.getElementById('ppCard');
+  ov.classList.add('on'); card.innerHTML = '<div class="empty"><div class="t">Loading...</div></div>';
+  try{
+    const d = await api('listProspects', {});
+    KNOWN_PROSPECTS = d.prospects || [];
+    PP = KNOWN_PROSPECTS.find(p => String(p.id) === String(id));
+    if(!PP) throw new Error('Prospect not found');
+    renderProfile();
+  }catch(err){ card.innerHTML = `<div class="empty"><div class="t">Could not open</div><div class="s">${esc(err.message)}</div></div>`; }
+}
+function closeProfile(){ document.getElementById('ppOverlay').classList.remove('on'); PP = null; }
+function renderProfile(){
+  const p = PP; const card = document.getElementById('ppCard');
+  const photo = p.headshot_key ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}" alt="">` : initials(p.name);
+  const perf = performances.filter(x => nkey(x.name)===nkey(p.name)).sort((a,b)=>dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date)));
+  const graded = perf.filter(e=>e.grade!=null && e.grade!=='').map(e=>Number(e.grade));
+  const f = (id, label, val, ph, opts) => `<div${opts&&opts.full?' class="full"':''}><label class="fl">${label}</label><input type="text" id="pp_${id}" value="${esc(val||'')}" placeholder="${esc(ph||'')}"></div>`;
+  card.innerHTML = `
+    <div class="pp-head">
+      <div class="pp-photo">${photo}<button type="button" onclick="ppPhoto()">Photo</button><input type="file" id="ppFile" accept="image/*" style="display:none" onchange="ppUpload(this.files[0])"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="pp-name">${esc(p.name)}</div>
+        <div class="pp-sub">${esc(p.position||'')}${p.school?' \u00b7 '+esc(p.school):''}${p.class_year?' \u00b7 Class of '+esc(p.class_year):''} \u00b7 prospect #${p.id}${p.boards?' \u00b7 '+esc(p.boards):''}</div>
+      </div>
+      <button type="button" class="mini-btn" onclick="closeProfile()">Close</button>
+    </div>
+    ${graded.length ? `<div class="pp-rank"><div class="rc-meta">Production Market</div><div style="display:flex;gap:18px;margin-top:6px;">
+      <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${graded[0].toFixed(1)}</div><div class="rc-meta">latest</div></div>
+      <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${(graded.reduce((a,b)=>a+b,0)/graded.length).toFixed(1)}</div><div class="rc-meta">season avg</div></div>
+      <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${Math.max(...graded).toFixed(1)}</div><div class="rc-meta">best</div></div>
+      <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${perf.length}</div><div class="rc-meta">games</div></div>
+    </div></div>` : ''}
+    <div class="pp-grid">
+      ${f('name','Name',p.name,'',{full:true})}
+      ${f('school','School',p.school,'')}
+      ${f('position','Position',p.position,'WR')}
+      ${f('class_year','Class year',p.class_year,'2027')}
+      <div><label class="fl">Level</label><select id="pp_level"><option ${p.level==='HS'?'selected':''}>HS</option><option ${p.level==='JUCO'?'selected':''}>JUCO</option><option ${p.level==='College'?'selected':''}>College</option></select></div>
+      ${f('home_city','City',p.home_city,'')}
+      ${f('home_state','State',p.home_state,'MS')}
+      ${f('height','Height',p.height,"6'1")}
+      ${f('weight','Weight',p.weight,'190')}
+      ${f('wingspan','Wingspan',p.wingspan,'')}
+      ${f('film_link','Film link',p.film_link,'https://',{full:true})}
+    </div>
+    <div class="rc-actions" style="margin-top:14px;">
+      <button type="button" class="btn" onclick="saveProfile()">Save</button>
+      <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.class_year||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
+      ${p.reports ? `<span class="rc-meta">${p.reports} report${p.reports===1?'':'s'} on file</span>` : ''}
+    </div>
+    ${perf.length ? `<div style="margin-top:14px;"><div class="rc-meta" style="margin-bottom:4px;">Game log</div>${perf.map(e=>`<div style="display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;"><span style="min-width:58px;color:var(--dim)">${fmtDate(e.performance_date)}</span><span style="min-width:40px;font-family:'Anton',sans-serif;font-size:15px;">${e.grade!=null&&e.grade!==''?Number(e.grade).toFixed(1):'\u2014'}</span><span style="flex:1;color:#D6D6D6">${esc(e.stat_line||'')}</span></div>`).join('')}</div>` : ''}`;
+}
+async function saveProfile(){
+  if(!PP) return;
+  const g = (id) => { const el = document.getElementById('pp_'+id); return el ? el.value : undefined; };
+  const fields = { name:g('name'), school:g('school'), position:(g('position')||'').toUpperCase(), class_year:g('class_year'), level:g('level'),
+                   home_city:g('home_city'), home_state:(g('home_state')||'').toUpperCase(), height:g('height'), weight:g('weight'), wingspan:g('wingspan'), film_link:g('film_link') };
+  try{
+    const d = await api('updateProspect', { id: PP.id, fields, prev: { name: PP.name, school: PP.school || '' } });
+    const oldName = PP.name, oldSchool = PP.school || '';
+    PP = Object.assign({}, PP, d.prospect);
+    performances.forEach(x => { if(nkey(x.name)===nkey(oldName) && (x.school||'')===oldSchool){ x.name = PP.name; x.school = PP.school; } });
+    buildKnownNames(); MK = null;
+    renderProfile(); renderPerf(); renderReports();
+    toast('Profile saved');
+  }catch(err){ toast(err.message); }
+}
+function ppPhoto(){ const i = document.getElementById('ppFile'); if(i) i.click(); }
+async function ppUpload(file){
+  if(!file || !PP) return;
+  toast('Uploading headshot...');
+  const img = await resizeImage(file, 1200);
+  if(!img){ alert('Could not read that image. Try a screenshot or a JPEG.'); return; }
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: PP.id, kind:'headshot', dataBase64: img.base64, contentType: img.contentType }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    PP.headshot_key = data.key;
+    reports.forEach(r => { if(r.prospect_id === PP.id) r.headshot_key = data.key; });
+    renderProfile(); renderReports(); toast('Headshot saved');
+  }catch(err){ alert('Photo upload failed: ' + err.message); }
 }
 
 /* ---------------- INTAKE QUEUE ---------------- */
@@ -2291,6 +2415,7 @@ function marketRowHTML(p, i){
       ${log}
       <div class="rc-actions" style="margin-top:10px;">
         <button type="button" class="mini-btn go" onclick="switchTab('perf'); addWeekFor('${esc(key)}')">+ Add week</button>
+        <button type="button" class="mini-btn" onclick="openProfileByName('${esc(p.name).replace(/'/g,"\\'")}','${esc(p.school||'').replace(/'/g,"\\'")}', {position:'${esc(p.position||'')}', class_year:'${esc(p.classYear||'')}', level:'${esc(p.level||'HS')}'})">Profile</button>
         <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
       </div>
     </div>`;
@@ -2864,15 +2989,33 @@ function renderPerf(){
     g.entries.push(p);
   });
   const players = [...groups.values()];
-  players.forEach(g => g.entries.sort((a,b)=> dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date))));
-  players.sort((a,b)=> dateOnly(b.entries[0].performance_date).localeCompare(dateOnly(a.entries[0].performance_date)));
+  players.forEach(g => {
+    g.entries.sort((a,b)=> dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date)));
+    const gr = g.entries.filter(e=>e.grade!=null && e.grade!=='').map(e=>Number(e.grade));
+    g.latest = gr.length ? gr[0] : null;
+    g.prev = gr.length > 1 ? gr[1] : null;
+    g.avg = gr.length ? gr.reduce((a,b)=>a+b,0)/gr.length : null;
+    g.best = gr.length ? Math.max(...gr) : null;
+    g.chg = (g.latest!=null && g.prev!=null) ? +(g.latest-g.prev).toFixed(1) : null;
+  });
+  const sortBy = (document.getElementById('perfSort')||{}).value || 'latest';
+  const nz = (v, d) => v==null ? d : v;
+  const sorters = {
+    latest:(a,b)=> nz(b.latest,-1)-nz(a.latest,-1) || nz(b.avg,-1)-nz(a.avg,-1),
+    avg:(a,b)=> nz(b.avg,-1)-nz(a.avg,-1),
+    best:(a,b)=> nz(b.best,-1)-nz(a.best,-1),
+    riser:(a,b)=> nz(b.chg,-999)-nz(a.chg,-999),
+    games:(a,b)=> b.entries.length-a.entries.length || nz(b.latest,-1)-nz(a.latest,-1),
+    recent:(a,b)=> dateOnly(b.entries[0].performance_date).localeCompare(dateOnly(a.entries[0].performance_date))
+  };
+  players.sort(sorters[sortBy] || sorters.latest);
 
   const el = document.getElementById('perfList');
   if(!players.length){
     el.innerHTML = `<div class="empty"><div class="t">No performances logged</div><div class="s">Add a stat line above with its source link.</div></div>`;
     return;
   }
-  el.innerHTML = players.map(g=>{
+  el.innerHTML = players.map((g, rank)=>{
     const latest = g.entries[0];
     const graded = g.entries.filter(e=>e.grade!=null && e.grade!=='');
     const latestGrade = graded.length ? Number(graded[0].grade) : null;
@@ -2885,12 +3028,14 @@ function renderPerf(){
         <div style="flex:1; font-size:12.5px; color:#D6D6D6; line-height:1.45;">${e.stat_line ? esc(e.stat_line) : '<span style="color:var(--dim)">no stat line</span>'}${e.source_link ? ` <a href="${esc(e.source_link)}" target="_blank" rel="noopener" style="color:var(--mute); font-size:11px;">source</a>` : ''}</div>
         <button type="button" class="mini-btn danger" style="padding:4px 8px; font-size:10px;" onclick="deletePerformance('${e.id}')">&times;</button>
       </div>`).join('');
+    const rankVal = sortBy==='avg' ? g.avg : sortBy==='best' ? g.best : sortBy==='riser' ? g.chg : g.latest;
     return `
     <div class="row-card">
       <div class="rc-top">
+        <div class="rank-num ${rank<3?'top':''}">${rankVal==null ? '\u2014' : (rank+1)}</div>
         <div class="rc-avatar">${initials(g.name)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(g.name)}</div>
+          <div class="rc-name">${esc(g.name)}${g.avg!=null ? ` <span class="rc-meta">avg ${g.avg.toFixed(1)} \u00b7 best ${g.best.toFixed(1)}</span>` : ''}</div>
           <div class="rc-meta">${esc(g.position||'')} &middot; ${esc(g.school||'\u2014')} &middot; Class of ${esc(g.class_year||'\u2014')}</div>
           <span class="pill ${g.level==='JUCO'?'juco':'hs'}">${esc(g.level||'HS')}</span>
           <span class="pill">${g.entries.length} game${g.entries.length===1?'':'s'}</span>
@@ -2904,6 +3049,7 @@ function renderPerf(){
       ${perfNameHint(g)}
       <div class="rc-actions">
         <button type="button" class="mini-btn go" onclick="addWeekFor('${esc(g.key)}')">+ Add week</button>
+        <button type="button" class="mini-btn" onclick="openProfileByName('${esc(g.name).replace(/'/g,"\\'")}','${esc(g.school||'').replace(/'/g,"\\'")}', {position:'${esc(g.position||'')}', class_year:'${esc(g.class_year||'')}', level:'${esc(g.level||'HS')}'})">Profile</button>
         <button type="button" class="mini-btn" onclick="renamePlayer('${esc(g.key)}')">Fix name</button>
         <button type="button" class="mini-btn" onclick="fixSchool('${esc(g.key)}')">Fix school</button>
         <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:g.name||'', school:g.school||'', class:g.class_year||'', position:(g.position && POS_MAP[g.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>

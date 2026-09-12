@@ -175,7 +175,7 @@ async function loadProspects(){
   log('Loading every prospect...');
   try{
     const data = await adminApi('listProspects', {});
-    ALL_PROSPECTS = data.prospects || [];
+    ALL_PROSPECTS = (data.prospects || []).concat((data.pending || []).map(p => Object.assign({}, p, { id: 'new:' + encodeURIComponent(p.name) + '|' + encodeURIComponent(p.school||''), pending: true })));
     if(!ALL_PROSPECTS.length){ log('No prospects in the database yet.', 'bad'); document.getElementById('prospect').innerHTML = '<option value="">(none)</option>'; return; }
     renderProspectOptions();
     log('Loaded ' + ALL_PROSPECTS.length + ' prospects (' + ALL_PROSPECTS.filter(p=>p.headshot_key).length + ' with a headshot).', 'ok');
@@ -189,7 +189,7 @@ function renderProspectOptions(){
   const list = ALL_PROSPECTS.filter(p => !q || (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q) || (p.boards||'').toLowerCase().includes(q));
   sel.innerHTML = list.map(p => {
     const tag = [p.position, p.school, p.class_year ? 'Class of ' + p.class_year : '', p.boards ? p.boards : '', p.reports ? p.reports + ' rpt' : ''].filter(Boolean).join(' \u00b7 ');
-    return `<option value="${p.id}">${p.headshot_key ? '\u25cf ' : '\u25cb '}${p.name} \u2014 ${tag} (id ${p.id})</option>`;
+    return `<option value="${p.id}">${p.headshot_key ? '\u25cf ' : '\u25cb '}${p.name} \u2014 ${tag}${p.pending ? ' \u00b7 from performance log, not a prospect yet' : ' (id ' + p.id + ')'}</option>`;
   }).join('') || '<option value="">(no match)</option>';
   if(keep && [...sel.options].some(o=>o.value===keep)) sel.value = keep;
 }
@@ -230,8 +230,19 @@ function toJpeg(file, maxDim){
 
 async function go(){
   if(!PICKED){ log('Pick an image first.', 'bad'); return; }
-  const prospectId = parseInt(document.getElementById('prospect').value, 10);
+  let prospectId = parseInt(document.getElementById('prospect').value, 10);
   const kind = document.getElementById('kind').value;
+  const raw = document.getElementById('prospect').value;
+  if(!prospectId && String(raw).startsWith('new:')){
+    /* performance-log player: make him a prospect first, then upload */
+    const p = ALL_PROSPECTS.find(x => x.id === raw);
+    log('Creating prospect record for ' + p.name + '...');
+    try{
+      const d = await adminApi('createProspectFromPerformance', { name: p.name, school: p.school, position: p.position, class_year: p.class_year, level: p.level });
+      prospectId = d.prospectId; p.id = d.prospectId; p.pending = false;
+      log('Prospect #' + prospectId + ' ready.', 'ok');
+    }catch(err){ log('Could not create prospect: ' + err.message, 'bad'); return; }
+  }
   if(!prospectId){ log('No prospect selected.', 'bad'); return; }
 
   log('POSTing to upload-prospect-photo...\nprospectId: ' + prospectId + '\nkind: ' + kind + '\ncontentType: image/jpeg');

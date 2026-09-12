@@ -56,7 +56,42 @@ function mendLigatures(text) {
     .replace(/([A-Za-z])\s+(ffi|ffl|ff|fi|fl)(?=[\s,;.]|$)/g, '$1$2');    // Hu ff -> Huff
 }
 
+/* Roster block: "DB 0 Samuel Watkins", "LB 17 Tyler Jenkins", "WR 7OMichael Moore".
+   Gives real positions to players the stat tables can only call "DEF". */
+const POS_CODES = 'QB|RB|FB|WR|TE|OL|OG|OT|C|DB|CB|S|SS|FS|NB|LB|ILB|OLB|DL|DE|DT|NG|NT|EDGE|K|P|LS|ATH';
+function rosterPositions(text) {
+  const map = {};
+  /* Two rosters often share a line ("WR 1 Waymond Jenerette Jr WR 1 Jeremiah Thomas"),
+     so match repeatedly and stop the name before the next position code. */
+  const tok = '(?!(?:' + POS_CODES + ')\\b)[A-Z][A-Za-z\'’.\\-]+';
+  const re = new RegExp('\\b(' + POS_CODES + ')\\s+(\\d{1,2})\\s*[A-Z]?\\s+(' + tok + '(?:\\s+' + tok + '){0,3})', 'g');
+  String(text).split('\n').forEach(line => {
+    if (!/\b(OFFENSE|DEFENSE)\b/.test(line) && !/^\s*(?:[A-Z]{1,4}\s+\d{1,2}[A-Z]?\s+[A-Z])/.test(line)) return;
+    let m;
+    while ((m = re.exec(line))) {
+      const key = m[3].toLowerCase().replace(/[^a-z]/g, '');
+      if (key.length >= 4 && !map[key]) map[key] = m[1].toUpperCase();
+    }
+  });
+  return map;
+}
+const DEF_GROUP = (pos) => /^(DB|CB|S|SS|FS|NB)$/.test(pos) ? 'DB' : /^(LB|ILB|OLB)$/.test(pos) ? 'LB' : /^(DL|DE|DT|NG|NT|EDGE)$/.test(pos) ? 'DL' : null;
+
 function parseText(text) {
+  text = mendLigatures(text);
+  const roster = rosterPositions(text);
+  const out = looksNarrative(text) ? (() => { const { date, teams, playerMap } = parseNarrative(text); return { date, teams, players: summarize(playerMap) }; })() : parseColumns(text);
+  out.players.forEach(p => {
+    const rp = roster[String(p.name).toLowerCase().replace(/[^a-z]/g, '')];
+    if (rp && (p.position === 'DEF' || p.position === 'ATH' || (p.position === 'WR' && /^(RB|TE|FB)$/.test(rp)) || (p.position === 'RB' && /^(WR|TE|QB)$/.test(rp)))) p.position = rp;
+    /* re-grade defenders now that we know their group */
+    if (p.metrics && p.metrics.def) { const g = suggestGrade(p.position, p.metrics); p.grade = g.grade; p.why = g.why; }
+  });
+  out.players.sort((a, b) => (b.selected - a.selected) || (b.grade - a.grade));
+  return out;
+}
+
+function parseTextLegacy(text) {
   text = mendLigatures(text);
   if (looksNarrative(text)) {
     const { date, teams, playerMap } = parseNarrative(text);
@@ -222,7 +257,7 @@ function summarize(players) {
 
     const { grade, why } = suggestGrade(pos, m);
     const level = /community college|\bCC\b|juco|junior college/i.test(r.team) ? 'JUCO' : 'HS';
-    out.push({ name: r.name, team: r.team, level, position: pos, statLine: parts.join(' | '), grade, why, metrics: m, selected: false });
+    out.push({ name: r.name, team: r.team, level, position: pos || 'ATH', statLine: parts.join(' | '), grade, why, metrics: m, selected: false });
   }
   /* Preselect the ones worth a human's time: top 3 per team in each stat
      category, plus anyone with a TD, a sack, or a pick. Everyone else is
@@ -285,8 +320,16 @@ function suggestGrade(pos, m) {
   }
   if (m.def) {
     const d = m.def;
-    take(40 + (d.total || 0) * 3 + (d.tfl || 0) * 5 + (d.sacks || 0) * 9 + (d.int || 0) * 9 + (d.pd || 0) * 3 + (d.unknown || 0) * 3);
-    why.push('DEF: 40 + tkl x3 + TFL x5 + sack x9 + INT x9 + PD x3');
+    const grp = DEF_GROUP(pos) || 'LB';
+    /* Tackles carry a linebacker; splash plays carry a corner or a rusher.
+       Tackle credit is capped so a 15-tackle night on a bad defense does not
+       outgrade a 2-sack night. */
+    const tk = Math.min(12, d.total || 0);
+    const wTk = grp === 'LB' ? 3.8 : grp === 'DB' ? 3.2 : 3.0;
+    const wTfl = grp === 'DL' ? 7 : 6, wSack = grp === 'DL' ? 11 : 10;
+    const wInt = grp === 'DB' ? 13 : 11, wPd = grp === 'DB' ? 5 : 4;
+    take(40 + tk * wTk + (d.tfl || 0) * wTfl + (d.sacks || 0) * wSack + (d.int || 0) * wInt + (d.pd || 0) * wPd + (d.unknown || 0) * 4.5);
+    why.push(`${grp}: 40 + tkl(max 12) x${wTk} + TFL x${wTfl} + sack x${wSack} + INT x${wInt} + PD x${wPd}`);
   }
   if (m.kick && g == null) {
     const k = m.kick;

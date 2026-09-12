@@ -501,6 +501,26 @@ exports.handler = async (event) => {
         return ok({ prospectId: row.id, existed: false });
       }
 
+      /* ---------------- MAP ---------------- */
+      case 'listMapPins': {
+        const { pins } = require('./lib/mappins');
+        const data = await pins(sql, siteBase(event));
+        return ok(data);
+      }
+      case 'saveSchoolLocation': {
+        const { schoolKey } = require('./lib/logos');
+        const { ensureTable } = require('./lib/mappins');
+        const school = String(body.school || '').trim();
+        const sk = schoolKey(school);
+        const lat = parseFloat(body.lat), lng = parseFloat(body.lng);
+        if (!sk || !Number.isFinite(lat) || !Number.isFinite(lng)) return fail(400, 'school, lat, lng required');
+        await ensureTable(sql);
+        await sql`INSERT INTO school_locations (school_key, display_name, latitude, longitude, state, updated_at)
+                  VALUES (${sk}, ${school}, ${lat}, ${lng}, ${body.state || null}, now())
+                  ON CONFLICT (school_key) DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, display_name = EXCLUDED.display_name, state = COALESCE(EXCLUDED.state, school_locations.state), updated_at = now()`;
+        return ok({ saved: sk });
+      }
+
       case 'listProspects': {
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,

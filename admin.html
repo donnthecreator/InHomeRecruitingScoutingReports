@@ -578,31 +578,28 @@
 
     <div class="map-controls">
       <div class="mc-row">
-        <label class="mc-toggle"><input type="checkbox" id="mLayerProspects" checked onchange="drawMap()"> <span>Prospects</span></label>
-        <label class="mc-toggle"><input type="checkbox" id="mLayerColleges" checked onchange="drawMap()"> <span>Colleges</span></label>
-        <label class="mc-toggle"><input type="checkbox" id="mLayerReports" checked onchange="drawMap()"> <span>Filed Reports</span></label>
+        <label class="mc-toggle"><input type="checkbox" id="mLayerHS" checked onchange="drawMap()"> <span>High school</span></label>
+        <label class="mc-toggle"><input type="checkbox" id="mLayerJUCO" checked onchange="drawMap()"> <span>JUCO</span></label>
+        <label class="mc-toggle"><input type="checkbox" id="mLayerCollege" checked onchange="drawMap()"> <span>College / transfer</span></label>
       </div>
       <div class="tools" style="margin-top:9px;">
+        <input type="text" id="mSearch" placeholder="Search name or school" oninput="drawMap()">
         <select id="mState" onchange="drawMap()"></select>
-        <select id="mPos" onchange="drawMap()">
-          <option value="All">All positions</option>
-          <option value="X">X</option><option value="Z">Z</option><option value="H">H</option>
-        </select>
+        <select id="mPos" onchange="drawMap()"><option value="All">All positions</option></select>
         <select id="mStatus" onchange="drawMap()">
           <option value="All">Any status</option>
-          <option value="open">Not worked</option>
-          <option value="done">Worked</option>
-          <option value="flag">Flagged</option>
+          <option value="scouted">Report filed</option>
+          <option value="board">On a program board</option>
+          <option value="tracked">Performance log only</option>
+          <option value="prospect">Prospect, no report</option>
         </select>
       </div>
-      <div class="chip-row" id="mLevelChips"></div>
       <div class="map-legend">
-        <span><i class="lg" style="background:#FF0000"></i>Prospect</span>
-        <span><i class="lg" style="background:#35C759"></i>Filed report</span>
-        <span><i class="lg" style="background:#4A90D9"></i>FBS</span>
-        <span><i class="lg" style="background:#7E57C2"></i>FCS</span>
-        <span><i class="lg" style="background:#E0A419"></i>D2</span>
-        <span><i class="lg" style="background:#EC7000"></i>JUCO</span>
+        <span><i class="lg" style="background:#35C759"></i>Report filed</span>
+        <span><i class="lg" style="background:#FF0000"></i>Program board</span>
+        <span><i class="lg" style="background:#E0A419"></i>Performance log</span>
+        <span><i class="lg" style="background:#8A8A8A"></i>Prospect</span>
+        <span style="color:var(--dim)">Faded = placed at the school, not an exact address</span>
       </div>
     </div>
 
@@ -613,11 +610,12 @@
 
     <div class="panel" style="margin-top:12px;">
       <div class="sub" style="margin:0;">
-        Pins start on their state center and sharpen to the real school as geocoding runs. Results cache in this browser, so it only costs lookups the first time. Tap a prospect for detail, the recruiting links, and one-tap assign.
+        Every prospect in the system: program boards, scouted players, and the performance log. A player without an exact address is placed at his school. Locate Schools looks up any school that still needs a spot and saves it for the coach portal too, so it only ever runs once per school.
       </div>
       <div class="rc-actions">
-        <button type="button" class="mini-btn" onclick="geocodeQueue(true)">Resolve Locations</button>
-        <button type="button" class="mini-btn danger" onclick="clearGeoCache()">Clear Location Cache</button>
+        <button type="button" class="mini-btn go" onclick="locateSchools()">Locate Schools</button>
+        <button type="button" class="mini-btn" onclick="MAP_PINS=null; drawMap()">Refresh pins</button>
+        <span class="rc-meta" id="mapCount"></span>
       </div>
     </div>
   </div>
@@ -846,7 +844,6 @@ function initBoard(){
   buildBoardFilters();
   renderBoardProgress();
   renderBoard();
-  loadGeoCache();
   loadMapsScript();
 }
 
@@ -1569,169 +1566,54 @@ const STATE_CENTROIDS = {
    real coordinates come from Google at runtime and cache in localStorage.
    ESPN team id (5th field) drives the logo where known, blank falls back
    to a colored marker with initials. Add a school by adding a line. */
-const COLLEGES = [
-/* ---- FBS ---- */
-["Alabama","FBS","AL",333],["Auburn","FBS","AL",2],["UAB","FBS","AL",5],
-["South Alabama","FBS","AL",6],["Troy","FBS","AL",2653],
-["Georgia","FBS","GA",61],["Georgia Tech","FBS","GA",59],["Georgia State","FBS","GA",2247],
-["Georgia Southern","FBS","GA",290],["Kennesaw State","FBS","GA",338],
-["Florida","FBS","FL",57],["Florida State","FBS","FL",52],["Miami","FBS","FL",2390],
-["UCF","FBS","FL",2116],["South Florida","FBS","FL",58],["Florida Atlantic","FBS","FL",2226],
-["FIU","FBS","FL",2229],["Jacksonville State","FBS","AL",55],
-["Texas","FBS","TX",251],["Texas A&M","FBS","TX",245],["TCU","FBS","TX",2628],
-["Baylor","FBS","TX",239],["Houston","FBS","TX",248],["SMU","FBS","TX",2567],
-["Texas Tech","FBS","TX",2641],["North Texas","FBS","TX",249],["UTSA","FBS","TX",2636],
-["Texas State","FBS","TX",326],["Rice","FBS","TX",242],["UTEP","FBS","TX",2638],
-["South Carolina","FBS","SC",2579],["Clemson","FBS","SC",228],["Coastal Carolina","FBS","SC",324],
-["Mississippi State","FBS","MS",344],["Ole Miss","FBS","MS",145],["Southern Miss","FBS","MS",2572],
-["North Carolina","FBS","NC",153],["NC State","FBS","NC",152],["Duke","FBS","NC",150],
-["Wake Forest","FBS","NC",154],["East Carolina","FBS","NC",151],["Charlotte","FBS","NC",2429],
-["Appalachian State","FBS","NC",2026],
-["LSU","FBS","LA",99],["Tulane","FBS","LA",2655],["Louisiana","FBS","LA",309],
-["Louisiana Tech","FBS","LA",2348],["ULM","FBS","LA",2433],
-["Tennessee","FBS","TN",2633],["Vanderbilt","FBS","TN",238],["Memphis","FBS","TN",235],
-["Middle Tennessee","FBS","TN",2393],
-["Oklahoma","FBS","OK",201],["Oklahoma State","FBS","OK",197],["Tulsa","FBS","OK",202],
-["Kentucky","FBS","KY",96],["Louisville","FBS","KY",97],["Western Kentucky","FBS","KY",98],
-
-/* ---- FCS ---- */
-["Samford","FCS","AL",2535],["Alabama State","FCS","AL",2011],["Alabama A&M","FCS","AL",2010],
-["North Alabama","FCS","AL",2453],
-["Mercer","FCS","GA",2382],["Savannah State","FCS","GA",2542],
-["Bethune-Cookman","FCS","FL",2065],["Florida A&M","FCS","FL",50],["Stetson","FCS","FL",56],
-["Sam Houston","FCS","TX",2534],["Stephen F. Austin","FCS","TX",2617],
-["Prairie View A&M","FCS","TX",2504],["Texas Southern","FCS","TX",2640],["Abilene Christian","FCS","TX",2000],
-["Furman","FCS","SC",231],["Wofford","FCS","SC",2747],["The Citadel","FCS","SC",2643],
-["South Carolina State","FCS","SC",2569],["Charleston Southern","FCS","SC",2127],
-["Jackson State","FCS","MS",2296],["Alcorn State","FCS","MS",2016],["Mississippi Valley State","FCS","MS",2400],
-["North Carolina A&T","FCS","NC",2448],["North Carolina Central","FCS","NC",2428],
-["Elon","FCS","NC",2210],["Campbell","FCS","NC",2097],["Davidson","FCS","NC",2166],
-["Grambling State","FCS","LA",2755],["Southern","FCS","LA",2582],["Nicholls","FCS","LA",2447],
-["Southeastern Louisiana","FCS","LA",2545],["McNeese","FCS","LA",2377],
-["Tennessee State","FCS","TN",2634],["Tennessee Tech","FCS","TN",2635],
-["Austin Peay","FCS","TN",2046],["UT Martin","FCS","TN",2630],["Chattanooga","FCS","TN",236],
-["Eastern Kentucky","FCS","KY",2198],["Murray State","FCS","KY",93],
-
-/* ---- D2 ---- */
-["West Alabama","D2","AL",0],["West Georgia","D2","GA",0],["Valdosta State","D2","GA",0],
-["Albany State","D2","GA",0],["Fort Valley State","D2","GA",0],["Tuskegee","D2","AL",0],
-["Miles College","D2","AL",0],["Delta State","D2","MS",0],
-["Lenoir-Rhyne","D2","NC",0],["Newberry College","D2","SC",0],["Limestone University","D2","SC",0],
-["Tarleton State","D2","TX",0],["Angelo State","D2","TX",0],["West Texas A&M","D2","TX",0],
-
-/* ---- JUCO ---- */
-["Coahoma Community College","JUCO","MS",0],["East Mississippi Community College","JUCO","MS",0],
-["Hinds Community College","JUCO","MS",0],["Jones College","JUCO","MS",0],
-["Northwest Mississippi Community College","JUCO","MS",0],["Copiah-Lincoln Community College","JUCO","MS",0],
-["Pearl River Community College","JUCO","MS",0],["Mississippi Gulf Coast Community College","JUCO","MS",0],
-["East Central Community College","JUCO","MS",0],["Itawamba Community College","JUCO","MS",0],
-["Holmes Community College","JUCO","MS",0],["Southwest Mississippi Community College","JUCO","MS",0],
-["Northeast Mississippi Community College","JUCO","MS",0],
-["Coffeyville Community College","JUCO","KS",0],["Hutchinson Community College","JUCO","KS",0],
-["Garden City Community College","JUCO","KS",0],["Independence Community College","JUCO","KS",0],
-["Butler Community College","JUCO","KS",0],["Dodge City Community College","JUCO","KS",0],
-["Highland Community College","JUCO","KS",0],
-["Kilgore College","JUCO","TX",0],["Tyler Junior College","JUCO","TX",0],
-["Blinn College","JUCO","TX",0],["Navarro College","JUCO","TX",0],
-["Trinity Valley Community College","JUCO","TX",0],["Cisco College","JUCO","TX",0],
-["Georgia Military College","JUCO","GA",0],["East Georgia State College","JUCO","GA",0],
-["Snow College","JUCO","UT",0],["Iowa Western Community College","JUCO","IA",0],
-["Northwest Kansas Technical College","JUCO","KS",0],["Arizona Western College","JUCO","AZ",0],
-["Mesa Community College","JUCO","AZ",0],["Scottsdale Community College","JUCO","AZ",0],
-["Northeast Oklahoma A&M College","JUCO","OK",0],["Eastern Oklahoma State College","JUCO","OK",0]
-];
-
-const GEO_KEY = 'inhome_geocache_v1';
-const LEVEL_COLOR = { FBS:'#4A90D9', FCS:'#7E57C2', D2:'#E0A419', JUCO:'#EC7000' };
-let geoCache = {};
-let mapLevelFilter = { FBS:true, FCS:true, D2:true, JUCO:true };
+/* Map state (the old college marker table and browser geocache are gone:
+   pins come from the server, school locations are saved there too). */
 let gmarkers = [];
 let geocoder = null, infoWin = null, geoRunning = false;
 
-function loadGeoCache(){
-  try{ geoCache = JSON.parse(localStorage.getItem(GEO_KEY) || '{}'); }
-  catch(e){ geoCache = {}; }
+/* ---- prospect map: pins from the server, schools located once ---- */
+let MAP_PINS = null, MAP_MISSING = [];
+async function loadMapPins(){
+  try{ const d = await api('listMapPins', {}); MAP_PINS = d.pins || []; MAP_MISSING = d.missingSchools || []; }
+  catch(err){ MAP_PINS = []; MAP_MISSING = []; setMapStatus('Could not load pins: ' + err.message); }
 }
-function saveGeoCache(){
-  try{ localStorage.setItem(GEO_KEY, JSON.stringify(geoCache)); }
-  catch(e){ console.error('geocache save failed', e); }
-}
-function clearGeoCache(){
-  if(!confirm('Clear cached map locations? They will be looked up again.')) return;
-  geoCache = {}; saveGeoCache(); drawMap(); toast('Location cache cleared');
-}
-
-/* ---- what needs a location ---- */
-function prospectGeoKey(p){ return 'hs|' + p[2] + '|' + p[3]; }
-function collegeGeoKey(c){ return 'col|' + c[0] + '|' + c[2]; }
-function prospectQuery(p){ return p[2] + ' High School, ' + (p[3]||'') + ', USA'; }
-function collegeQuery(c){ return c[0] + ' university football, ' + (c[2]||'') + ', USA'; }
-
-function posFor(key, fallbackState){
-  const hit = geoCache[key];
-  if(hit && hit.lat) return { lat:hit.lat, lng:hit.lng, exact:true };
-  const c = STATE_CENTROIDS[fallbackState];
-  if(!c) return null;
-  /* jitter so same-state pins don't stack into one dot */
-  const j = (Math.abs(hashStr(key))%1000)/1000;
-  const j2 = (Math.abs(hashStr(key+'x'))%1000)/1000;
-  return { lat:c[0]+(j-0.5)*1.1, lng:c[1]+(j2-0.5)*1.1, exact:false };
-}
-function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=((h<<5)-h)+s.charCodeAt(i); h|=0; } return h; }
-
-/* ---- geocode queue, throttled ---- */
-async function geocodeQueue(userTriggered){
+async function locateSchools(){
   if(geoRunning) return;
-  if(!geocoder){ if(userTriggered) toast('Map not ready yet'); return; }
-
-  const jobs = [];
-  BOARD_DATA.forEach(p=>{
-    const k = prospectGeoKey(p);
-    if(!geoCache[k] && p[2]) jobs.push({key:k, q:prospectQuery(p)});
-  });
-  COLLEGES.forEach(c=>{
-    const k = collegeGeoKey(c);
-    if(!geoCache[k]) jobs.push({key:k, q:collegeQuery(c)});
-  });
-  const seen = new Set(); const queue = jobs.filter(j=>{
-    if(seen.has(j.key)) return false; seen.add(j.key); return true;
-  });
-
-  if(!queue.length){ if(userTriggered) toast('Everything already located'); return; }
-
+  if(!geocoder){ toast('Map not ready yet'); return; }
+  if(MAP_PINS === null) await loadMapPins();
+  if(!MAP_MISSING.length){ toast('Every school already has a location'); return; }
   geoRunning = true;
-  let done = 0, failed = 0;
-  for(const job of queue){
+  let done = 0, saved = 0;
+  for(const m of MAP_MISSING){
+    const level = (m.level||'').toUpperCase();
+    const kind = level === 'JUCO' ? ' community college' : level === 'COLLEGE' ? ' university' : ' high school';
+    const q = m.school + (/(college|university|hs|high school|academy|prep)\b/i.test(m.school) ? '' : kind) + (m.state ? ', ' + m.state : '') + ', USA';
     try{
       const res = await new Promise((resolve,reject)=>{
-        geocoder.geocode({ address: job.q }, (r,status)=>{
+        geocoder.geocode({ address: q, region: 'us' }, (r,status)=>{
           if(status==='OK' && r && r[0]) resolve(r[0]);
           else if(status==='OVER_QUERY_LIMIT') reject(new Error('OVER_QUERY_LIMIT'));
           else resolve(null);
         });
       });
       if(res){
-        geoCache[job.key] = { lat:res.geometry.location.lat(), lng:res.geometry.location.lng() };
-      } else {
-        geoCache[job.key] = { lat:null, lng:null };  /* remember the miss, don't retry forever */
-        failed++;
+        const lat = res.geometry.location.lat(), lng = res.geometry.location.lng();
+        const st = (res.address_components||[]).find(c => c.types.includes('administrative_area_level_1'));
+        await api('saveSchoolLocation', { school: m.school, lat, lng, state: st ? st.short_name : m.state });
+        saved++;
       }
     }catch(err){
-      if(err.message==='OVER_QUERY_LIMIT'){
-        setMapStatus('Rate limited. Saved ' + done + '. Hit Resolve Locations again in a minute.');
-        break;
-      }
-      failed++;
+      if(err.message==='OVER_QUERY_LIMIT'){ setMapStatus('Rate limited after ' + done + '. Tap Locate Schools again in a minute.'); break; }
     }
     done++;
-    if(done % 10 === 0){ saveGeoCache(); setMapStatus('Locating... ' + done + ' of ' + queue.length); }
-    await new Promise(r=>setTimeout(r, 90));
+    setMapStatus('Locating schools... ' + done + ' of ' + MAP_MISSING.length);
+    await new Promise(r=>setTimeout(r, 120));
   }
-  saveGeoCache();
   geoRunning = false;
   setMapStatus('');
-  drawMap();
-  toast('Located ' + (done-failed) + ' of ' + queue.length);
+  MAP_PINS = null;
+  await drawMap();
+  toast('Located ' + saved + ' school' + (saved===1?'':'s'));
 }
 function setMapStatus(txt){
   const el = document.getElementById('mapStatus');
@@ -1742,121 +1624,78 @@ function setMapStatus(txt){
 
 /* ---- markers ---- */
 function dot(color, size){
-  return {
-    path: google.maps.SymbolPath.CIRCLE,
-    fillColor: color, fillOpacity: 0.95,
-    strokeColor: '#000', strokeWeight: 1.2,
-    scale: size
-  };
+  return { path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 0.95, strokeColor: '#000', strokeWeight: 1.2, scale: size };
 }
 function clearMarkers(){ gmarkers.forEach(m=>m.setMap(null)); gmarkers = []; }
+const PIN_COLOR = { scouted:'#35C759', board:'#FF0000', tracked:'#E0A419', prospect:'#8A8A8A' };
 
-function drawMap(){
+async function drawMap(){
   if(!window.gmap) return;
+  if(MAP_PINS === null){ setMapStatus('Loading prospects...'); await loadMapPins(); setMapStatus(''); buildMapFilters(); }
   clearMarkers();
   const bounds = new google.maps.LatLngBounds();
+  const q = (document.getElementById('mSearch').value||'').trim().toLowerCase();
   const stF = document.getElementById('mState').value;
   const posF = document.getElementById('mPos').value;
   const statF = document.getElementById('mStatus').value;
-  const showP = document.getElementById('mLayerProspects').checked;
-  const showC = document.getElementById('mLayerColleges').checked;
-  const showR = document.getElementById('mLayerReports').checked;
-  let pCount = 0, cCount = 0, unresolved = 0;
-
-  if(showP){
-    BOARD_DATA.forEach(p=>{
-      if(stF!=='All' && p[3]!==stF) return;
-      if(posF!=='All' && p[1]!==posF) return;
-      const status = boardStatus[boardKey(p)] || 'open';
-      if(statF!=='All' && status!==statF) return;
-      const loc = posFor(prospectGeoKey(p), p[3]);
-      if(!loc) return;
-      if(!loc.exact) unresolved++;
-      const color = status==='done' ? '#5A5A5A' : (status==='flag' ? '#FF7043' : '#FF0000');
-      const m = new google.maps.Marker({
-        position:{lat:loc.lat,lng:loc.lng}, map:window.gmap,
-        icon: dot(color, loc.exact?6:4.5),
-        opacity: loc.exact?1:0.55,
-        title: p[0] + ' — ' + p[2]
-      });
-      m.addListener('click', ()=>openProspectPop(p, m, status));
-      gmarkers.push(m); bounds.extend(m.getPosition()); pCount++;
-    });
-  }
-
-  if(showC){
-    COLLEGES.forEach(c=>{
-      if(!mapLevelFilter[c[1]]) return;
-      if(stF!=='All' && c[2]!==stF) return;
-      const loc = posFor(collegeGeoKey(c), c[2]);
-      if(!loc) return;
-      const m = new google.maps.Marker({
-        position:{lat:loc.lat,lng:loc.lng}, map:window.gmap,
-        icon: dot(LEVEL_COLOR[c[1]]||'#888', loc.exact?7:5),
-        opacity: loc.exact?1:0.5,
-        title: c[0] + ' (' + c[1] + ')'
-      });
-      m.addListener('click', ()=>openCollegePop(c, m));
-      gmarkers.push(m); bounds.extend(m.getPosition()); cCount++;
-    });
-  }
-
-  if(showR){
-    reports.forEach(r=>{
-      if(!r.latitude || !r.longitude) return;
-      if(stF!=='All' && r.home_state!==stF) return;
-      const m = new google.maps.Marker({
-        position:{lat:Number(r.latitude), lng:Number(r.longitude)}, map:window.gmap,
-        icon: dot('#35C759', 7), title: r.prospect + ' — report filed'
-      });
-      m.addListener('click', ()=>{
-        infoWin.setContent(`<div class="gm-pop"><h4>${esc(r.prospect)}</h4>
-          <div class="gm-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'')}<br>
-          Score ${r.inhome_score ?? '—'} &middot; ${esc(r.recommendation_tier||'Ungraded')}<br>
-          Filed by ${esc(r.scout_name||scoutName(r.scout_id))}</div></div>`);
-        infoWin.open(window.gmap, m);
-      });
-      gmarkers.push(m); bounds.extend(m.getPosition());
-    });
-  }
-
-  document.getElementById('cntMap').textContent = pCount + ' pins';
+  const lv = { HS: document.getElementById('mLayerHS').checked, JUCO: document.getElementById('mLayerJUCO').checked, College: document.getElementById('mLayerCollege').checked };
+  let shown = 0, unplaced = 0, rough = 0;
+  /* jitter pins that share a school so they don't stack into one dot */
+  const seenAt = {};
+  MAP_PINS.forEach(p => {
+    const level = (p.level||'HS');
+    const lvKey = level === 'JUCO' ? 'JUCO' : level === 'HS' ? 'HS' : 'College';
+    if(!lv[lvKey]) return;
+    if(stF!=='All' && (p.state||'') !== stF) return;
+    if(posF!=='All' && (p.position||'') !== posF) return;
+    if(statF!=='All' && p.status !== statF) return;
+    if(q && !((p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q))) return;
+    if(p.lat == null){ unplaced++; return; }
+    if(!p.exact) rough++;
+    const k = p.lat.toFixed(3) + ',' + p.lng.toFixed(3);
+    const n = (seenAt[k] = (seenAt[k]||0) + 1);
+    const ang = n * 2.399, rad = n > 1 ? 0.012 * Math.sqrt(n) : 0;
+    const pos = { lat: p.lat + Math.sin(ang)*rad, lng: p.lng + Math.cos(ang)*rad };
+    const m = new google.maps.Marker({ position: pos, map: window.gmap, icon: dot(PIN_COLOR[p.status]||'#8A8A8A', p.exact ? 7 : 6), opacity: p.exact ? 1 : 0.6, title: p.name + ' — ' + (p.school||'') });
+    m.addListener('click', ()=>openPinPop(p, m));
+    gmarkers.push(m); bounds.extend(pos); shown++;
+  });
+  document.getElementById('cntMap').textContent = shown;
+  document.getElementById('mapCount').textContent = shown + ' on the map' + (rough ? ' \u00b7 ' + rough + ' placed at their school' : '') + (unplaced ? ' \u00b7 ' + unplaced + ' need a school location' : '');
   window.gmapBounds = bounds;
   if(!bounds.isEmpty()) window.gmap.fitBounds(bounds);
-  setMapStatus(unresolved ? unresolved + ' still on state center — tap Resolve Locations' : '');
+  setMapStatus(unplaced ? unplaced + ' prospect' + (unplaced===1?'':'s') + ' not placed yet \u2014 tap Locate Schools' : '');
 }
 
-function openProspectPop(p, marker, status){
-  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p[0])}" target="_blank" rel="noopener">${s.name}</a>`).join('');
-  infoWin.setContent(`<div class="gm-pop">
-    <h4>${esc(p[0])}</h4>
-    <div class="gm-meta">${esc(p[1])} &middot; ${esc(p[2])} &middot; ${esc(p[3]||'')}<br>
-      ${esc([p[4],p[5]].filter(Boolean).join(' / '))}<br>
-      Status: ${status==='done'?'Worked':status==='flag'?'Flagged':'Not worked'}</div>
+function openPinPop(p, marker){
+  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p.name)}" target="_blank" rel="noopener">${s.name}</a>`).join('');
+  const face = p.headshotUrl ? `<img src="${esc(p.headshotUrl)}" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;float:right;margin-left:8px" onerror="this.style.display='none'">` : '';
+  const logo = p.logoUrl ? `<img src="${esc(p.logoUrl)}" alt="" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px;margin-right:4px" onerror="this.remove()">` : '';
+  infoWin.setContent(`<div class="gm-pop">${face}
+    <h4>${esc(p.name)}</h4>
+    <div class="gm-meta">${esc(p.position||'')} &middot; ${logo}${esc(p.school||'')}${p.classYear?' &middot; Class of '+esc(p.classYear):''}<br>
+      ${esc(p.level||'HS')}${p.boards?' &middot; '+esc(p.boards):''}${p.score!=null?' &middot; Score '+p.score.toFixed(1):''}<br>
+      ${p.exact ? 'Exact location' : 'Placed at the school'}</div>
     <div>${links}</div>
-    <button onclick="assignFromBoard('${esc(boardKey(p))}')">Assign to Scout</button>
-  </div>`);
-  infoWin.open(window.gmap, marker);
-}
-function openCollegePop(c, marker){
-  const logo = c[3] ? `<img src="https://a.espncdn.com/i/teamlogos/ncaa/500/${c[3]}.png" alt="" style="width:34px;height:34px;object-fit:contain;float:right;margin-left:8px" onerror="this.style.display='none'">` : '';
-  infoWin.setContent(`<div class="gm-pop">${logo}
-    <h4>${esc(c[0])}</h4>
-    <div class="gm-meta">${esc(c[1])} &middot; ${esc(c[2])}</div>
+    ${p.id ? `<button onclick="openProfile(${p.id})">Profile</button>` : ''}
+    <a href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;">Scout this player</a>
   </div>`);
   infoWin.open(window.gmap, marker);
 }
 
 function buildMapFilters(){
-  const states = [...new Set([...BOARD_DATA.map(p=>p[3]), ...COLLEGES.map(c=>c[2])].filter(Boolean))].sort();
+  const pins = MAP_PINS || [];
+  const states = [...new Set(pins.map(p=>p.state).filter(Boolean))].sort();
   const sel = document.getElementById('mState');
-  if(!sel.options.length){
-    sel.innerHTML = '<option value="All">All states</option>' + states.map(s=>`<option value="${s}">${s}</option>`).join('');
-  }
-  document.getElementById('mLevelChips').innerHTML = ['FBS','FCS','D2','JUCO'].map(l=>
-    `<button type="button" class="chip ${mapLevelFilter[l]?'on':''}" onclick="toggleLevel('${l}')">${l}</button>`).join('');
+  const keepS = sel.value;
+  sel.innerHTML = '<option value="All">All states</option>' + states.map(s=>`<option value="${s}">${s}</option>`).join('');
+  if(keepS && [...sel.options].some(o=>o.value===keepS)) sel.value = keepS;
+  const posSel = document.getElementById('mPos');
+  const keepP = posSel.value;
+  const positions = [...new Set(pins.map(p=>p.position).filter(Boolean))].sort();
+  posSel.innerHTML = '<option value="All">All positions</option>' + positions.map(x=>`<option value="${x}">${x}</option>`).join('');
+  if(keepP && [...posSel.options].some(o=>o.value===keepP)) posSel.value = keepP;
 }
-function toggleLevel(l){ mapLevelFilter[l] = !mapLevelFilter[l]; buildMapFilters(); drawMap(); }
 
 /* ---- boot ---- */
 function initMap(){

@@ -213,11 +213,33 @@ function summarize(players) {
 
     const { grade, why } = suggestGrade(pos, m);
     const level = /community college|\bCC\b|juco|junior college/i.test(r.team) ? 'JUCO' : 'HS';
-    const notable = (m.rush && (m.rush.yds >= 50 || m.rush.td)) || (m.rcv && (m.rcv.yds >= 50 || m.rcv.td)) ||
-      (m.pass && m.pass.att >= 8) || (m.def && (m.def.total >= 5 || m.def.sacks || m.def.int || m.def.tfl >= 1)) || false;
-    out.push({ name: r.name, team: r.team, level, position: pos, statLine: parts.join(' | '), grade, why, metrics: m, selected: !!notable });
+    out.push({ name: r.name, team: r.team, level, position: pos, statLine: parts.join(' | '), grade, why, metrics: m, selected: false });
   }
-  out.sort((a, b) => b.grade - a.grade);
+  /* Preselect the ones worth a human's time: top 3 per team in each stat
+     category, plus anyone with a TD, a sack, or a pick. Everyone else is
+     still returned but starts unticked and hidden behind "show all". */
+  const cats = [
+    ['rush', p => p.metrics.rush && p.metrics.rush.yds, 'top-3 rushing'],
+    ['rcv',  p => p.metrics.rcv && p.metrics.rcv.yds, 'top-3 receiving'],
+    ['pass', p => p.metrics.pass && p.metrics.pass.yds, 'top-3 passing'],
+    ['def',  p => p.metrics.def && p.metrics.def.total, 'top-3 tackles']
+  ];
+  const teams = [...new Set(out.map(p => p.team))];
+  out.forEach(p => { p.selected = false; p.reasons = []; });
+  teams.forEach(t => {
+    const mine = out.filter(p => p.team === t);
+    cats.forEach(([key, val, label]) => {
+      mine.filter(p => (val(p) || 0) > 0).sort((a, b) => val(b) - val(a)).slice(0, 3)
+        .forEach(p => { p.selected = true; p.reasons.push(label); });
+    });
+    mine.forEach(p => {
+      const m = p.metrics;
+      const td = (m.rush && m.rush.td) || (m.rcv && m.rcv.td) || (m.pass && m.pass.td);
+      if (td) { p.selected = true; p.reasons.push('touchdown'); }
+      if (m.def && (m.def.sacks || m.def.int)) { p.selected = true; p.reasons.push(m.def.sacks ? 'sack' : 'interception'); }
+    });
+  });
+  out.sort((a, b) => (b.selected - a.selected) || (b.grade - a.grade));
   return out;
 }
 

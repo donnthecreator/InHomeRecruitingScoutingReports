@@ -424,6 +424,7 @@
         <div><label class="fl">Game date</label><input type="date" id="bxDate"></div>
         <div><label class="fl">Level for these rows</label><select id="bxLevel"><option value="JUCO">JUCO</option><option value="HS">High School</option></select></div>
         <div><label class="fl">Focus on (name filter)</label><input type="text" id="bxFocus" placeholder="e.g. Benjamin" oninput="renderBoxRows()"></div>
+        <div><label class="fl">Show</label><select id="bxShow" onchange="renderBoxRows()"><option value="top">Top performers only</option><option value="all">Every player</option></select></div>
       </div>
       <div id="bxStatus" class="sub" style="margin-top:8px;"></div>
       <div id="bxTeams" style="margin-top:10px;"></div>
@@ -2539,7 +2540,7 @@ async function importBoxScore(file){
     if(BX.date) document.getElementById('bxDate').value = BX.date;
     const juco = BX.players.some(p=>p.level==='JUCO');
     document.getElementById('bxLevel').value = juco ? 'JUCO' : 'HS';
-    st.textContent = `${BX.players.length} players found${BX.date ? ' \u00b7 ' + fmtDate(BX.date) : ''}. ${BX.players.filter(p=>p.selected).length} preselected as notable. Grades are suggestions, edit before logging.`;
+    st.textContent = `${BX.players.length} players found${BX.date ? ' \u00b7 ' + fmtDate(BX.date) : ''}. ${BX.players.filter(p=>p.selected).length} preselected: top 3 per team in rushing, receiving, passing, and tackles, plus anyone with a TD, sack, or pick. Switch Show to "Every player" for the rest.`;
     document.getElementById('bxActions').style.display = '';
     renderBoxRows();
   }catch(err){ st.textContent = 'Import failed: ' + err.message; }
@@ -2616,7 +2617,8 @@ function flipBoxTeam(i){
 }
 function bxVisible(){
   const q = (document.getElementById('bxFocus').value||'').trim().toLowerCase();
-  return BX.players.filter(p => !q || p.name.toLowerCase().includes(q) || (p.team||'').toLowerCase().includes(q));
+  const show = (document.getElementById('bxShow')||{}).value || 'top';
+  return BX.players.filter(p => (show==='all' || p.selected || q) && (!q || p.name.toLowerCase().includes(q) || (p.team||'').toLowerCase().includes(q)));
 }
 /* PDFs built with ligature fonts often drop a letter: Ruffin -> Rufn,
    Jefferson -> Jeferson, Huff -> Huf, Griffin -> Grifn. Flag those so
@@ -2692,6 +2694,7 @@ function renderBoxRows(){
           <div style="display:flex; gap:6px; align-items:center; margin-top:5px;">
             <button type="button" class="pill" onclick="flipBoxTeam(${p.i})" title="Tap to move to the other school" style="cursor:pointer; font-weight:800; min-width:26px; text-align:center;">${String.fromCharCode(65 + boxSchoolIndex(p.team))}</button>
             <span class="rc-meta">${esc(p.team||'(no school)')}</span>
+            ${p.reasons && p.reasons.length ? `<span class="rc-meta" style="color:var(--ink)">\u00b7 ${esc(p.reasons.join(', '))}</span>` : ''}
           </div>
           <input type="text" value="${esc(p.statLine)}" oninput="BX.players[${p.i}].statLine=this.value" style="margin-top:6px; font-size:12px; padding:7px 9px;">
         </div>

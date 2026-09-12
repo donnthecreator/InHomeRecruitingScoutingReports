@@ -237,6 +237,34 @@ exports.handler = async (event) => {
       y -= 8;
     }
 
+    /* ---- consensus (other scouts on this prospect) ---- */
+    if (r.consensus && r.consensus.count > 1) {
+      section('Scout consensus', r.consensus.count + ' evaluations - avg ' + (r.consensus.avgScore != null ? r.consensus.avgScore.toFixed(1) : '-'));
+      r.consensus.evaluations.forEach(e => {
+        need(15);
+        page.drawText(clean((e.scoutName || 'Scout') + (e.isThis ? ' (this report)' : '') + (e.scoutRole ? ' - ' + e.scoutRole : '') + (e.dateEvaluated ? ' - ' + e.dateEvaluated : '')), { x: M, y, size: 9.5, font: F, color: INK });
+        const v = (e.score != null ? e.score.toFixed(1) : '-') + (e.tier ? '  ' + e.tier : '');
+        page.drawText(clean(v), { x: PW - M - H.widthOfTextAtSize(clean(v), 9), y, size: 9, font: H, color: INK });
+        y -= 15;
+      });
+      y -= 8;
+    }
+
+    /* ---- guided prompts ---- */
+    const PQ = { signature: 'What does he do that shows up on every rep?', loses: 'Where does he lose, and against what kind of player?', adversity: 'How does he respond after a bad play or a bad drive?', comp: 'Who does he remind you of, and where does the comparison break?', competition: 'Who has he actually done it against?', projection: 'Best-case version of him in three years, and what has to happen?', nextlook: 'What would he still need to show?' };
+    const pr = raw.prompts || {};
+    const pks = Object.keys(PQ).filter(k => pr[k]);
+    if (pks.length) {
+      section("Scout's read", r.scoutName || '');
+      pks.forEach(k => {
+        need(28);
+        page.drawText(clean(PQ[k]).toUpperCase(), { x: M, y, size: 7.5, font: H, color: MUTE }); y -= 12;
+        wrap(F, 10, pr[k], PW - M * 2).forEach(l => { need(15); page.drawText(clean(l), { x: M, y, size: 10, font: F, color: INK }); y -= 14; });
+        y -= 6;
+      });
+      y -= 4;
+    }
+
     /* ---- narrative ---- */
     if (r.narrative) {
       section('Scout narrative');

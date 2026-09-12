@@ -115,6 +115,7 @@ exports.handler = async (event) => {
           gates:            raw.gates            || r.gates             || {},
           interview:        raw.interview        || r.interview_data    || {},
           track:            raw.track            || r.track             || null,
+          prompts:          raw.prompts          || {},
           /* A rep with hasClip has a real playable video stored under
              clip_<repId> via save-frames.js; the portal plays it directly
              instead of falling back to a Hudl deep link. */
@@ -124,6 +125,39 @@ exports.handler = async (event) => {
           })),
           recommendedPrograms: raw.recommendedPrograms || []
         }
+      };
+    });
+
+    /* Multiple scouts on one prospect: every report carries the full set
+       of evaluations so the portal can show them side by side and a
+       consensus (average) score. Built from the rows returned here; for a
+       single-report fetch we look the siblings up. */
+    let siblings = reports;
+    if (reportId && reports.length && reports[0].prospectId) {
+      const sib = await sql`
+        SELECT r.id, r.scout_name, r.scout_id, r.scout_role, r.inhome_score, r.recommendation_tier, r.archetype,
+               r.date_evaluated, r.created_at, r.football_iq, r.narrative
+        FROM reports r WHERE r.prospect_id = ${reports[0].prospectId}`;
+      siblings = sib.map(x => ({ id: x.id, prospectId: reports[0].prospectId, scoutName: x.scout_name, scoutId: x.scout_id, scoutRole: x.scout_role,
+        inhomeScore: x.inhome_score, recommendationTier: x.recommendation_tier, archetype: x.archetype, dateEvaluated: x.date_evaluated, createdAt: x.created_at, footballIQ: x.football_iq, narrative: x.narrative }));
+    }
+    const byProspect = {};
+    siblings.forEach(x => { if (x.prospectId) (byProspect[x.prospectId] = byProspect[x.prospectId] || []).push(x); });
+    reports.forEach(rep => {
+      const group = rep.prospectId ? (byProspect[rep.prospectId] || []) : [];
+      const evals = group.map(x => ({
+        reportId: x.id, scoutName: x.scoutName, scoutId: x.scoutId, scoutRole: x.scoutRole || null,
+        score: x.inhomeScore != null ? Number(x.inhomeScore) : null, tier: x.recommendationTier || null,
+        archetype: x.archetype || null, footballIQ: x.footballIQ != null ? Number(x.footballIQ) : null,
+        dateEvaluated: x.dateEvaluated || null, createdAt: x.createdAt || null,
+        narrative: x.narrative || null, isThis: x.id === rep.id
+      })).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+      const scores = evals.map(e => e.score).filter(v => v != null);
+      rep.consensus = {
+        count: evals.length,
+        avgScore: scores.length ? +(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : null,
+        spread: scores.length > 1 ? +(Math.max(...scores) - Math.min(...scores)).toFixed(1) : 0,
+        evaluations: evals
       };
     });
 

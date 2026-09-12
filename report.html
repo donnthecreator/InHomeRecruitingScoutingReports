@@ -698,6 +698,9 @@
       <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#9A9A9A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <div class="section-body"><div class="section-body-inner">
+      <div class="section-sub" style="margin-bottom:10px;">Answer the ones you can. Coaches read these more than the grades. Short and specific beats long and general: name the play, name the rep, name the game.</div>
+      <div id="promptWrap"></div>
+      <label class="lbl" style="margin-top:14px;">Anything else</label>
       <textarea id="fNarrative" placeholder="Comparable player, projection, standout plays, concerns..."></textarea>
     </div></div>
   </div>
@@ -1650,6 +1653,7 @@ async function submitReport(){
     dateEvaluated: gv('fDate'),
     footballIQ: state.iq,
     narrative: gv('fNarrative'),
+    prompts: collectPrompts(),
     hasHeadshot: !!state.headshot,
     recommendationTier: state.tier,
     inhomeScore: document.getElementById('scoreBig').textContent,
@@ -1673,6 +1677,7 @@ async function submitReport(){
       recommendedPrograms: Object.keys(state.recs).map(n=>({
         program:n, conference:state.recs[n].conf, state:state.recs[n].state, espnId:state.recs[n].espnId, fit:state.recs[n].fit || null
       })),
+      prompts: collectPrompts(),
       eisReps: SEND_REPS_WITH_REPORT
         ? state.eisReps.map(r=>{ const {frame, clipData, ...rest} = r; return rest; })
         : []
@@ -2453,6 +2458,32 @@ state.position = getPositionFromURL();
 initPosSelect();
 loadPosition(state.position);
 if(!REQUIRE_SCOUT_CODE){ document.getElementById('gate').classList.add('hide'); }
+/* Guided prompts. Each is a question a Director of Player Personnel
+   actually asks on the phone. Stored per report in raw.prompts so
+   different scouts' answers sit side by side on the same player. */
+const SCOUT_PROMPTS = [
+  { id:'signature',  q:'What does he do that shows up on every rep?',              ph:'The thing you would bet on. Name a rep or a game where it showed.' },
+  { id:'loses',      q:'Where does he lose, and against what kind of player?',       ph:'Be specific: the technique, the matchup, the down and distance.' },
+  { id:'adversity',  q:'How does he respond after a bad play or a bad drive?',      ph:'Body language, next-rep effort, does he come back to the sideline and fix it?' },
+  { id:'comp',       q:'Who does he remind you of, and where does the comparison break?', ph:'A college player is more useful to a coach than an NFL one.' },
+  { id:'competition',q:'Who has he actually done it against?',                     ph:'Level of competition, the best player he faced, how he held up.' },
+  { id:'projection', q:'What is the best-case version of him in three years, and what has to happen?', ph:'Weight, technique, position change, coaching. What is the path?' },
+  { id:'nextlook',   q:'What do you still need to see before you would stake your name on him?', ph:'The game, the drill, the matchup, the number that would settle it.' }
+];
+function renderPrompts(){
+  const host = document.getElementById('promptWrap'); if(!host) return;
+  host.innerHTML = SCOUT_PROMPTS.map(p => `
+    <div style="margin-bottom:12px;">
+      <label class="lbl" style="font-size:12.5px; color:var(--ink); text-transform:none; letter-spacing:0; font-weight:600;">${p.q}</label>
+      <textarea id="prompt_${p.id}" placeholder="${p.ph.replace(/"/g,'&quot;')}" style="min-height:70px;"></textarea>
+    </div>`).join('');
+}
+function collectPrompts(){
+  const out = {};
+  SCOUT_PROMPTS.forEach(p => { const el = document.getElementById('prompt_' + p.id); const v = el ? el.value.trim() : ''; if(v) out[p.id] = v; });
+  return out;
+}
+renderPrompts();
 prefillFromURL();
 loadReportForEdit();
 
@@ -2497,6 +2528,7 @@ async function loadReportForEdit(){
   setVal('fCamp', r.evalCamp);
   setVal('fDate', r.dateEvaluated);
   setVal('fNarrative', r.narrative);
+  Object.entries(((r.raw||{}).prompts) || {}).forEach(([k,v]) => setVal('prompt_' + k, v));
   if(!SCOUT) setVal('fScout', r.scoutName);
 
   if(r.archetype) try{ pickArche(r.archetype); }catch(e){}

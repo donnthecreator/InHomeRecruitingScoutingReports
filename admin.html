@@ -227,6 +227,51 @@
   .gm-pop a{color:#C4001A; font-size:10.5px; font-weight:700; text-decoration:none; margin-right:8px;}
   .gm-pop button{background:#C4001A; color:#fff; border:none; border-radius:6px; padding:6px 10px;
     font-size:10.5px; font-weight:700; cursor:pointer; margin-top:7px; font-family:'Inter',sans-serif;}
+
+  /* ---------- PROSPECT MARKET (matches the coach portal view) ---------- */
+  .xg-index{display:grid; grid-template-columns:1fr 1.4fr; gap:20px; align-items:center;
+      background:#0F1116; border:1px solid #212430; border-radius:13px; padding:18px 20px; margin-bottom:14px;}
+  .xg-idx-name{font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:#7A8094; margin-bottom:7px;}
+  .xg-idx-val{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:36px; font-weight:600; line-height:1; color:#EDEFF4;}
+  .xg-idx-chg{display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; font-weight:600;}
+  .xg-idx-pill{padding:3px 9px; border-radius:5px; font-size:12px; font-weight:700; font-family:ui-monospace,monospace;}
+  .xg-idx-sub{font-size:10.5px; color:#7A8094; margin-top:9px;}
+  .xg-idx-chart{height:100px;}
+  @media(max-width:720px){ .xg-index{grid-template-columns:1fr;} .xg-idx-chart{height:80px;} }
+  .xg-movers{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;}
+  @media(max-width:720px){ .xg-movers{grid-template-columns:1fr;} }
+  .xg-mv{background:#0F1116; border:1px solid #212430; border-radius:13px; padding:14px 16px;}
+  .xg-mv h4{margin:0 0 3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7A8094;}
+  .xg-mv .why{font-size:10.5px; color:#5F6472; margin-bottom:10px;}
+  .xg-mv-row{display:grid; grid-template-columns:18px 1fr auto auto; gap:9px; align-items:center;
+      padding:7px 0; border-top:1px solid #1B1E27;}
+  .xg-mv-rank{font-family:ui-monospace,monospace; font-size:11px; color:#5F6472;}
+  .xg-mv-name{min-width:0;}
+  .xg-mv-name b{display:block; font-size:12.5px; font-weight:700; color:#EDEFF4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .xg-mv-name span{font-size:10.5px; color:#7A8094;}
+  .xg-mv-price{font-family:ui-monospace,monospace; font-size:13px; color:#EDEFF4;}
+  .xg-table{background:#0F1116; border:1px solid #212430; border-radius:13px; overflow:hidden;}
+  .xg-head{display:grid; grid-template-columns:1fr 44px 56px 104px 92px; gap:6px;
+      padding:8px 12px; background:#14161C; border-bottom:1px solid #212430;}
+  .xg-head span{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#7A8094; font-weight:600;}
+  .xg-row{display:grid; grid-template-columns:1fr 44px 56px 104px 92px; gap:6px; align-items:center;
+      padding:8px 12px; border-bottom:1px solid #212430; position:relative; cursor:pointer;}
+  .xg-row:hover{background:#12141A;}
+  .xg-row::before{content:''; position:absolute; left:0; top:0; bottom:0; width:2.5px;}
+  .xg-row.up::before{background:#00C87A;} .xg-row.down::before{background:#FF4D4D;} .xg-row.flat::before{background:#4B5063;}
+  .xg-sym{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .xg-sym b{font-weight:700; font-size:12.5px; font-family:ui-monospace,monospace; color:#EDEFF4;}
+  .xg-sym span{font-size:11px; color:#7A8094; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .xg-pos{font-size:11px; color:#7A8094; font-family:ui-monospace,monospace;}
+  .xg-price{font-size:14px; font-weight:600; font-family:ui-monospace,monospace; color:#EDEFF4;}
+  .xg-pct{display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700;
+      padding:3px 6px; border-radius:5px; font-family:ui-monospace,monospace; white-space:nowrap;}
+  .xg-pct.up{color:#00C87A; background:rgba(0,200,122,.12);}
+  .xg-pct.down{color:#FF4D4D; background:rgba(255,77,77,.12);}
+  .xg-pct.flat{color:#7A8094; background:rgba(122,128,148,.12);}
+  .xg-detail{background:#0B0C10; border-bottom:1px solid #212430; padding:12px 14px;}
+  .xg-detail .lg{display:flex; gap:10px; padding:6px 0; border-top:1px solid #1B1E27; font-size:12px;}
+  .xg-detail .lg:first-child{border-top:0;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -2130,13 +2175,79 @@ async function acceptIntake(id){
 
 /* ---------------- PROSPECT MARKET (admin view of the portal market) ---------------- */
 let MK = null;
-function mkSpark(vals, w, h){
-  if(vals.length < 2) return `<svg width="${w}" height="${h}"><line x1="3" y1="${h/2}" x2="${w-3}" y2="${h/2}" stroke="#333" stroke-width="2" stroke-dasharray="2 4"/></svg>`;
-  const min = Math.min(...vals), max = Math.max(...vals), span = (max-min)||1, pad = 3, step = (w-pad*2)/(vals.length-1);
-  const pts = vals.map((v,i)=>`${(pad+i*step).toFixed(1)},${(pad+(1-(v-min)/span)*(h-pad*2)).toFixed(1)}`);
-  const col = vals[vals.length-1] > vals[vals.length-2] ? '#35C759' : vals[vals.length-1] < vals[vals.length-2] ? '#FF5A5A' : '#888';
-  return `<svg width="${w}" height="${h}"><polyline fill="none" stroke="${col}" stroke-width="2" points="${pts.join(' ')}"/></svg>`;
+/* Sparkline / area chart. Same visual language as the coach portal:
+   green when the last game was up, red when it was down. */
+function marketSpark(vals, w, h, area){
+  if(!vals || vals.length < 2)
+    return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><line x1="4" y1="${h/2}" x2="${w-4}" y2="${h/2}" stroke="#2A2E3A" stroke-width="2" stroke-dasharray="2 4"/></svg>`;
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max-min)||1, pad = 4, step = (w-pad*2)/(vals.length-1);
+  const pts = vals.map((v,i)=>[pad+i*step, pad+(1-(v-min)/span)*(h-pad*2)]);
+  const col = vals[vals.length-1] > vals[vals.length-2] ? '#00C87A' : vals[vals.length-1] < vals[vals.length-2] ? '#FF4D4D' : '#7A8094';
+  const line = pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const fill = area ? `<polygon points="${pad},${h-pad} ${line} ${w-pad},${h-pad}" fill="${col}" opacity=".10"/>` : '';
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${fill}<polyline fill="none" stroke="${col}" stroke-width="2" points="${line}"/></svg>`;
 }
+
+/* Top risers and fallers, straight from the change between a player's
+   last two graded games. Nothing estimated: one game means not eligible. */
+function marketMovers(list){
+  const moved = list.filter(p=>p.chg!=null && p.chg!==0);
+  const risers = moved.filter(p=>p.chg>0).sort((a,b)=>b.chg-a.chg).slice(0,5);
+  const fallers = moved.filter(p=>p.chg<0).sort((a,b)=>a.chg-b.chg).slice(0,5);
+  const col = (title, why, rows, cls) => `
+    <div class="xg-mv">
+      <h4>${title}</h4>
+      <div class="why">${why}</div>
+      ${rows.length ? rows.map((p,i)=>`
+        <div class="xg-mv-row">
+          <span class="xg-mv-rank">${i+1}</span>
+          <span class="xg-mv-name"><b>${esc(p.name)}</b><span>${esc(p.position||'')} \u00b7 ${esc(p.school||'')}</span></span>
+          <span class="xg-mv-price">${p.price.toFixed(1)}</span>
+          <span class="xg-pct ${cls}">${p.chg>0?'\u25b2':'\u25bc'} ${p.chg>0?'+':''}${p.chg}</span>
+        </div>`).join('') : '<div class="why">Nobody has two graded games yet.</div>'}
+    </div>`;
+  return `<div class="xg-movers">
+    ${col('Top risers', 'Biggest jump from his previous game', risers, 'up')}
+    ${col('Top fallers', 'Biggest drop from his previous game', fallers, 'down')}
+  </div>`;
+}
+
+/* Index over time: average grade across every tracked player, per date. */
+function marketIndexSeries(list){
+  const byDate = {};
+  list.forEach(p => p.graded.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(Number(e.grade)); }));
+  const dates = Object.keys(byDate).sort();
+  const vals = dates.map(d => +(byDate[d].reduce((a,b)=>a+b,0)/byDate[d].length).toFixed(1));
+  let chgHTML = '<span class="xg-idx-pill" style="color:#7A8094;background:rgba(122,128,148,.14)">Moves after the 2nd slate</span>';
+  if(vals.length > 1){
+    const c = +(vals[vals.length-1] - vals[vals.length-2]).toFixed(1);
+    const cls = c > 0 ? 'up' : c < 0 ? 'down' : 'flat';
+    chgHTML = `<span class="xg-pct ${cls}">${c>0?'\u25b2':c<0?'\u25bc':'\u00b7'} ${c>0?'+':''}${c}</span><span style="color:#7A8094;font-size:11px;">vs the previous slate</span>`;
+  }
+  return { vals, chgHTML };
+}
+
+function marketRowHTML(p, i){
+  const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'') + p.chg + (p.pct!=null ? ` (${p.pct>0?'+':''}${p.pct}%)` : '');
+  const arrow = p.dir==='up' ? '\u25b2' : p.dir==='down' ? '\u25bc' : '\u00b7';
+  const key = (p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + schoolKey(p.school);
+  const log = p.graded.slice().reverse().map(e=>`<div class="lg"><span style="min-width:58px;color:#7A8094">${fmtDate(e.date)}</span><span style="min-width:38px;font-family:ui-monospace,monospace;color:#EDEFF4">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#9AA0AA">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:#7A8094">source</a>`:''}</span></div>`).join('');
+  return `<div class="xg-row ${p.dir}" data-mk="${i}">
+      <div class="xg-sym"><b>${esc(p.sym)}</b><span>${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
+      <div class="xg-pos">${esc(p.position||'')}</div>
+      <div class="xg-price">${p.price.toFixed(1)}</div>
+      <div><span class="xg-pct ${p.dir}">${arrow} ${chgTxt}</span></div>
+      <div>${marketSpark(p.vals, 92, 26)}</div>
+    </div>
+    <div class="xg-detail" id="mkd-${i}" style="display:none;">
+      ${log}
+      <div class="rc-actions" style="margin-top:10px;">
+        <button type="button" class="mini-btn go" onclick="switchTab('perf'); addWeekFor('${esc(key)}')">+ Add week</button>
+        <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
+      </div>
+    </div>`;
+}
+
 async function renderMarket(){
   const el = document.getElementById('mkList'), st = document.getElementById('mkStats');
   if(MK === null){
@@ -2151,7 +2262,12 @@ async function renderMarket(){
         const price = vals.length ? vals[vals.length-1] : null;
         const prev = vals.length > 1 ? vals[vals.length-2] : null;
         const chg = (price!=null && prev!=null) ? +(price-prev).toFixed(1) : null;
-        return { ...p, graded, vals, price, chg, games:(p.entries||[]).length };
+        const pct = (chg!=null && prev) ? +((chg/prev)*100).toFixed(1) : null;
+        const initials = String(p.name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,3);
+        const tail = String(p.name||'').replace(/[^A-Za-z]/g,'').slice(-2).toUpperCase();
+        return Object.assign({}, p, { graded, vals, price, prev, chg, pct, sym: initials + tail,
+                 games:(p.entries||[]).length,
+                 dir: chg==null ? 'flat' : chg>0 ? 'up' : chg<0 ? 'down' : 'flat' });
       }).filter(p=>p.price!=null);
       const posSel = document.getElementById('mkPos');
       if(posSel.options.length <= 1) [...new Set(MK.map(p=>p.position).filter(Boolean))].sort().forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; posSel.appendChild(o); });
@@ -2169,36 +2285,32 @@ async function renderMarket(){
     name:(a,b)=>a.name.localeCompare(b.name)
   };
   list.sort(sorters[sort] || sorters.price);
+
   const up = list.filter(p=>p.chg>0).length, down = list.filter(p=>p.chg<0).length, one = list.filter(p=>p.chg==null).length;
-  const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length).toFixed(1) : '\u2014';
-  st.textContent = `${list.length} tracked \u00b7 index ${idx} \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`;
+  const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length) : null;
+  st.textContent = `${list.length} tracked \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`;
   if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No graded games yet</div><div class="s">Log a performance with a grade and he shows up here.</div></div>'; return; }
-  el.innerHTML = list.map(p=>{
-    const col = p.chg==null ? 'var(--dim)' : p.chg>0 ? '#35C759' : p.chg<0 ? '#FF5A5A' : 'var(--dim)';
-    const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'')+p.chg;
-    const key = (p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + schoolKey(p.school);
-    const log = p.graded.slice().reverse().map(e=>`<div style="display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;"><span style="min-width:60px;color:var(--dim)">${fmtDate(e.date)}</span><span style="min-width:40px;font-family:'Anton',sans-serif;font-size:15px;">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#D6D6D6">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--mute)">source</a>`:''}</span></div>`).join('');
-    return `<div class="row-card" style="padding:10px 12px;">
-      <div style="display:flex;gap:12px;align-items:center;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
-        <div style="flex:1;min-width:0;">
-          <div class="rc-name" style="font-size:14px;">${esc(p.name)} <span class="rc-meta">${esc(p.position||'')}</span></div>
-          <div class="rc-meta">${esc(p.school||'')} \u00b7 ${esc(p.level||'')}${p.classYear?' \u00b7 Class of '+esc(p.classYear):''} \u00b7 ${p.games} game${p.games===1?'':'s'}</div>
-        </div>
-        ${mkSpark(p.vals, 90, 26)}
-        <div style="text-align:right;min-width:64px;">
-          <div style="font-family:'Anton',sans-serif;font-size:20px;line-height:1;">${p.price.toFixed(1)}</div>
-          <div style="font-size:11px;font-weight:700;color:${col};margin-top:3px;">${chgTxt}</div>
-        </div>
+
+  const idxSeries = marketIndexSeries(list);
+  el.innerHTML =
+    `<div class="xg-index">
+      <div>
+        <div class="xg-idx-name">InHome Production Index</div>
+        <div class="xg-idx-val">${idx!=null ? idx.toFixed(1) : '\u2014'}</div>
+        <div class="xg-idx-chg">${idxSeries.chgHTML}</div>
+        <div class="xg-idx-sub">Average of the latest Production Grade across ${list.length} tracked player${list.length===1?'':'s'}.</div>
       </div>
-      <div style="display:none;margin-top:8px;">
-        ${log}
-        <div class="rc-actions" style="margin-top:8px;">
-          <button type="button" class="mini-btn go" onclick="switchTab('perf'); addWeekFor('${esc(key)}')">+ Add week</button>
-          <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
-        </div>
-      </div>
+      <div class="xg-idx-chart">${marketSpark(idxSeries.vals, 380, 100, true)}</div>
+    </div>
+    ${marketMovers(list)}
+    <div class="xg-table">
+      <div class="xg-head"><span>Prospect</span><span>Pos</span><span>Grade</span><span>Change</span><span>Trend</span></div>
+      ${list.map((p,i)=>marketRowHTML(p,i)).join('')}
     </div>`;
-  }).join('');
+  el.querySelectorAll('[data-mk]').forEach(r => r.addEventListener('click', () => {
+    const d = document.getElementById('mkd-' + r.dataset.mk);
+    if(d) d.style.display = d.style.display === 'none' ? '' : 'none';
+  }));
 }
 
 /* ---------------- REPORT ADMIN ACTIONS ---------------- */

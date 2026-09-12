@@ -430,14 +430,15 @@ exports.handler = async (event) => {
         if (!from || !to) return fail(400, 'fromName and toName required');
         const fromKey = from.toLowerCase().replace(/[^a-z]/g, '');
         const school = (body.school !== undefined && body.school !== null && body.school !== '') ? String(body.school) : null;
+        const toSchool = body.toSchool ? String(body.toSchool).trim() : null;
         const rows = school
           ? await sql`
-              UPDATE player_performances SET name = ${to}
+              UPDATE player_performances SET name = ${to}, school = COALESCE(${toSchool}, school)
               WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${fromKey}
                 AND COALESCE(school,'') = ${school}
               RETURNING id`
           : await sql`
-              UPDATE player_performances SET name = ${to}
+              UPDATE player_performances SET name = ${to}, school = COALESCE(${toSchool}, school)
               WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${fromKey}
               RETURNING id`;
         return ok({ updated: rows.length });

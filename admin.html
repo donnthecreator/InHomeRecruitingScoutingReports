@@ -2248,11 +2248,27 @@ function marketIndexSeries(list){
   return { vals, chgHTML };
 }
 
+/* The story behind a move: last game against the one before it, with
+   the grade swing. Pure comparison of what's logged, no narrative added. */
+function whyHeMoved(p){
+  const g = p.graded; if(!g || g.length < 2) return `<div class="rc-meta" style="margin-bottom:8px;">One graded game so far. The line moves when the next one is logged.</div>`;
+  const cur = g[g.length-1], prev = g[g.length-2];
+  const d = +(Number(cur.grade) - Number(prev.grade)).toFixed(1);
+  const col = d > 0 ? '#00C87A' : d < 0 ? '#FF4D4D' : '#7A8094';
+  return `<div style="border:1px solid #212430; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+    <div style="font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#7A8094; margin-bottom:6px;">Why he moved <span style="color:${col}; margin-left:6px;">${d>0?'\u25b2 +':d<0?'\u25bc ':''}${d}</span></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;">
+      <div><div style="color:#7A8094; font-size:10.5px;">Previous \u00b7 ${fmtDate(prev.date)} \u00b7 <span style="font-family:ui-monospace,monospace; color:#EDEFF4">${Number(prev.grade).toFixed(1)}</span></div><div style="color:#C4C8D0; margin-top:3px;">${esc(prev.statLine||'no stat line')}</div></div>
+      <div><div style="color:#7A8094; font-size:10.5px;">Latest \u00b7 ${fmtDate(cur.date)} \u00b7 <span style="font-family:ui-monospace,monospace; color:#EDEFF4">${Number(cur.grade).toFixed(1)}</span></div><div style="color:#EDEFF4; margin-top:3px;">${esc(cur.statLine||'no stat line')}</div></div>
+    </div>
+  </div>`;
+}
 function marketRowHTML(p, i){
   const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'') + p.chg + (p.pct!=null ? ` (${p.pct>0?'+':''}${p.pct}%)` : '');
   const arrow = p.dir==='up' ? '\u25b2' : p.dir==='down' ? '\u25bc' : '\u00b7';
   const key = (p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + schoolKey(p.school);
   const log = p.graded.slice().reverse().map(e=>`<div class="lg"><span style="min-width:58px;color:#7A8094">${fmtDate(e.date)}</span><span style="min-width:38px;font-family:ui-monospace,monospace;color:#EDEFF4">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#9AA0AA">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:#7A8094">source</a>`:''}</span></div>`).join('');
+  const story = whyHeMoved(p);
   return `<div class="xg-row ${p.dir}" data-mk="${i}">
       <div class="xg-sym"><b>${esc(p.sym)}</b><span>${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
       <div class="xg-pos">${esc(p.position||'')}</div>
@@ -2261,6 +2277,7 @@ function marketRowHTML(p, i){
       <div>${marketSpark(p.vals, 92, 26)}</div>
     </div>
     <div class="xg-detail" id="mkd-${i}" style="display:none;">
+      ${story}
       ${log}
       <div class="rc-actions" style="margin-top:10px;">
         <button type="button" class="mini-btn go" onclick="switchTab('perf'); addWeekFor('${esc(key)}')">+ Add week</button>
@@ -2831,6 +2848,7 @@ function renderPerf(){
       <div class="rc-actions">
         <button type="button" class="mini-btn go" onclick="addWeekFor('${esc(g.key)}')">+ Add week</button>
         <button type="button" class="mini-btn" onclick="renamePlayer('${esc(g.key)}')">Fix name</button>
+        <button type="button" class="mini-btn" onclick="fixSchool('${esc(g.key)}')">Fix school</button>
         <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:g.name||'', school:g.school||'', class:g.class_year||'', position:(g.position && POS_MAP[g.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
         <button type="button" class="mini-btn" onclick="assignFromPerf('${latest.id}')">Assign to Scout</button>
       </div>
@@ -2864,10 +2882,16 @@ async function renamePlayer(key){
   if(!to || to.trim() === p.name) return;
   await doRename(p.name, to.trim(), p.school || '');
 }
-async function doRename(fromName, toName, school){
+async function fixSchool(key){
+  const p = performances.find(x=>perfKey(x)===key); if(!p) return;
+  const to = prompt('Correct school for ' + p.name + ':', p.school || '');
+  if(to === null || !to.trim() || to.trim() === (p.school||'')) return;
+  await doRename(p.name, p.name, p.school || '', to.trim());
+}
+async function doRename(fromName, toName, school, toSchool){
   try{
-    const d = await api('renamePerformancePlayer', { fromName, toName, school });
-    performances.forEach(x => { if(nkey(x.name)===nkey(fromName) && (!school || (x.school||'')===school)) x.name = toName; });
+    const d = await api('renamePerformancePlayer', { fromName, toName, school, toSchool: toSchool || null });
+    performances.forEach(x => { if(nkey(x.name)===nkey(fromName) && (!school || (x.school||'')===school)){ x.name = toName; if(toSchool) x.school = toSchool; } });
     buildKnownNames();
     renderPerf(); MK = null;
     toast('Updated ' + d.updated + ' game' + (d.updated===1?'':'s') + ' to ' + toName);

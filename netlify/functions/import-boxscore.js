@@ -82,9 +82,12 @@ function parseColumns(text) {
   const isHeader = (l) => TABLES.find(t => { const lt = l.split(' '); return t.head.length === lt.length && t.head.every((h, j) => h === lt[j]); });
   const SECTION = /^(Individual|Passing|Rushing|Receiving|Kicking|Tackles|Sacks|Interceptions|Fumbles|Statistics|Official|Score by|Team Statistics)/;
   const BANNER = /Print Version|\bvs\.?\s|Athletics|https?:|Page \d+ of|PrestoSports|informational purposes|official verification/i;
+  const SCHOOLY = /\b(College|CC|JC|University|Univ|High|School|HS|Academy|Prep|State|Tech|Institute)\b|^No\.\s*\d+/i;
   const looksLikeTeam = (l) => {
     const lt = l.split(' ');
     if (isHeader(l) || /^Totals\b/.test(l) || /^None\.?$/.test(l) || BANNER.test(l) || /^@@COL/.test(l)) return false;
+    /* a two-word capitalized line with no school word is a wrapped player name, not a team */
+    if (!SCHOOLY.test(l) && !(teams.length && teams.some(t => t && l.includes(t)))) return false;
     if (isNum(lt[lt.length - 1])) return false;              // rows end in numbers
     if (/^(Individual|Passing|Rushing|Receiving|Kicking|Tackles|Sacks|Interceptions|Fumbles|Statistics|Official)/.test(l)) return false;
     return /[A-Za-z]{3,}/.test(l);

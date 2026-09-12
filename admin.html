@@ -407,6 +407,7 @@
         <div><label class="fl">Focus on (name filter)</label><input type="text" id="bxFocus" placeholder="e.g. Benjamin" oninput="renderBoxRows()"></div>
       </div>
       <div id="bxStatus" class="sub" style="margin-top:8px;"></div>
+      <div id="bxTeams" style="margin-top:10px;"></div>
       <div id="bxRows" style="margin-top:10px;"></div>
       <div class="rc-actions" id="bxActions" style="display:none; margin-top:10px;">
         <button type="button" class="mini-btn" onclick="bxSelect(true)">Select all shown</button>
@@ -2175,6 +2176,7 @@ async function acceptIntake(id){
 
 /* ---------------- PROSPECT MARKET (admin view of the portal market) ---------------- */
 let MK = null;
+let MK_EXCLUDED = [];
 /* Sparkline / area chart. Same visual language as the coach portal:
    green when the last game was up, red when it was down. */
 function marketSpark(vals, w, h, area){
@@ -2256,6 +2258,7 @@ async function renderMarket(){
       const res = await fetch('/.netlify/functions/list-performances', { cache:'no-store' });
       const data = await res.json();
       if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      MK_EXCLUDED = [];
       MK = (data.players||[]).map(p=>{
         const graded = (p.entries||[]).filter(e=>e.grade!=null && e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
         const vals = graded.map(e=>+Number(e.grade).toFixed(1));
@@ -2268,7 +2271,11 @@ async function renderMarket(){
         return Object.assign({}, p, { graded, vals, price, prev, chg, pct, sym: initials + tail,
                  games:(p.entries||[]).length,
                  dir: chg==null ? 'flat' : chg>0 ? 'up' : chg<0 ? 'down' : 'flat' });
-      }).filter(p=>p.price!=null);
+      }).filter(p=>{
+        if(p.price!=null) return true;
+        MK_EXCLUDED.push(p.name + (p.school ? ' (' + p.school + ')' : '') + ': ' + ((p.entries||[]).length ? 'games logged but none has a grade' : 'no games'));
+        return false;
+      });
       const posSel = document.getElementById('mkPos');
       if(posSel.options.length <= 1) [...new Set(MK.map(p=>p.position).filter(Boolean))].sort().forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; posSel.appendChild(o); });
       document.getElementById('cntMarket').textContent = MK.length;
@@ -2288,7 +2295,9 @@ async function renderMarket(){
 
   const up = list.filter(p=>p.chg>0).length, down = list.filter(p=>p.chg<0).length, one = list.filter(p=>p.chg==null).length;
   const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length) : null;
-  st.textContent = `${list.length} tracked \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`;
+  st.innerHTML = `${list.length} tracked \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`
+    + (MK_EXCLUDED.length ? `<div style="margin-top:6px;color:var(--warn)">Not on the market (${MK_EXCLUDED.length}): ${MK_EXCLUDED.map(esc).join(' \u00b7 ')}. Add a grade on the Performance tab and they appear.</div>` : '')
+    + (q||lvl||pos ? '' : '');
   if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No graded games yet</div><div class="s">Log a performance with a grade and he shows up here.</div></div>'; return; }
 
   const idxSeries = marketIndexSeries(list);
@@ -2480,7 +2489,8 @@ async function importBoxScore(file){
     st.textContent = 'Parsing players...';
     if(!KNOWN_PROSPECTS.length) await loadKnownProspects(); else buildKnownNames();
     const data = await api('importBoxScore', { text });
-    BX = { players: (data.players||[]).map((p,i)=>({ ...p, i, grade: p.grade })), date: data.date, teams: data.teams||[] };
+    BX = { players: (data.players||[]).map((p,i)=>({ ...p, i, grade: p.grade, teamKey: p.team||'' })), date: data.date, teams: data.teams||[] };
+    renderBoxTeams();
     if(BX.date) document.getElementById('bxDate').value = BX.date;
     const juco = BX.players.some(p=>p.level==='JUCO');
     document.getElementById('bxLevel').value = juco ? 'JUCO' : 'HS';
@@ -2491,6 +2501,29 @@ async function importBoxScore(file){
   document.getElementById('bxFile').value = '';
 }
 
+/* Confirm the school names the parser found. Editing one renames every
+   row from that team, so a bad guess (a wrapped player name read as a
+   team) is fixed in one place instead of 30. */
+function renderBoxTeams(){
+  const el = document.getElementById('bxTeams');
+  const keys = [...new Set(BX.players.map(p=>p.teamKey))];
+  if(!keys.length){ el.innerHTML=''; return; }
+  const looksLikePerson = (t) => t && !/\b(College|CC|JC|University|High|School|HS|Academy|Prep|State|Tech)\b/i.test(t);
+  el.innerHTML = `<div class="rc-meta" style="margin-bottom:6px;">Schools in this box score. Fix any that are wrong before logging; every player from that team updates.</div>` +
+    keys.map(k => {
+      const n = BX.players.filter(p=>p.teamKey===k).length;
+      const cur = (BX.players.find(p=>p.teamKey===k)||{}).team || k;
+      const known = schoolDisplay(schoolKey(cur));
+      return `<div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+        <input type="text" value="${esc(cur)}" data-teamkey="${esc(k)}" oninput="setBoxTeam(this.dataset.teamkey, this.value)" style="flex:1; ${looksLikePerson(cur)?'border-color:var(--warn);':''}">
+        <span class="rc-meta" style="flex:0 0 auto;">${n} player${n===1?'':'s'}${looksLikePerson(cur) ? ' \u00b7 <span style="color:var(--warn)">does this look like a school?</span>' : ''}${known && known!==cur ? ` \u00b7 on file as <a href="#" onclick="setBoxTeam('${esc(k).replace(/'/g,"\\'")}','${esc(known).replace(/'/g,"\\'")}'); renderBoxTeams(); return false;" style="color:var(--ink)">${esc(known)}</a>` : ''}</span>
+      </div>`;
+    }).join('');
+}
+function setBoxTeam(key, value){
+  BX.players.forEach(p => { if(p.teamKey===key) p.team = value; });
+  renderBoxRows();
+}
 function bxVisible(){
   const q = (document.getElementById('bxFocus').value||'').trim().toLowerCase();
   return BX.players.filter(p => !q || p.name.toLowerCase().includes(q) || (p.team||'').toLowerCase().includes(q));

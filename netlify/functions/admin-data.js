@@ -145,8 +145,12 @@ exports.handler = async (event) => {
         const scouts = await sql`SELECT * FROM scouts ORDER BY active DESC, name`;
         const assignments = await sql`
           SELECT * FROM scout_assignments ORDER BY assigned_at DESC`;
-        const performances = await sql`
-          SELECT * FROM player_performances ORDER BY performance_date DESC`;
+        /* performance_date as a plain YYYY-MM-DD string: a calendar date,
+           never a timestamp that shifts a day when the browser localizes it. */
+        let performances = await sql`
+          SELECT *, to_char(performance_date, 'YYYY-MM-DD') AS performance_date_str
+          FROM player_performances ORDER BY performance_date DESC`;
+        performances = performances.map(r => ({ ...r, performance_date: r.performance_date_str || null }));
 
         /* Reports, with the prospects join for photos. If the join fails
            for any reason, fall back to a plain reports query so the admin
@@ -266,14 +270,25 @@ exports.handler = async (event) => {
           grade = g;
         }
         await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`;
+        /* Same player, same date, same stat line = the same game. A double
+           tap on "Log selected" must not create a second row. */
+        const nk = String(name).toLowerCase().replace(/[^a-z]/g, '');
+        const [dup] = await sql`
+          SELECT *, to_char(performance_date, 'YYYY-MM-DD') AS performance_date_str
+          FROM player_performances
+          WHERE lower(regexp_replace(name, '[^A-Za-z]', '', 'g')) = ${nk}
+            AND performance_date = ${performance_date || null}::date
+            AND COALESCE(stat_line, '') = ${stat_line || ''}
+          LIMIT 1`;
+        if (dup) return ok({ performance: { ...dup, performance_date: dup.performance_date_str }, duplicate: true });
         const rows = await sql`
           INSERT INTO player_performances
             (name, level, position, class_year, school, stat_line, source_link, performance_date, grade)
           VALUES
             (${name}, ${level || 'HS'}, ${position || null}, ${class_year || null}, ${school || null},
              ${stat_line || null}, ${source_link || null}, ${performance_date || null}, ${grade})
-          RETURNING *`;
-        return ok({ performance: rows[0] });
+          RETURNING *, to_char(performance_date, 'YYYY-MM-DD') AS performance_date_str`;
+        return ok({ performance: { ...rows[0], performance_date: rows[0].performance_date_str } });
       }
 
       case 'updatePerformance': {

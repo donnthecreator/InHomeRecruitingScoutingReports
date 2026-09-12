@@ -745,7 +745,15 @@ function reportPhotoUrl(r){
   if(r.has_headshot) return '/.netlify/functions/frame?key=headshot_' + r.id;
   return null;
 }
-function fmtDate(d){ if(!d) return ''; const x=new Date(d); return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+/* A bare YYYY-MM-DD is a calendar date, not a moment: parse it as local so
+   it never shifts a day in US time zones. */
+function fmtDate(d){
+  if(!d) return '';
+  const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const x = m ? new Date(+m[1], +m[2]-1, +m[3]) : new Date(d);
+  return isNaN(x)?'':x.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function dateOnly(d){ const m = String(d||'').match(/^(\d{4}-\d{2}-\d{2})/); return m ? m[1] : ''; }
 function scoutName(id){ const s = SCOUT_ROSTER.find(s=>s.id===id); return s ? s.name : (id||'Unassigned'); }
 function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 function tierColor(t){
@@ -2207,7 +2215,9 @@ function renderBoxRows(){
 }
 function bxSelect(on){ bxVisible().forEach(p => { p.selected = on; }); renderBoxRows(); }
 
+let BX_BUSY = false;
 async function logSelectedBox(){
+  if(BX_BUSY) return;
   const rows = BX.players.filter(p=>p.selected);
   if(!rows.length){ toast('Nothing selected'); return; }
   const date = document.getElementById('bxDate').value;
@@ -2215,17 +2225,30 @@ async function logSelectedBox(){
   const link = document.getElementById('bxLink').value.trim();
   if(!date){ toast('Set the game date first'); return; }
   if(!confirm(`Log ${rows.length} performance${rows.length===1?'':'s'} dated ${fmtDate(date)}?`)) return;
-  let ok = 0, bad = 0;
+  BX_BUSY = true;
+  const btn = document.querySelector('#bxActions .btn'); if(btn){ btn.disabled = true; btn.textContent = 'Logging...'; }
+  const st = document.getElementById('bxStatus');
+  let ok = 0, dup = 0, bad = 0; const failed = [];
   for(const p of rows){
-    const rec = { name: p.name, level, position: p.position, class_year: '', school: p.team || '', stat_line: p.statLine, source_link: link, performance_date: date, grade: p.grade };
+    /* reuse the spelling already on file for this school so both games land on one card */
+    const school = schoolDisplay(schoolKey(p.team)) || p.team || '';
+    const rec = { name: p.name, level, position: p.position, class_year: '', school, stat_line: p.statLine, source_link: link, performance_date: date, grade: p.grade };
     try{
-      if(demoMode){ performances.unshift({ id:'demo_'+Date.now()+Math.random(), ...rec }); }
-      else { const out = await api('createPerformance', rec); performances.unshift(out.performance); }
-      ok++; p.selected = false;
-    }catch(err){ bad++; console.error(p.name, err.message); }
+      if(demoMode){ performances.unshift({ id:'demo_'+Date.now()+Math.random(), ...rec }); ok++; }
+      else {
+        const out = await api('createPerformance', rec);
+        if(out.duplicate) dup++; else { performances.unshift(out.performance); ok++; }
+      }
+      p.selected = false;
+    }catch(err){ bad++; failed.push(p.name + ' (' + err.message + ')'); }
+    st.textContent = `Logging... ${ok + dup + bad} of ${rows.length}`;
   }
+  BX_BUSY = false;
+  if(btn){ btn.disabled = false; btn.textContent = 'Log selected'; }
   renderStats(); renderPerfChips(); renderPerf(); renderBoxRows();
-  toast(`Logged ${ok}${bad ? ', ' + bad + ' failed' : ''}`);
+  const summary = `Done: ${ok} logged` + (dup ? `, ${dup} already on file (skipped)` : '') + (bad ? `, ${bad} failed` : '') + ` for ${fmtDate(date)}.`;
+  st.textContent = summary + (failed.length ? ' Failed: ' + failed.join('; ') : '');
+  alert(summary + (failed.length ? '\n\nFailed:\n' + failed.join('\n') : ''));
 }
 
 async function createPerformance(){
@@ -2247,6 +2270,7 @@ async function createPerformance(){
       performances.unshift({ id:'demo_'+Date.now(), ...rec });
     } else {
       const out = await api('createPerformance', rec);
+      if(out.duplicate){ toast('Already on file for ' + rec.name + ' (same date and stats). Nothing added.'); return; }
       performances.unshift(out.performance);
     }
     ['pName','pClass','pSchool','pStat','pLink','pGrade'].forEach(id=>document.getElementById(id).value='');
@@ -2285,7 +2309,20 @@ function renderPerfChips(){
 }
 function setPerfLevel(l){ perfLevelFilter = l; renderPerfChips(); renderPerf(); }
 
-function perfKey(p){ return String(p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + String(p.school||'').toLowerCase().trim(); }
+function schoolKey(s){
+  return String(s||'').toLowerCase().replace(/^no\.?\s*\d+\s*/,'')
+    .replace(/community college/g,'cc').replace(/junior college/g,'jc').replace(/high school/g,'hs')
+    .replace(/[^a-z0-9]/g,'');
+}
+/* map box-score position guesses onto report.html position codes */
+const POS_MAP = { QB:'QB', RB:'RB', WR:'WR', TE:'TE', OL:'OL', OT:'OL', OG:'OL', DL:'DL', DE:'DL', EDGE:'EDGE', LB:'LB', ILB:'LB', CB:'CB', S:'S', SAF:'S', DEF:'', K:'', ATH:'' };
+function perfKey(p){ return String(p.name||'').toLowerCase().replace(/[^a-z]/g,'') + '|' + schoolKey(p.school); }
+/* Display name for a school: the longest spelling already logged for it. */
+function schoolDisplay(key){
+  let best = '';
+  performances.forEach(p => { if(schoolKey(p.school)===key && String(p.school||'').length > best.length) best = p.school; });
+  return best;
+}
 
 /* One card per player, weeks stacked newest first inside it. "Add week"
    prefills the form with the player's identity so a new game never gets
@@ -2307,11 +2344,13 @@ function renderPerf(){
     if(!g.position && p.position) g.position = p.position;
     if(!g.class_year && p.class_year) g.class_year = p.class_year;
     if(p.level==='JUCO') g.level = 'JUCO';
+    if(String(p.school||'').length > String(g.school||'').length) g.school = p.school;
+    if(g.entries.some(e => dateOnly(e.performance_date)===dateOnly(p.performance_date) && (e.stat_line||'')===(p.stat_line||''))){ g.dupes = (g.dupes||0)+1; g.dupeIds = (g.dupeIds||[]).concat(p.id); return; }
     g.entries.push(p);
   });
   const players = [...groups.values()];
-  players.forEach(g => g.entries.sort((a,b)=> new Date(b.performance_date||0) - new Date(a.performance_date||0)));
-  players.sort((a,b)=> new Date(b.entries[0].performance_date||0) - new Date(a.entries[0].performance_date||0));
+  players.forEach(g => g.entries.sort((a,b)=> dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date))));
+  players.sort((a,b)=> dateOnly(b.entries[0].performance_date).localeCompare(dateOnly(a.entries[0].performance_date)));
 
   const el = document.getElementById('perfList');
   if(!players.length){
@@ -2346,8 +2385,10 @@ function renderPerf(){
       </div>
       <div style="margin-top:8px;">${weeks}</div>
       ${railHTML(g.name, latest.source_link)}
+      ${g.dupes ? `<div class="rc-meta" style="margin-top:6px;color:var(--warn)">${g.dupes} duplicate log${g.dupes===1?'':'s'} hidden (same date + stats). <a href="#" onclick="removeDupes('${esc(g.key)}'); return false;" style="color:var(--ink)">Remove them</a></div>` : ''}
       <div class="rc-actions">
         <button type="button" class="mini-btn go" onclick="addWeekFor('${esc(g.key)}')">+ Add week</button>
+        <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:g.name||'', school:g.school||'', class:g.class_year||'', position:(g.position && POS_MAP[g.position]) || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
         <button type="button" class="mini-btn" onclick="assignFromPerf('${latest.id}')">Assign to Scout</button>
       </div>
     </div>`;
@@ -2356,6 +2397,16 @@ function renderPerf(){
 
 /* Prefill the log form with this player's identity; only date, stat
    line, grade, and link are left to type. */
+async function removeDupes(key){
+  const groups = {};
+  performances.filter(p=>perfKey(p)===key).forEach(p=>{ const k = dateOnly(p.performance_date)+'|'+(p.stat_line||''); (groups[k]=groups[k]||[]).push(p); });
+  const extras = Object.values(groups).flatMap(list => list.slice(1));
+  if(!extras.length) return;
+  if(!confirm(`Delete ${extras.length} duplicate row${extras.length===1?'':'s'}? The first copy of each game stays.`)) return;
+  for(const p of extras){ try{ if(!demoMode) await api('deletePerformance', { id:p.id }); performances = performances.filter(x=>x.id!==p.id); }catch(e){ toast(e.message); } }
+  renderStats(); renderPerfChips(); renderPerf(); toast('Duplicates removed');
+}
+
 function addWeekFor(key){
   const p = performances.find(x=>perfKey(x)===key);
   if(!p) return;

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Get Evaluated | InHome Recruiting Intelligence</title>
+<meta name="description" content="Send InHome your film. Players, high school coaches, and parents can request a scouting evaluation. We watch every submission.">
+<meta property="og:title" content="Get Evaluated | InHome Recruiting Intelligence">
+<meta property="og:description" content="Send us your film after Friday night. Every submission gets watched.">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#FF0000; --paper:#000; --card:#111; --card-2:#171717; --line:#2A2A2A;
+    --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;}
+  .wrap{max-width:680px; margin:0 auto; padding:0 18px;}
+
+  .nav{display:flex; align-items:center; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--line);}
+  .logo{font-family:'Anton',sans-serif; font-size:23px; letter-spacing:.01em;}
+  .logo b{color:var(--red); font-weight:400;}
+  .logo small{display:block; font-family:'Inter',sans-serif; font-size:8.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-top:1px;}
+
+  .hero{padding:44px 0 34px;}
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:clamp(34px,8.5vw,54px); line-height:1.02; margin:0 0 16px; letter-spacing:.01em;}
+  h1 em{font-style:normal; color:var(--red);}
+  .lede{font-size:16.5px; color:#D6D6D6; max-width:34em;}
+  .lede + .lede{margin-top:12px;}
+  .cta{display:inline-block; margin-top:24px; background:var(--ink); color:#000; text-decoration:none; font-weight:800; font-size:13px; letter-spacing:.12em; text-transform:uppercase; padding:15px 26px; border-radius:12px;}
+
+  .strip{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:34px 0;}
+  .strip div{background:#000; padding:18px 12px; text-align:center;}
+  .strip .n{font-family:'Anton',sans-serif; font-size:26px;}
+  .strip .l{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-top:5px;}
+
+  h2{font-family:'Anton',sans-serif; font-weight:400; font-size:26px; margin:38px 0 14px; letter-spacing:.01em;}
+  .steps{counter-reset:s; padding:0; margin:0; list-style:none;}
+  .steps li{counter-increment:s; position:relative; padding:0 0 18px 44px; font-size:15px; color:#D6D6D6;}
+  .steps li::before{content:counter(s); position:absolute; left:0; top:-2px; width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:14px; color:var(--ink);}
+  .steps b{color:var(--ink);}
+
+  form{margin-top:14px;}
+  fieldset{border:none; border-top:1px solid var(--line); padding:22px 0 4px; margin:0;}
+  legend{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); font-weight:700; padding:0 10px 0 0;}
+  label.fl{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); font-weight:700; margin:16px 0 6px;}
+  label.fl span{text-transform:none; letter-spacing:0; color:var(--dim); font-weight:500;}
+  input[type=text], input[type=email], input[type=tel], input[type=url], select, textarea{
+    width:100%; padding:13px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--card);
+    color:var(--ink); font-size:16px; font-family:inherit;}
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--mute);}
+  textarea{min-height:96px; resize:vertical; line-height:1.5;}
+  .g2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .g3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:560px){ .g3{grid-template-columns:1fr 1fr;} }
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .chip{border:1.5px solid var(--line); background:transparent; color:var(--mute); border-radius:10px;
+        padding:11px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .chip.on{background:var(--ink); border-color:var(--ink); color:#000;}
+
+  .progs{max-height:210px; overflow:auto; border:1.5px solid var(--line); border-radius:10px; padding:8px; margin-top:8px; background:var(--card);}
+  .progs .conf{font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); font-weight:700; padding:8px 4px 4px;}
+  .progs .row{display:flex; flex-wrap:wrap; gap:6px;}
+  .pchip{border:1px solid var(--line); background:transparent; color:var(--mute); border-radius:8px; padding:6px 9px; font-size:12px; cursor:pointer; font-family:inherit;}
+  .pchip.on{background:var(--ink); border-color:var(--ink); color:#000; font-weight:700;}
+  .picked{font-size:12px; color:var(--mute); margin-top:8px; min-height:1em;}
+
+  .consent{display:flex; gap:10px; align-items:flex-start; margin-top:18px; font-size:13px; color:var(--mute); line-height:1.5;}
+  .consent input{width:18px; height:18px; margin-top:2px; flex:0 0 auto; accent-color:#F5F5F5;}
+  .note{font-size:12.5px; color:var(--dim); margin-top:8px; line-height:1.55;}
+  .submit{width:100%; margin-top:24px; background:var(--red); color:#fff; border:none; border-radius:12px; padding:17px;
+          font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;}
+  .submit:disabled{opacity:.45;}
+  .err{color:#FF7A7A; font-size:13.5px; margin-top:12px; min-height:1em;}
+  .hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;}
+
+  .done{padding:56px 0 40px; text-align:center;}
+  .done .big{font-family:'Anton',sans-serif; font-size:38px; margin-bottom:12px;}
+  .done p{color:#D6D6D6; font-size:15.5px; max-width:30em; margin:0 auto 10px;}
+
+  .faq{margin-top:14px;}
+  .faq details{border-top:1px solid var(--line); padding:14px 0;}
+  .faq summary{cursor:pointer; font-weight:600; font-size:15px; list-style:none;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:'+'; float:right; color:var(--dim);}
+  .faq details[open] summary::after{content:'\2013';}
+  .faq p{color:#C4C4C4; font-size:14px; margin:10px 0 0;}
+
+  footer{border-top:1px solid var(--line); margin-top:44px; padding:22px 0 50px; font-size:12px; color:var(--dim); line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <div class="logo">inh<b>o</b>me<small>Recruiting Intelligence</small></div>
+    <a href="#form" class="cta" style="margin:0; padding:10px 16px; font-size:11px;">Send film</a>
+  </div>
+
+  <div class="hero">
+    <h1>Somebody always says<br><em>"I got a kid you need to see."</em></h1>
+    <p class="lede">Four years ago somebody said it to us about a kid nobody was calling. He plays at Texas A&amp;M now.</p>
+    <p class="lede">So send us the film. Players, high school coaches, parents, trainers. Every submission gets watched by a real evaluator, not a filter. If the tape says you belong, we build the report and put it in front of college staffs on our platform.</p>
+    <a href="#form" class="cta">Send your film</a>
+  </div>
+
+  <div class="strip">
+    <div><div class="n">Free</div><div class="l">To submit</div></div>
+    <div><div class="n">Every</div><div class="l">Tape gets watched</div></div>
+    <div><div class="n">Sat</div><div class="l">Friday film reviewed</div></div>
+  </div>
+
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><b>You send the film.</b> Hudl profile link and the game you want us to start with. Takes about three minutes.</li>
+    <li><b>We watch it.</b> A real evaluator, using the same Eye in the Sky framework we use for every prospect on the platform.</li>
+    <li><b>You hear back either way.</b> If we're moving forward, we tell you what we're building and when. If we're not, we tell you why and what would change our mind.</li>
+    <li><b>If we scout you, coaches see it.</b> Your report goes on the InHome platform where Directors of Player Personnel are already looking, with your score, traits, and film.</li>
+  </ol>
+
+  <h2 id="form">Send us the film</h2>
+  <p class="note" style="margin-bottom:4px;">One player per submission. If you coach several, send them one at a time so each gets its own evaluation.</p>
+
+  <div id="formHost">
+  <form id="intakeForm" autocomplete="on">
+    <div class="hp"><label>Leave this empty<input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <fieldset>
+      <legend>Who's sending this</legend>
+      <div class="chips" id="whoChips">
+        <button type="button" class="chip" data-who="player">I'm the player</button>
+        <button type="button" class="chip" data-who="coach">I'm his coach</button>
+        <button type="button" class="chip" data-who="parent">I'm a parent</button>
+        <button type="button" class="chip" data-who="trainer">I'm his trainer</button>
+        <button type="button" class="chip" data-who="other">Someone else</button>
+      </div>
+      <div class="g2" style="margin-top:14px;">
+        <div><label class="fl">Your name</label><input type="text" id="submitterName" autocomplete="name"></div>
+        <div><label class="fl">Your email</label><input type="email" id="submitterEmail" autocomplete="email" inputmode="email" autocapitalize="off"></div>
+      </div>
+      <div class="g2">
+        <div><label class="fl">Your phone <span>(optional)</span></label><input type="tel" id="submitterPhone" autocomplete="tel"></div>
+        <div id="roleWrap"><label class="fl">Your role <span>(optional)</span></label><input type="text" id="submitterRole" placeholder="Head Coach, Hoover HS"></div>
+      </div>
+      <div id="guardianWrap" style="display:none;">
+        <label class="fl">Parent, guardian, or coach email <span>(required)</span></label>
+        <input type="email" id="guardianEmail" inputmode="email" autocapitalize="off">
+        <div class="note">If you're under 18 we keep an adult on the thread. We won't contact your school or anyone else without going through them first.</div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>The player</legend>
+      <div class="g2">
+        <div><label class="fl">Full name</label><input type="text" id="playerName"></div>
+        <div><label class="fl">Position</label>
+          <select id="playerPosition">
+            <option value="">Select</option>
+            <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
+            <option>OL</option><option>DL</option><option>EDGE</option><option>LB</option>
+            <option>CB</option><option>S</option><option>ATH</option><option>K/P</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2">
+        <div><label class="fl">School</label><input type="text" id="school" placeholder="Hoover High School"></div>
+        <div><label class="fl">Graduation year</label><input type="text" id="classYear" inputmode="numeric" placeholder="2027"></div>
+      </div>
+      <div class="g3">
+        <div><label class="fl">City</label><input type="text" id="homeCity"></div>
+        <div><label class="fl">State</label><input type="text" id="homeState" maxlength="2" placeholder="AL" autocapitalize="characters"></div>
+        <div><label class="fl">GPA <span>(opt)</span></label><input type="text" id="gpa" inputmode="decimal" placeholder="3.4"></div>
+      </div>
+      <div class="g2">
+        <div><label class="fl">Height <span>(opt)</span></label><input type="text" id="height" placeholder="6'1"></div>
+        <div><label class="fl">Weight <span>(opt)</span></label><input type="text" id="weight" placeholder="190"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>The film</legend>
+      <label class="fl">Hudl profile link</label>
+      <input type="url" id="hudlUrl" placeholder="https://www.hudl.com/profile/..." inputmode="url" autocapitalize="off">
+      <div class="note">Paste the link to the profile, not a login. Open Hudl, go to the profile, copy the address bar. Never send anyone your password, including us.</div>
+
+      <label class="fl">Link to the most recent game</label>
+      <input type="url" id="gameUrl" placeholder="https://..." inputmode="url" autocapitalize="off">
+
+      <label class="fl">Any other film <span>(optional: YouTube, Drive, MaxPreps)</span></label>
+      <input type="url" id="otherFilmUrl" placeholder="https://..." inputmode="url" autocapitalize="off">
+
+      <label class="fl">Last game stat line</label>
+      <textarea id="lastGameStats" placeholder="Fri 9/11 vs Central: 7 catches, 138 yds, 2 TD. Also had a punt return for 40."></textarea>
+
+      <label class="fl">Verified track / testing marks <span>(optional)</span></label>
+      <input type="text" id="trackMarks" placeholder="10.62 100m, 21.9 200m, 4.51 laser 40, 36&quot; vert">
+      <div class="note">Track times move college coaches faster than almost anything else. If it's on Athletic.net or MileSplit, say so.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Where you think he fits</legend>
+      <label class="fl">Level you'd put him at</label>
+      <div class="chips" id="levelChips">
+        <button type="button" class="chip" data-lvl="P4">Power 4</button>
+        <button type="button" class="chip" data-lvl="G5">Group of 5</button>
+        <button type="button" class="chip" data-lvl="FCS">FCS</button>
+        <button type="button" class="chip" data-lvl="D2">D2</button>
+        <button type="button" class="chip" data-lvl="D3/NAIA">D3 / NAIA</button>
+        <button type="button" class="chip" data-lvl="JUCO">JUCO</button>
+        <button type="button" class="chip" data-lvl="Not sure">Not sure, you tell me</button>
+      </div>
+
+      <label class="fl">Programs you think fit <span>(optional, pick any)</span></label>
+      <input type="text" id="progSearch" placeholder="Search schools" autocapitalize="off">
+      <div class="progs" id="progList"></div>
+      <div class="picked" id="progPicked"></div>
+
+      <label class="fl">Why we should watch him</label>
+      <textarea id="pitch" placeholder="What does the tape show that a stat sheet won't? What kind of teammate and student is he? Anything a college staff would want to know."></textarea>
+    </fieldset>
+
+    <div class="consent">
+      <input type="checkbox" id="consent">
+      <label for="consent">I'm allowed to share this player's information and film with InHome for evaluation. If the player is under 18, a parent, guardian, or school coach knows this is being sent.</label>
+    </div>
+
+    <div class="err" id="err"></div>
+    <button type="submit" class="submit" id="submitBtn">Send it in</button>
+    <div class="note" style="text-align:center; margin-top:12px;">Free. No account. We never ask for passwords to Hudl or anything else.</div>
+  </form>
+  </div>
+
+  <h2>Straight answers</h2>
+  <div class="faq">
+    <details><summary>Does this cost anything?</summary><p>No. Submitting is free and getting evaluated is free. We make our money from college programs who subscribe to the platform, not from families.</p></details>
+    <details><summary>Do you really watch every one?</summary><p>Yes. It's the whole point. What we can't promise is that every player gets a full report, that depends on what the tape shows.</p></details>
+    <details><summary>Why won't you take my Hudl login?</summary><p>Because nobody should have your password, including us. Your Hudl profile link shows us everything we need, and handing account credentials to any recruiting service is a bad habit that will get a kid burned eventually.</p></details>
+    <details><summary>How long until I hear something?</summary><p>We work through Friday night film over the weekend. Give us about a week in season. If we need more film to make a call, we'll ask instead of going quiet.</p></details>
+    <details><summary>What if you pass on me?</summary><p>You'll get a real answer about why and what would change it. A no in October isn't a no in March, plenty of players submit again after a jump and get a different answer.</p></details>
+    <details><summary>I'm a JUCO or transfer player. Can I submit?</summary><p>Yes. Put your current school in and note your remaining eligibility in the pitch box. We track JUCO and transfer production closely.</p></details>
+  </div>
+
+  <footer>
+    InHome Recruiting Intelligence &middot; Tuscaloosa, Alabama<br>
+    Questions: <a href="mailto:drlee@inhomerecruiting.com" style="color:var(--mute)">drlee@inhomerecruiting.com</a><br>
+    We collect only what's needed to evaluate a player and reach you about it. We don't sell contact information, and we don't contact a college program on a player's behalf without saying so first.
+  </footer>
+</div>
+
+<script src="programs.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let WHO = '', LVL = '';
+const PICKED = new Set();
+
+document.querySelectorAll('#whoChips .chip').forEach(b => b.addEventListener('click', () => {
+  WHO = b.dataset.who;
+  document.querySelectorAll('#whoChips .chip').forEach(x => x.classList.toggle('on', x === b));
+  $('guardianWrap').style.display = WHO === 'player' ? '' : 'none';
+  $('roleWrap').style.display = (WHO === 'coach' || WHO === 'trainer') ? '' : 'none';
+}));
+document.querySelectorAll('#levelChips .chip').forEach(b => b.addEventListener('click', () => {
+  LVL = b.dataset.lvl;
+  document.querySelectorAll('#levelChips .chip').forEach(x => x.classList.toggle('on', x === b));
+}));
+
+/* Program picker, grouped by conference, filtered as you type. */
+function drawPrograms(){
+  const q = ($('progSearch').value || '').trim().toLowerCase();
+  const list = (typeof PROGRAMS !== 'undefined' ? PROGRAMS : []).filter(p => !q || p.n.toLowerCase().includes(q) || (p.c||'').toLowerCase().includes(q));
+  const byConf = {};
+  list.forEach(p => { (byConf[p.c] = byConf[p.c] || []).push(p); });
+  $('progList').innerHTML = Object.keys(byConf).map(c =>
+    `<div class="conf">${c}</div><div class="row">` +
+    byConf[c].map(p => `<button type="button" class="pchip ${PICKED.has(p.n)?'on':''}" data-p="${p.n.replace(/"/g,'&quot;')}">${p.n}</button>`).join('') +
+    `</div>`).join('') || '<div class="conf">No match</div>';
+  $('progList').querySelectorAll('.pchip').forEach(b => b.addEventListener('click', () => {
+    const n = b.dataset.p;
+    if(PICKED.has(n)) PICKED.delete(n); else if(PICKED.size < 12) PICKED.add(n);
+    b.classList.toggle('on', PICKED.has(n));
+    $('progPicked').textContent = PICKED.size ? [...PICKED].join(', ') : '';
+  }));
+}
+$('progSearch').addEventListener('input', drawPrograms);
+drawPrograms();
+
+$('intakeForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('err'); err.textContent = '';
+  const btn = $('submitBtn');
+
+  if(!WHO){ err.textContent = 'Tell us who is sending this.'; return; }
+  if(!$('consent').checked){ err.textContent = 'Please check the box confirming you can share this film.'; return; }
+
+  const payload = {
+    website: $('website').value,
+    submitterType: WHO,
+    submitterName: $('submitterName').value,
+    submitterEmail: $('submitterEmail').value,
+    submitterPhone: $('submitterPhone').value,
+    submitterRole: $('submitterRole').value,
+    guardianEmail: $('guardianEmail').value,
+    playerName: $('playerName').value,
+    playerPosition: $('playerPosition').value,
+    classYear: $('classYear').value,
+    school: $('school').value,
+    homeCity: $('homeCity').value,
+    homeState: ($('homeState').value || '').toUpperCase(),
+    height: $('height').value,
+    weight: $('weight').value,
+    gpa: $('gpa').value,
+    hudlUrl: $('hudlUrl').value,
+    gameUrl: $('gameUrl').value,
+    otherFilmUrl: $('otherFilmUrl').value,
+    lastGameStats: $('lastGameStats').value,
+    trackMarks: $('trackMarks').value,
+    levelRec: LVL,
+    programRecs: [...PICKED],
+    pitch: $('pitch').value,
+    consent: true
+  };
+
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    const res = await fetch('/.netlify/functions/submit-intake', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('Something went wrong (HTTP ' + res.status + ')'));
+    const name = payload.playerName || 'the player';
+    $('formHost').innerHTML =
+      `<div class="done">
+        <div class="big">Got it.</div>
+        <p>${name.replace(/[<>&]/g,'')} is in front of our evaluators. We work through Friday film over the weekend, so give us about a week in season.</p>
+        <p>You'll hear back at ${(payload.submitterEmail||'').replace(/[<>&]/g,'')} either way, whether we're moving forward or not.</p>
+        <p style="color:var(--dim); font-size:13px; margin-top:18px;">Got another player? Refresh this page and send the next one.</p>
+      </div>`;
+    $('formHost').scrollIntoView({behavior:'smooth', block:'center'});
+  }catch(e2){
+    err.textContent = e2.message;
+    btn.disabled = false; btn.textContent = 'Send it in';
+  }
+});
+</script>
+</body>
+</html>

@@ -340,6 +340,88 @@ exports.handler = async (event) => {
         return ok(parsed);
       }
 
+      /* ---------------- INTAKE (get-evaluated.html submissions) ---------------- */
+      case 'listIntake': {
+        try {
+          const rows = await sql`
+            SELECT *, to_char(created_at, 'YYYY-MM-DD') AS created_day
+            FROM intake_requests ORDER BY
+              CASE status WHEN 'new' THEN 0 WHEN 'reviewing' THEN 1 WHEN 'accepted' THEN 2 ELSE 3 END,
+              created_at DESC
+            LIMIT 500`;
+          return ok({ intake: rows });
+        } catch (e) {
+          /* table only exists after the first submission */
+          if (/relation .* does not exist/i.test(e.message)) return ok({ intake: [] });
+          throw e;
+        }
+      }
+
+      case 'updateIntake': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const status = ['new', 'reviewing', 'accepted', 'passed'].includes(body.status) ? body.status : null;
+        const rows = await sql`
+          UPDATE intake_requests SET
+            status = COALESCE(${status}, status),
+            admin_note = COALESCE(${body.note !== undefined ? String(body.note).slice(0, 2000) : null}, admin_note),
+            updated_at = now()
+          WHERE id = ${id} RETURNING *`;
+        return ok({ intake: rows[0] || null });
+      }
+
+      /* Turn a submission into a real prospect (and optionally a scout
+         assignment). Same find-or-create rules as everywhere else. */
+      case 'acceptIntake': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const [r] = await sql`SELECT * FROM intake_requests WHERE id = ${id}`;
+        if (!r) return fail(404, 'Submission not found');
+        const nameKey = String(r.player_name || '').toLowerCase().replace(/[^a-z]/g, '');
+        if (!nameKey) return fail(400, 'Submission has no player name');
+
+        let prospectId = r.prospect_id || null;
+        if (!prospectId) {
+          const [exact] = await sql`
+            SELECT id FROM prospects WHERE name_key = ${nameKey}
+              AND COALESCE(school,'') = ${r.school || ''} AND COALESCE(class_year,'') = ${r.class_year || ''} LIMIT 1`;
+          if (exact) prospectId = exact.id;
+          else {
+            const [blank] = await sql`
+              SELECT id FROM prospects WHERE name_key = ${nameKey}
+                AND COALESCE(school,'') = ${r.school || ''} AND COALESCE(class_year,'') = '' LIMIT 1`;
+            if (blank) {
+              prospectId = blank.id;
+              if (r.class_year) await sql`UPDATE prospects SET class_year = ${r.class_year}, updated_at = now() WHERE id = ${blank.id}`;
+            } else {
+              const [created] = await sql`
+                INSERT INTO prospects (name, name_key, school, class_year, position, level, home_city, home_state, height, weight, film_link)
+                VALUES (${r.player_name}, ${nameKey}, ${r.school || null}, ${r.class_year || null}, ${r.player_position || null},
+                        'HS', ${r.home_city || null}, ${r.home_state || null}, ${r.height || null}, ${r.weight || null},
+                        ${r.hudl_url || r.game_url || r.other_film_url || null})
+                RETURNING id`;
+              prospectId = created ? created.id : null;
+            }
+          }
+        }
+
+        let assignmentId = null;
+        if (body.scoutId && prospectId) {
+          const [a] = await sql`
+            INSERT INTO scout_assignments
+              (name, scout_id, position, class_year, level, school, priority, source_link, note, status, prospect_id, assigned_at)
+            SELECT ${r.player_name}, ${String(body.scoutId)}, ${r.player_position || null}, ${r.class_year || null}, 'HS',
+                   ${r.school || null}, ${body.priority || 'normal'}, ${r.hudl_url || r.game_url || null},
+                   ${'Submitted via get-evaluated by ' + (r.submitter_name || r.submitter_email || 'unknown')}, 'open', ${prospectId}, now()
+            WHERE NOT EXISTS (SELECT 1 FROM scout_assignments x WHERE x.scout_id = ${String(body.scoutId)} AND x.prospect_id = ${prospectId})
+            RETURNING id`;
+          assignmentId = a ? a.id : null;
+        }
+
+        await sql`UPDATE intake_requests SET status = 'accepted', prospect_id = ${prospectId}, updated_at = now() WHERE id = ${id}`;
+        return ok({ prospectId, assignmentId });
+      }
+
       case 'listProspects': {
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,

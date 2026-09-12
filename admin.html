@@ -275,6 +275,7 @@
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbPerf" onclick="switchTab('perf')">Performance<span class="cnt" id="cntPerf">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbIntake" onclick="switchTab('intake')">Inbox<span class="cnt" id="cntIntake">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbMarket" onclick="switchTab('market')">Market<span class="cnt" id="cntMarket">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbBoard" onclick="switchTab('board')">Board<span class="cnt" id="cntBoard">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbMap" onclick="switchTab('map')">Map<span class="cnt" id="cntMap">&mdash;</span></button>
@@ -400,6 +401,23 @@
   </div>
 
   <!-- ============ RECRUITING BOARD ============ -->
+  <div class="pane" id="paneIntake">
+    <div class="panel">
+      <h3>Evaluation Requests</h3>
+      <div class="sub">Everything submitted through the public page at <a href="get-evaluated.html" target="_blank" rel="noopener" style="color:var(--ink)">get-evaluated.html</a>. Players, high school coaches, parents, trainers. Triage here: accept turns it into a real prospect you can assign, pass closes it out.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="inSearch" placeholder="Search player, school, submitter" oninput="renderIntake(true)">
+        <select id="inStatus" onchange="renderIntake(true)">
+          <option value="open">New + reviewing</option><option value="new">New only</option>
+          <option value="accepted">Accepted</option><option value="passed">Passed</option><option value="">Everything</option>
+        </select>
+        <button type="button" class="mini-btn" onclick="INTAKE=null; renderIntake()">Refresh</button>
+      </div>
+      <div id="inStats" class="sub" style="margin-top:8px;"></div>
+      <div id="inList" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
   <div class="pane" id="paneMarket">
     <div class="panel">
       <h3>Prospect Market</h3>
@@ -741,10 +759,11 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     document.getElementById('tb'+cap).classList.toggle('on', k===t);
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
+  if(t==='intake') renderIntake();
   if(t==='market') renderMarket();
   /* Google Maps renders at zero size if it initialized while hidden. */
   if(t==='map' && window.gmap){
@@ -2022,6 +2041,90 @@ function renderReports(){
         <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
       </div>
     </div>`).join('');
+}
+
+/* ---------------- INTAKE QUEUE ---------------- */
+let INTAKE = null;
+async function renderIntake(skipFetch){
+  const el = document.getElementById('inList'), st = document.getElementById('inStats');
+  if(INTAKE === null && !skipFetch){
+    el.innerHTML = '<div class="empty"><div class="t">Loading...</div></div>';
+    try{ const d = await api('listIntake', {}); INTAKE = d.intake || []; }
+    catch(err){ el.innerHTML = `<div class="empty"><div class="t">Could not load</div><div class="s">${esc(err.message)}</div></div>`; return; }
+  }
+  if(!INTAKE) return;
+  document.getElementById('cntIntake').textContent = INTAKE.filter(r=>r.status==='new').length || INTAKE.length;
+
+  const q = (document.getElementById('inSearch').value||'').trim().toLowerCase();
+  const sf = document.getElementById('inStatus').value;
+  let list = INTAKE.filter(r=>{
+    if(sf==='open' && !['new','reviewing'].includes(r.status)) return false;
+    if(sf && sf!=='open' && r.status!==sf) return false;
+    if(!q) return true;
+    return [r.player_name,r.school,r.submitter_name,r.submitter_email,r.player_position].some(v=>(v||'').toLowerCase().includes(q));
+  });
+  const n = INTAKE.filter(r=>r.status==='new').length;
+  st.textContent = `${list.length} shown \u00b7 ${n} new \u00b7 ${INTAKE.filter(r=>r.status==='accepted').length} accepted \u00b7 ${INTAKE.length} all time`;
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">Nothing here</div><div class="s">Submissions from the public page land in this tab.</div></div>'; return; }
+
+  const scoutOpts = (SCOUT_ROSTER||[]).filter(s=>s.active!==false).map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  el.innerHTML = list.map(r=>{
+    const links = [['Hudl',r.hudl_url],['Game',r.game_url],['Other film',r.other_film_url]]
+      .filter(([,u])=>u).map(([k,u])=>`<a class="mini-btn" href="${esc(u)}" target="_blank" rel="noopener">${k}</a>`).join('');
+    const badge = { new:'var(--red)', reviewing:'var(--warn)', accepted:'var(--good)', passed:'var(--dim)' }[r.status] || 'var(--dim)';
+    return `<div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(r.player_name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(r.player_name||'(no name)')} <span class="rc-meta">${esc(r.player_position||'')}</span></div>
+          <div class="rc-meta">${esc(r.school||'\u2014')}${r.class_year?' \u00b7 Class of '+esc(r.class_year):''}${(r.home_city||r.home_state)?' \u00b7 '+esc([r.home_city,r.home_state].filter(Boolean).join(', ')):''}</div>
+          <div class="rc-meta">${[r.height,r.weight,r.gpa?'GPA '+esc(r.gpa):''].filter(Boolean).map(esc).join(' \u00b7 ')}</div>
+          <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(r.status)}</span>
+          ${r.level_rec?`<span class="pill">wants ${esc(r.level_rec)}</span>`:''}
+          ${r.prospect_id?`<span class="pill">prospect #${r.prospect_id}</span>`:''}
+        </div>
+        <div class="rc-right"><div class="rc-sub">${fmtDate(r.created_day)}</div></div>
+      </div>
+
+      <div style="margin-top:8px; font-size:12.5px; color:var(--mute); line-height:1.6;">
+        From <b style="color:var(--ink)">${esc(r.submitter_name||'(no name)')}</b> (${esc(r.submitter_type||'')})${r.submitter_role?' \u00b7 '+esc(r.submitter_role):''}<br>
+        <a href="mailto:${esc(r.submitter_email)}" style="color:var(--ink)">${esc(r.submitter_email||'')}</a>${r.submitter_phone?' \u00b7 '+esc(r.submitter_phone):''}${r.guardian_email?`<br>Guardian/coach: <a href="mailto:${esc(r.guardian_email)}" style="color:var(--ink)">${esc(r.guardian_email)}</a>`:''}
+      </div>
+      ${r.last_game_stats?`<div style="margin-top:8px;font-size:13px;color:#D6D6D6;background:var(--card-2);border-radius:8px;padding:9px 11px;"><b>Last game:</b> ${esc(r.last_game_stats)}</div>`:''}
+      ${r.track_marks?`<div style="margin-top:6px;font-size:13px;color:#D6D6D6;"><b>Track/testing:</b> ${esc(r.track_marks)}</div>`:''}
+      ${r.pitch?`<div style="margin-top:6px;font-size:13px;color:#D6D6D6;line-height:1.55;"><b>Pitch:</b> ${esc(r.pitch)}</div>`:''}
+      ${r.program_recs?`<div style="margin-top:6px;font-size:12px;color:var(--mute);"><b>Fits they named:</b> ${esc(r.program_recs)}</div>`:''}
+      <div class="rail" style="margin-top:10px;"><span class="rail-lbl">Film</span>${links||'<span class="rc-meta">none</span>'}</div>
+
+      <div class="rc-actions">
+        <select id="inScout-${r.id}" style="width:auto;padding:6px 8px;font-size:12px;"><option value="">Assign to...</option>${scoutOpts}</select>
+        <button type="button" class="mini-btn go" onclick="acceptIntake(${r.id})">Accept &rarr; prospect</button>
+        <button type="button" class="mini-btn" onclick="setIntake(${r.id},'reviewing')">Reviewing</button>
+        <button type="button" class="mini-btn danger" onclick="setIntake(${r.id},'passed')">Pass</button>
+        <span class="rc-meta" id="inMsg-${r.id}"></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function setIntake(id, status){
+  try{
+    await api('updateIntake', { id, status });
+    const r = INTAKE.find(x=>x.id===id); if(r) r.status = status;
+    renderIntake(true); toast('Marked ' + status);
+  }catch(err){ toast(err.message); }
+}
+async function acceptIntake(id){
+  const sel = document.getElementById('inScout-'+id);
+  const scoutId = sel ? sel.value : '';
+  const msg = document.getElementById('inMsg-'+id);
+  try{
+    if(msg) msg.textContent = 'Creating prospect...';
+    const d = await api('acceptIntake', { id, scoutId: scoutId || null });
+    const r = INTAKE.find(x=>x.id===id); if(r){ r.status='accepted'; r.prospect_id = d.prospectId; }
+    renderIntake(true);
+    toast(d.assignmentId ? 'Prospect created and assigned' : 'Prospect created');
+    loadAll();
+  }catch(err){ if(msg) msg.textContent=''; toast(err.message); }
 }
 
 /* ---------------- PROSPECT MARKET (admin view of the portal market) ---------------- */

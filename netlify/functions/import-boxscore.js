@@ -323,7 +323,9 @@ function parseEntry(chunk) {
 }
 
 function parseNarrative(text) {
-  const flat = String(text).replace(/\r/g, '').replace(/^@@COL [LR]$/gm, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  const flat = String(text).replace(/\r/g, '').replace(/^@@COL [LR]$/gm, '')
+    .replace(/(\d)-\s*\n\s*(\d)/g, '$1-$2')     // "26-13-0-\n99" -> "26-13-0-99"
+    .replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/(\d)-\s+(\d)/g, '$1-$2').trim();
 
   /* teams + date from the "A vs. B (M/D/YYYY ...)" header */
   let teams = [], date = null;
@@ -335,6 +337,23 @@ function parseNarrative(text) {
     const d = flat.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
     if (d) date = `${d[3]}-${d[1].padStart(2, '0')}-${d[2].padStart(2, '0')}`;
   }
+
+  /* Stat lines often use the short school name ("East Central -") while
+     the header uses the long one. The score box carries the short names;
+     map short -> long so every row lands on the header team. */
+  const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const teamAliases = teams.map(t => {
+    const words = t.split(' ');
+    const cands = [];
+    for (let n = words.length - 1; n >= 1; n--) cands.push(words.slice(0, n).join(' '));
+    /* keep a prefix only if it actually shows up as "Prefix - " in the text,
+       and only if the other team's name doesn't also start with it */
+    const others = teams.filter(o => o !== t);
+    const aliases = cands.filter(c => c.length >= 4
+      && new RegExp('\\b' + esc(c) + '\\s*[-\u2013\u2014]\\s+[A-Z]').test(flat)
+      && !others.some(o => o.startsWith(c + ' ') || o === c));
+    return [t, ...aliases];
+  });
 
   const players = new Map();
   const rec = (team, name) => {
@@ -373,13 +392,22 @@ function parseNarrative(text) {
   marks.forEach((mk, i) => {
     const body = flat.slice(mk.start, i + 1 < marks.length ? marks[i + 1].idx : undefined)
       .replace(/\s*(Game Starters|Score by Quarters)[\s\S]*$/i, '');
-    /* split the body by team name */
+    /* split the body by team name (long or short form), any dash */
     const segs = [];
-    const found = teams.map(t => ({ t, i: body.indexOf(t + ' - ') })).filter(x => x.i >= 0).sort((a, b) => a.i - b.i);
-    if (!found.length) segs.push({ team: teams[0] || '', body });
-    else found.forEach((f, j) => {
-      const from = f.i + f.t.length + 3;
-      const to = j + 1 < found.length ? found[j + 1].i : body.length;
+    const found = [];
+    teamAliases.forEach(([long, ...aliases]) => {
+      [long, ...aliases].forEach(alias => {
+        const re = new RegExp(alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*[-\u2013\u2014]\\s*', 'g');
+        let mm; while ((mm = re.exec(body))) found.push({ t: long, i: mm.index, len: mm[0].length });
+      });
+    });
+    found.sort((a, b) => a.i - b.i);
+    /* a long name contains its short form; keep the earliest match at a position */
+    const dedup = found.filter((f, k) => !found.some((g, j) => j !== k && g.i <= f.i && f.i < g.i + g.len && g.len > f.len));
+    if (!dedup.length) segs.push({ team: teams[0] || '', body });
+    else dedup.forEach((f, j) => {
+      const from = f.i + f.len;
+      const to = j + 1 < dedup.length ? dedup[j + 1].i : body.length;
       segs.push({ team: f.t, body: body.slice(from, to) });
     });
 

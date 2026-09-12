@@ -45,6 +45,7 @@ async function verifyScoutCode(code) {
 
 /* ---------- position config for trait names ---------- */
 const POSCFG = require('./lib/positions');
+const LOGO = require('./lib/logo');
 function loadPositions() { return POSCFG; }
 
 /* ---------- tiny layout helpers ---------- */
@@ -94,15 +95,22 @@ exports.handler = async (event) => {
     const need = (h) => { if (y - h < M + 30) newPage(); };
     const text = (s, x, size, font, color, opts = {}) => page.drawText(clean(s), { x, y, size, font, color, ...opts });
 
-    /* ---- header band ---- */
-    page.drawRectangle({ x: 0, y: PH - 56, width: PW, height: 56, color: BLACK });
-    page.drawText('inh', { x: M, y: PH - 38, size: 22, font: H, color: WHITE });
-    page.drawText('o', { x: M + H.widthOfTextAtSize('inh', 22), y: PH - 38, size: 22, font: H, color: RED });
-    page.drawText('me', { x: M + H.widthOfTextAtSize('inho', 22), y: PH - 38, size: 22, font: H, color: WHITE });
-    page.drawText('RECRUITING INTELLIGENCE  |  EIS SCOUTING REPORT', { x: M + 90, y: PH - 34, size: 8.5, font: H, color: rgb(0.7, 0.7, 0.7) });
+    /* ---- header band with the real logo ---- */
+    const BAND = 64;
+    page.drawRectangle({ x: 0, y: PH - BAND, width: PW, height: BAND, color: BLACK });
+    let logo = null;
+    try { logo = await pdf.embedPng(Buffer.from(LOGO.LOGO_PNG_BASE64, 'base64')); } catch (e) { logo = null; }
+    if (logo) {
+      const lh = 40, lw = lh * (logo.width / logo.height);
+      page.drawImage(logo, { x: M - 4, y: PH - BAND + (BAND - lh) / 2, width: lw, height: lh });
+    } else {
+      page.drawText('inhome', { x: M, y: PH - 40, size: 22, font: H, color: WHITE });
+    }
+    const hdrR = 'EIS SCOUTING REPORT';
+    page.drawText(hdrR, { x: PW - M - H.widthOfTextAtSize(hdrR, 8.5), y: PH - 28, size: 8.5, font: H, color: rgb(0.75, 0.75, 0.75) });
     const rid = 'Report #' + r.id;
-    page.drawText(rid, { x: PW - M - H.widthOfTextAtSize(rid, 8.5), y: PH - 34, size: 8.5, font: H, color: rgb(0.7, 0.7, 0.7) });
-    y = PH - 56 - 26;
+    page.drawText(rid, { x: PW - M - H.widthOfTextAtSize(rid, 8.5), y: PH - 42, size: 8.5, font: F, color: rgb(0.6, 0.6, 0.6) });
+    y = PH - BAND - 26;
 
     /* ---- headshot (best effort) ---- */
     let photo = null;
@@ -135,7 +143,7 @@ exports.handler = async (event) => {
     if (l2) { text(l2, M, 9.5, F, MUTE); y -= 13; }
     const l3 = [r.height ? 'HT ' + r.height : '', r.weight ? 'WT ' + r.weight : '', r.wingspan ? 'WS ' + r.wingspan : ''].filter(Boolean).join('    ');
     if (l3) { text(l3, M, 9.5, F, MUTE); y -= 13; }
-    y -= 12; if (photo && y > PH - 56 - 26 - photoH - 4) y = PH - 56 - 26 - photoH - 4;
+    y -= 12; if (photo && y > PH - BAND - 26 - photoH - 4) y = PH - BAND - 26 - photoH - 4;
 
     /* ---- score row ---- */
     const film = raw.traitGrades || {}, ath = raw.athleticGrades || {}, prod = raw.productionGrades || {}, gates = raw.gates || {};

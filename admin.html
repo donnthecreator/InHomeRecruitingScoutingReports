@@ -276,6 +276,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
+<!-- INHOME INTRO: black screen, logo, one line, fades out. Shown once per
+     browser session so it never gets in the way of reloads. -->
+<div id="ihSplash" style="position:fixed; inset:0; z-index:99999; background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; opacity:1; transition:opacity .55s ease;">
+  <img src="inhome-logo.png" alt="InHome Recruiting Intelligence" style="width:min(64vw,420px); height:auto; opacity:0; transform:translateY(8px); animation:ihIn .7s ease .1s forwards;">
+  <div style="font-family:'Inter',system-ui,sans-serif; font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:#8A8A8A; opacity:0; animation:ihIn .7s ease .55s forwards;">Eye in the Sky. Every rep, every week.</div>
+</div>
+<style>@keyframes ihIn{to{opacity:1; transform:none;}}</style>
+<script>
+(function(){
+  var el = document.getElementById('ihSplash'); if(!el) return;
+  var seen = false; try{ seen = sessionStorage.getItem('ih_intro_seen') === '1'; }catch(e){}
+  var kill = function(){ if(!el.parentNode) return; el.style.opacity = '0'; setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 560); try{ sessionStorage.setItem('ih_intro_seen','1'); }catch(e){} };
+  if(seen){ el.parentNode.removeChild(el); return; }
+  el.addEventListener('click', kill);
+  setTimeout(kill, 2100);
+})();
+</script>
+
+
 
 <div class="toast" id="toast"></div>
 

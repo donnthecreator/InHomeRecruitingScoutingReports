@@ -28,7 +28,7 @@ exports.handler = async (event) => {
                  r.raw, r.track, r.film_grades, r.athletic_grades, r.athletic_raw,
                  r.production_grades, r.production_raw, r.gates, r.interview_data,
                  r.created_at, r.prospect_id,
-                 p.headshot_key, p.wingspan_key, p.wingspan
+                 p.headshot_key, p.wingspan_key, p.wingspan, p.verifications
           FROM reports r
           LEFT JOIN prospects p ON p.id = r.prospect_id
           WHERE r.id = ${reportId}
@@ -43,7 +43,7 @@ exports.handler = async (event) => {
                  r.raw, r.track, r.film_grades, r.athletic_grades, r.athletic_raw,
                  r.production_grades, r.production_raw, r.gates, r.interview_data,
                  r.created_at, r.prospect_id,
-                 p.headshot_key, p.wingspan_key, p.wingspan
+                 p.headshot_key, p.wingspan_key, p.wingspan, p.verifications
           FROM reports r
           LEFT JOIN prospects p ON p.id = r.prospect_id
           WHERE r.scout_id = ${scoutId}
@@ -58,7 +58,7 @@ exports.handler = async (event) => {
                  r.raw, r.track, r.film_grades, r.athletic_grades, r.athletic_raw,
                  r.production_grades, r.production_raw, r.gates, r.interview_data,
                  r.created_at, r.prospect_id,
-                 p.headshot_key, p.wingspan_key, p.wingspan
+                 p.headshot_key, p.wingspan_key, p.wingspan, p.verifications
           FROM reports r
           LEFT JOIN prospects p ON p.id = r.prospect_id
           ORDER BY r.created_at DESC
@@ -98,6 +98,7 @@ exports.handler = async (event) => {
         headshotKey: r.headshot_key || null,
         wingspanKey: r.wingspan_key || null,
         wingspan: r.wingspan || null,
+        verifications: r.verifications || {},
         /* Prospect-level photo is canonical. Legacy report-time headshot
            (key headshot_<reportId>) still resolves for older reports. */
         headshotUrl: r.headshot_key ? frameUrl(base, r.headshot_key)
@@ -141,6 +142,22 @@ exports.handler = async (event) => {
       siblings = sib.map(x => ({ id: x.id, prospectId: reports[0].prospectId, scoutName: x.scout_name, scoutId: x.scout_id, scoutRole: x.scout_role,
         inhomeScore: x.inhome_score, recommendationTier: x.recommendation_tier, archetype: x.archetype, dateEvaluated: x.date_evaluated, createdAt: x.created_at, footballIQ: x.football_iq, narrative: x.narrative }));
     }
+    /* completed athlete assessments, so a coach sees the interview and the
+       IQ result on the same page as the film evaluation */
+    const pids = [...new Set(reports.map(r => r.prospectId).filter(Boolean))];
+    const assess = {};
+    if (pids.length) {
+      try {
+        const rows = await sql`SELECT prospect_id, kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed_day
+                               FROM assessments WHERE status = 'complete' AND prospect_id = ANY(${pids})`;
+        rows.forEach(x => { (assess[x.prospect_id] = assess[x.prospect_id] || []).push({
+          kind: x.kind, pct: x.score_pct != null ? Number(x.score_pct) : null,
+          correct: x.score_detail ? x.score_detail.correct : null, total: x.score_detail ? x.score_detail.total : null,
+          completed: x.completed_day, answers: x.answers || {} }); });
+      } catch (e) { /* table may not exist yet */ }
+    }
+    reports.forEach(rep2 => { rep2.assessments = rep2.prospectId ? (assess[rep2.prospectId] || []) : []; });
+
     const byProspect = {};
     siblings.forEach(x => { if (x.prospectId) (byProspect[x.prospectId] = byProspect[x.prospectId] || []).push(x); });
     reports.forEach(rep => {

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#FF0000; --paper:#000; --card:#111; --card-2:#171717; --line:#2A2A2A; --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A; --good:#35C759; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:640px; margin:0 auto; padding:0 18px 60px;}
+  .top{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line);}
+  .logo{font-family:'Anton',sans-serif; font-size:21px;}
+  .logo b{color:var(--red); font-weight:400;}
+  .logo small{display:block; font-family:'Inter',sans-serif; font-size:8px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .who{text-align:right; font-size:12px; color:var(--mute);}
+  .who b{display:block; color:var(--ink); font-size:14px;}
+
+  .bar{position:sticky; top:0; z-index:20; background:#000; padding:10px 0 8px; border-bottom:1px solid var(--line);}
+  .bar-track{height:4px; background:var(--card-2); border-radius:2px; overflow:hidden;}
+  .bar-fill{height:100%; background:var(--ink); width:0; transition:width .3s;}
+  .bar-txt{font-size:11px; color:var(--dim); margin-top:6px; display:flex; justify-content:space-between;}
+
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:30px; margin:26px 0 8px; line-height:1.05;}
+  .lede{color:#D0D0D0; font-size:15px; margin-bottom:6px;}
+  .fine{color:var(--dim); font-size:12.5px;}
+
+  .sec-title{font-family:'Anton',sans-serif; font-size:19px; margin:30px 0 4px;}
+  .sec-count{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .q{border-top:1px solid var(--line); padding:18px 0;}
+  .q-text{font-size:15px; font-weight:600; margin-bottom:10px;}
+  textarea, input[type=text]{width:100%; padding:12px 13px; border-radius:10px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-size:16px; font-family:inherit;}
+  textarea{min-height:88px; resize:vertical;}
+  textarea:focus, input:focus{outline:none; border-color:var(--mute);}
+  .opts{display:flex; flex-direction:column; gap:8px;}
+  .opt{display:flex; gap:10px; align-items:flex-start; border:1.5px solid var(--line); border-radius:10px; padding:12px 13px; cursor:pointer; font-size:14.5px; background:transparent;}
+  .opt.on{border-color:var(--ink); background:var(--ink); color:#000; font-weight:600;}
+  .opt i{width:16px; height:16px; border-radius:50%; border:1.5px solid var(--dim); flex:0 0 auto; margin-top:2px;}
+  .opt.on i{border-color:#000; background:#000;}
+  .scale{display:flex; gap:6px;}
+  .scale button{flex:1; border:1.5px solid var(--line); background:transparent; color:var(--mute); border-radius:9px; padding:12px 0; font-family:'Anton',sans-serif; font-size:16px; cursor:pointer;}
+  .scale button.on{background:var(--ink); border-color:var(--ink); color:#000;}
+  .scale-ends{display:flex; justify-content:space-between; font-size:11px; color:var(--dim); margin-top:5px;}
+
+  .clip{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:12px; background:var(--card);}
+  .clip .vid{position:relative; padding-bottom:56.25%; height:0; background:#000;}
+  .clip .vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+  .clip .body{padding:14px;}
+
+  .save{position:fixed; left:0; right:0; bottom:0; background:rgba(0,0,0,.95); border-top:1px solid var(--line); padding:12px 18px calc(12px + env(safe-area-inset-bottom)); z-index:30;}
+  .save .inner{max-width:640px; margin:0 auto; display:flex; gap:10px; align-items:center;}
+  .btn{flex:1; background:var(--red); color:#fff; border:none; border-radius:12px; padding:15px; font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.05em; text-transform:uppercase; cursor:pointer;}
+  .btn.ghost{background:transparent; color:var(--ink); border:1.5px solid var(--line); flex:0 0 auto; padding:15px 18px; font-size:13px;}
+  .btn:disabled{opacity:.45;}
+  .status{font-size:12px; color:var(--dim); text-align:center; padding:8px 0 0;}
+  .done{text-align:center; padding:70px 0;}
+  .done .big{font-family:'Anton',sans-serif; font-size:38px; margin-bottom:10px;}
+  .done p{color:#D0D0D0; max-width:30em; margin:0 auto 10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">inh<b>o</b>me<small>Recruiting Intelligence</small></div>
+    <div class="who" id="who"></div>
+  </div>
+  <div id="app"><div class="fine" style="padding:60px 0; text-align:center;">Loading...</div></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let DATA = null, ANSWERS = {}, DIRTY = false;
+
+function totalQuestions(){
+  let n = 0;
+  (DATA.sections||[]).forEach(s => n += s.items.length);
+  n += (DATA.clips||[]).length;
+  return n;
+}
+function answeredCount(){
+  return Object.keys(ANSWERS).filter(k => { const v = ANSWERS[k]; return v !== '' && v !== null && v !== undefined; }).length;
+}
+function updateBar(){
+  const t = totalQuestions(), a = Math.min(answeredCount(), t);
+  const f = $('barFill'); if(f) f.style.width = (t ? (a/t*100) : 0) + '%';
+  const x = $('barTxt'); if(x) x.textContent = a + ' of ' + t + ' answered';
+}
+
+function setAns(id, val){ ANSWERS[id] = val; DIRTY = true; updateBar(); }
+
+function qHTML(it){
+  const v = ANSWERS[it.id];
+  if(it.type === 'single'){
+    return `<div class="opts">${(it.options||[]).map((o,i)=>
+      `<button type="button" class="opt ${String(v)===String(i)?'on':''}" data-q="${esc(it.id)}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`;
+  }
+  if(it.type === 'scale'){
+    const max = it.max || 5;
+    return `<div class="scale">${Array.from({length:max},(_,i)=>i+1).map(n=>
+      `<button type="button" class="${String(v)===String(n)?'on':''}" data-q="${esc(it.id)}" data-v="${n}">${n}</button>`).join('')}</div>
+      <div class="scale-ends"><span>${esc(it.low||'')}</span><span>${esc(it.high||'')}</span></div>`;
+  }
+  if(it.type === 'short'){
+    return `<input type="text" data-q="${esc(it.id)}" value="${esc(v||'')}" autocomplete="off">`;
+  }
+  return `<textarea data-q="${esc(it.id)}" placeholder="Take your time. Specific beats long.">${esc(v||'')}</textarea>`;
+}
+
+function render(){
+  const isIQ = DATA.kind === 'iq';
+  $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
+  const clipOpts = (c) => `<div class="opts">${(c.options||[]).map((o,i)=>
+    `<button type="button" class="opt ${String(ANSWERS['clip_'+c.id])===String(i)?'on':''}" data-q="clip_${c.id}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`;
+
+  $('app').innerHTML = `
+    <div class="bar"><div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+      <div class="bar-txt"><span id="barTxt"></span><span id="saveState"></span></div></div>
+
+    <h1>${isIQ ? 'Football IQ Assessment' : 'InHome Athlete Interview'}</h1>
+    <p class="lede">${isIQ
+      ? 'Some of this is multiple choice, some of it is film. Watch each clip and tell us what you see. There is no time limit and you can leave and come back.'
+      : 'These are the questions a college coach would ask you sitting at your kitchen table. Answer them straight. The ones that sound uncomfortable are the ones that help you most.'}</p>
+    <p class="fine">${isIQ
+      ? 'Answer honestly without looking anything up. A wrong answer you reasoned through is worth more to us than a right one you searched.'
+      : 'Nobody is grading your grammar. Type the way you talk.'} Your answers save as you go.</p>
+
+    ${(DATA.sections||[]).map(sec => `
+      <div class="sec-title">${esc(sec.section)}</div>
+      <div class="sec-count">${sec.items.length} question${sec.items.length===1?'':'s'}</div>
+      ${sec.items.map(it => `<div class="q"><div class="q-text">${esc(it.q)}</div>${qHTML(it)}</div>`).join('')}
+    `).join('')}
+
+    ${(DATA.clips||[]).length ? `
+      <div class="sec-title">Film</div>
+      <div class="sec-count">${DATA.clips.length} clip${DATA.clips.length===1?'':'s'} &middot; watch as many times as you need</div>
+      ${DATA.clips.map(c => `
+        <div class="q">
+          <div class="clip">
+            <div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(c.youtubeId)}?rel=0&modestbranding=1${c.start?'&start='+c.start:''}" title="Film clip" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+            <div class="body"><div class="q-text" style="margin:0;">${esc(c.question)}</div></div>
+          </div>
+          ${clipOpts(c)}
+        </div>`).join('')}
+    ` : ''}
+
+    <div style="height:90px;"></div>
+    <div class="save"><div class="inner">
+      <button type="button" class="btn ghost" onclick="saveNow(false)">Save</button>
+      <button type="button" class="btn" id="submitBtn" onclick="submitAll()">Submit</button>
+    </div><div class="status" id="statusLine"></div></div>`;
+
+  document.querySelectorAll('[data-q]').forEach(el => {
+    if(el.tagName === 'BUTTON'){
+      el.addEventListener('click', () => {
+        setAns(el.dataset.q, el.dataset.v);
+        const grp = el.parentElement;
+        grp.querySelectorAll('button').forEach(b => b.classList.toggle('on', b === el));
+      });
+    } else {
+      el.addEventListener('input', () => setAns(el.dataset.q, el.value));
+    }
+  });
+  updateBar();
+}
+
+async function saveNow(quiet){
+  if(!DIRTY && quiet) return;
+  const st = $('saveState');
+  try{
+    await fetch('/.netlify/functions/assessment', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ t: TOKEN, answers: ANSWERS }) });
+    DIRTY = false;
+    if(st) st.textContent = 'Saved';
+    setTimeout(()=>{ if(st && !DIRTY) st.textContent = ''; }, 2000);
+  }catch(e){ if(st) st.textContent = 'Not saved, check your signal'; }
+}
+setInterval(()=>saveNow(true), 20000);
+window.addEventListener('beforeunload', (e) => { if(DIRTY){ e.preventDefault(); e.returnValue = ''; } });
+
+async function submitAll(){
+  const t = totalQuestions(), a = answeredCount();
+  if(a < t && !confirm(`You have answered ${a} of ${t}. Submit anyway? You will not be able to change it after.`)) return;
+  const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Sending...';
+  try{
+    const res = await fetch('/.netlify/functions/assessment', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ t: TOKEN, answers: ANSWERS, done: true }) });
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || 'Something went wrong');
+    DIRTY = false;
+    $('app').innerHTML = `<div class="done">
+      <div class="big">Sent.</div>
+      <p>Thanks${DATA.athlete ? ', ' + esc(DATA.athlete.split(' ')[0]) : ''}. An InHome evaluator reads every one of these himself.</p>
+      <p class="fine">${d.scored ? 'Your film and multiple-choice answers are scored automatically. The written ones are read by a person, and those matter more.' : 'Nothing here is auto-scored. A person reads all of it.'}</p>
+    </div>`;
+    window.scrollTo({top:0, behavior:'smooth'});
+  }catch(err){
+    btn.disabled = false; btn.textContent = 'Submit';
+    $('statusLine').textContent = err.message;
+  }
+}
+
+(async function(){
+  if(!TOKEN){ $('app').innerHTML = '<div class="done"><div class="big">Missing link key</div><p>Ask InHome for a fresh link.</p></div>'; return; }
+  try{
+    const res = await fetch('/.netlify/functions/assessment?t=' + encodeURIComponent(TOKEN));
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || 'This link is not valid');
+    DATA = d; ANSWERS = d.answers || {};
+    if(d.status === 'complete'){
+      $('app').innerHTML = '<div class="done"><div class="big">Already submitted</div><p>This one is in. If you need to change something, tell whoever sent you the link.</p></div>';
+      return;
+    }
+    render();
+  }catch(err){
+    $('app').innerHTML = `<div class="done"><div class="big">Link not valid</div><p>${esc(err.message)}</p></div>`;
+  }
+})();
+</script>
+</body>
+</html>

@@ -294,6 +294,12 @@
   .mk-face{width:32px; height:32px; border-radius:8px; object-fit:cover; background:#1B1E27; border:1px solid #212430; flex:0 0 auto;}
   .mk-logo{width:16px; height:16px; object-fit:contain; vertical-align:-3px; margin-right:4px;}
   .rc-avatar img{width:100%; height:100%; object-fit:cover; border-radius:inherit;}
+
+  .vchk{display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%;
+        background:#1D9BF0; color:#fff; font-size:9px; font-weight:900; margin-left:4px; vertical-align:1px; cursor:help;}
+  .vrow{display:flex; gap:8px; align-items:center; padding:6px 0; border-top:1px solid var(--line); font-size:12.5px;}
+  .clip-card{border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--card);}
+  .clip-card iframe{width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#000;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -365,6 +371,7 @@
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbPerf" onclick="switchTab('perf')">Performance<span class="cnt" id="cntPerf">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbIntake" onclick="switchTab('intake')">Inbox<span class="cnt" id="cntIntake">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbAssess" onclick="switchTab('assess')">Assess<span class="cnt" id="cntAssess">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbMarket" onclick="switchTab('market')">Market<span class="cnt" id="cntMarket">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbBoard" onclick="switchTab('board')">Board<span class="cnt" id="cntBoard">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbMap" onclick="switchTab('map')">Map<span class="cnt" id="cntMap">&mdash;</span></button>
@@ -522,6 +529,43 @@
       </div>
       <div id="inStats" class="sub" style="margin-top:8px;"></div>
       <div id="inList" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="pane" id="paneAssess">
+    <div class="panel">
+      <h3>Athlete Assessments</h3>
+      <div class="sub">Two links you can text a kid: the <b>Interview</b> (character, background, coachability, self-awareness) and the <b>Football IQ</b> test (written questions plus film clips he diagnoses). Send from any player's Profile, or start one here by name.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="asName" placeholder="Athlete name">
+        <input type="text" id="asSchool" placeholder="School">
+        <select id="asKind"><option value="interview">Interview</option><option value="iq">Football IQ</option></select>
+        <button type="button" class="btn" onclick="newAssessment()">Create link</button>
+      </div>
+      <div id="asStatus" class="sub" style="margin-top:8px;"></div>
+      <div id="asList" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Film Clips for the IQ Test</h3>
+      <div class="sub">YouTube-hosted clips the athlete watches and diagnoses. Upload the clip to YouTube as <b>unlisted</b>, paste the link here, write the question and the options, and mark the right answer. Cut the clip before the outcome shows. Eight to twelve seconds is the sweet spot.</div>
+      <div class="grid2" style="margin-top:10px;">
+        <div><label class="fl">YouTube link or video id</label><input type="text" id="clYt" placeholder="https://youtu.be/..."></div>
+        <div><label class="fl">Start at (seconds, optional)</label><input type="text" id="clStart" placeholder="0"></div>
+      </div>
+      <label class="fl">Question</label>
+      <input type="text" id="clQ" placeholder="What coverage is this and what tells you?">
+      <label class="fl">Options (one per line; leave blank to use the standard coverage list)</label>
+      <textarea id="clOpts" placeholder="Cover 0&#10;Cover 1&#10;Cover 2&#10;Cover 3&#10;Cover 4 / Quarters"></textarea>
+      <div class="grid3" style="margin-top:8px;">
+        <div><label class="fl">Correct option number</label><input type="text" id="clAns" placeholder="1 = first option"></div>
+        <div><label class="fl">Position group</label><select id="clPos"><option>ALL</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>OL</option><option>DL</option><option>LB</option><option>DB</option></select></div>
+        <div><label class="fl">Order</label><input type="text" id="clOrder" placeholder="0"></div>
+      </div>
+      <label class="fl">Why that is the answer (shown to you, never to the athlete)</label>
+      <textarea id="clWhy" placeholder="Two high pre-snap, boundary safety rotates down at the snap..."></textarea>
+      <button type="button" class="btn" onclick="saveClip()" style="margin-top:10px;">Add clip</button>
+      <div id="clipList" style="margin-top:14px;"></div>
     </div>
   </div>
 
@@ -867,11 +911,12 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     document.getElementById('tb'+cap).classList.toggle('on', k===t);
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
   if(t==='intake') renderIntake();
+  if(t==='assess'){ renderAssessments(); renderClips(); }
   if(t==='market') renderMarket();
   /* Google Maps renders at zero size if it initialized while hidden. */
   if(t==='map' && window.gmap){
@@ -1994,6 +2039,129 @@ function renderReports(){
     </div>`).join('');
 }
 
+/* ---------------- ASSESSMENTS + FILM CLIPS ---------------- */
+let ASSESS = null, CLIPS = null;
+async function newAssessment(kind, prospectId, name, school){
+  const k = kind || document.getElementById('asKind').value;
+  const n = name || (document.getElementById('asName')||{}).value;
+  const sc = school !== undefined ? school : (document.getElementById('asSchool')||{}).value;
+  if(!prospectId && !(n||'').trim()){ toast('Enter a name'); return null; }
+  try{
+    const d = await api('createAssessment', { kind:k, prospectId: prospectId||null, name:n, school:sc });
+    ASSESS = null; if(currentView==='assess') renderAssessments();
+    let copied = false;
+    try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
+    const label = k==='iq' ? 'Football IQ' : 'Interview';
+    if(copied) toast(label + ' link copied' + (d.reused ? ' (existing open link)' : ''));
+    else prompt('Copy this ' + label + ' link:', d.url);
+    const st = document.getElementById('asStatus'); if(st) st.textContent = d.url;
+    return d.url;
+  }catch(err){ toast(err.message); return null; }
+}
+async function renderAssessments(){
+  const el = document.getElementById('asList');
+  if(ASSESS === null){
+    el.innerHTML = '<div class="empty"><div class="t">Loading...</div></div>';
+    try{ const d = await api('listAssessments', {}); ASSESS = d.assessments || []; }
+    catch(err){ el.innerHTML = `<div class="empty"><div class="t">Could not load</div><div class="s">${esc(err.message)}</div></div>`; return; }
+  }
+  document.getElementById('cntAssess').textContent = ASSESS.filter(a=>a.status==='complete').length;
+  if(!ASSESS.length){ el.innerHTML = '<div class="empty"><div class="t">No assessments yet</div><div class="s">Create a link above or from a player\'s Profile.</div></div>'; return; }
+  el.innerHTML = ASSESS.map(a=>{
+    const badge = { complete:'var(--good)', started:'var(--warn)', sent:'var(--dim)' }[a.status] || 'var(--dim)';
+    const url = location.origin + '/assessment.html?t=' + a.token;
+    return `<div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(a.athlete_name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(a.athlete_name||'')}</div>
+          <div class="rc-meta">${esc(a.school||'')}${a.position?' \u00b7 '+esc(a.position):''} \u00b7 sent ${fmtDate(a.created_day)}</div>
+          <span class="pill">${a.kind==='iq'?'Football IQ':'Interview'}</span>
+          <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(a.status)}</span>
+          ${a.score_pct!=null?`<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${Number(a.score_pct)}%</span>`:''}
+        </div>
+        <div class="rc-right"><div class="rc-sub">${a.completed_day?fmtDate(a.completed_day):''}</div></div>
+      </div>
+      <div class="rc-actions">
+        ${a.status==='complete' ? `<button type="button" class="mini-btn go" onclick="viewAssessment(${a.id})">Read answers</button>` : `<button type="button" class="mini-btn" onclick="copyAssess('${esc(url)}')">Copy link</button>`}
+        ${a.prospect_id?`<button type="button" class="mini-btn" onclick="openProfile(${a.prospect_id})">Profile</button>`:''}
+        <button type="button" class="mini-btn danger" onclick="deleteAssessment(${a.id})">Delete</button>
+      </div>
+      <div id="asBody-${a.id}" style="display:none; margin-top:10px;"></div>
+    </div>`;
+  }).join('');
+}
+async function copyAssess(url){ try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch(e){ prompt('Copy this link:', url); } }
+async function deleteAssessment(id){
+  if(!confirm('Delete this assessment and its answers?')) return;
+  try{ await api('deleteAssessment', { id }); ASSESS = ASSESS.filter(a=>a.id!==id); renderAssessments(); toast('Deleted'); }catch(err){ toast(err.message); }
+}
+function viewAssessment(id){
+  const a = ASSESS.find(x=>x.id===id); if(!a) return;
+  const host = document.getElementById('asBody-'+id);
+  if(host.style.display !== 'none'){ host.style.display='none'; return; }
+  host.style.display='';
+  const ans = a.answers || {};
+  const det = (a.score_detail && a.score_detail.detail) || [];
+  const written = Object.entries(ans).filter(([k])=>!det.some(d=>d.id===k));
+  host.innerHTML =
+    (det.length ? `<div class="rc-meta" style="margin-bottom:6px;">Scored ${a.score_detail.correct} of ${a.score_detail.total}</div>` +
+      det.map(d=>`<div class="vrow"><span style="color:${d.correct?'var(--good)':'#FF5A5A'};font-weight:800;">${d.correct?'\u2713':'\u2717'}</span>
+        <span style="flex:1;"><b style="font-weight:600;">${esc(d.q)}</b><br>
+        <span class="rc-meta">He said: ${esc((d.options&&d.options[d.given])||d.given||'\u2014')}${d.correct?'':' \u00b7 correct: '+esc((d.options&&d.options[d.answer])||d.answer)}</span></span></div>`).join('') : '') +
+    (written.length ? `<div class="rc-meta" style="margin:10px 0 4px;">Written answers</div>` +
+      written.map(([k,v])=>`<div style="padding:8px 0;border-top:1px solid var(--line);"><div class="rc-meta">${esc(k)}</div><div style="font-size:13px;color:#D6D6D6;line-height:1.55;white-space:pre-wrap;">${esc(v)}</div></div>`).join('') : '');
+}
+
+async function renderClips(){
+  const el = document.getElementById('clipList');
+  if(CLIPS === null){
+    try{ const d = await api('listClips', {}); CLIPS = d.clips || []; }catch(err){ el.innerHTML = esc(err.message); return; }
+  }
+  if(!CLIPS.length){ el.innerHTML = '<div class="empty"><div class="t">No clips yet</div><div class="s">Add one above. Clips show on every Football IQ assessment.</div></div>'; return; }
+  el.innerHTML = CLIPS.map(c=>`<div class="clip-card">
+    <iframe src="https://www.youtube-nocookie.com/embed/${esc(c.youtube_id)}?rel=0${c.start_seconds?'&start='+c.start_seconds:''}" allowfullscreen loading="lazy"></iframe>
+    <div style="margin-top:8px;font-size:13.5px;font-weight:600;">${esc(c.question)}</div>
+    <div class="rc-meta" style="margin-top:4px;">${(c.options||['(standard coverage list)']).map((o,i)=>`${i+1}. ${esc(o)}`).join(' \u00b7 ')}</div>
+    <div class="rc-meta">Answer: ${c.answer_index!=null?(c.answer_index+1):'not scored'} \u00b7 ${esc(c.position_group||'ALL')} \u00b7 ${c.active?'active':'hidden'}</div>
+    ${c.explanation?`<div class="rc-meta" style="margin-top:4px;color:#9AA0AA;">${esc(c.explanation)}</div>`:''}
+    <div class="rc-actions">
+      <button type="button" class="mini-btn" onclick="toggleClip(${c.id}, ${!c.active})">${c.active?'Hide':'Activate'}</button>
+      <button type="button" class="mini-btn danger" onclick="deleteClip(${c.id})">Delete</button>
+    </div>
+  </div>`).join('');
+}
+async function saveClip(){
+  const opts = (document.getElementById('clOpts').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  const ansRaw = (document.getElementById('clAns').value||'').trim();
+  const body = {
+    youtubeId: document.getElementById('clYt').value,
+    start: document.getElementById('clStart').value,
+    question: document.getElementById('clQ').value,
+    options: opts.length ? opts : null,
+    answerIndex: ansRaw === '' ? null : (parseInt(ansRaw,10) - 1),
+    explanation: document.getElementById('clWhy').value,
+    positionGroup: document.getElementById('clPos').value,
+    sortOrder: document.getElementById('clOrder').value
+  };
+  try{
+    const d = await api('saveClip', body);
+    CLIPS = null; renderClips();
+    ['clYt','clStart','clQ','clOpts','clAns','clWhy','clOrder'].forEach(id=>document.getElementById(id).value='');
+    toast('Clip added');
+  }catch(err){ toast(err.message); }
+}
+async function toggleClip(id, active){
+  const c = CLIPS.find(x=>x.id===id); if(!c) return;
+  try{ await api('saveClip', { id, youtubeId:c.youtube_id, question:c.question, options:c.options, answerIndex:c.answer_index,
+        explanation:c.explanation, positionGroup:c.position_group, start:c.start_seconds, sortOrder:c.sort_order, active });
+    CLIPS = null; renderClips(); }catch(err){ toast(err.message); }
+}
+async function deleteClip(id){
+  if(!confirm('Delete this clip? It disappears from future assessments.')) return;
+  try{ await api('deleteClip', { id }); CLIPS = CLIPS.filter(c=>c.id!==id); renderClips(); toast('Deleted'); }catch(err){ toast(err.message); }
+}
+
 /* ---------------- PLAYER PROFILE (edit any prospect from anywhere) ---------------- */
 let PP = null;
 async function openProfileByName(name, school, extra){
@@ -2049,7 +2217,24 @@ function renderProfile(){
       ${f('wingspan','Wingspan',p.wingspan,'')}
       ${f('film_link','Film link',p.film_link,'https://',{full:true})}
     </div>
+    <div style="margin-top:14px;">
+      <div class="rc-meta" style="margin-bottom:4px;">Verified measurables <span style="color:var(--dim)">— a blue check tells a coach we confirmed it at the source</span></div>
+      ${['height','weight','wingspan','track','forty','gpa'].map(f=>{
+        const v = (p.verifications||{})[f];
+        return `<div class="vrow">
+          <span style="min-width:66px;text-transform:capitalize;">${f==='forty'?'40 time':f}</span>
+          ${v ? `<span style="flex:1;color:var(--ink);">${esc(v.value||'verified')} <span class="vchk" title="Verified">\u2713</span> <span class="rc-meta">${esc(v.source||'')}${v.at?' \u00b7 '+esc(v.at):''}</span></span>
+                 <button type="button" class="mini-btn danger" onclick="setVerify('${f}', true)">Remove</button>`
+               : `<span style="flex:1;" class="rc-meta">not verified</span>
+                  <button type="button" class="mini-btn" onclick="setVerify('${f}')">Verify</button>`}
+        </div>`;
+      }).join('')}
+    </div>
     <div class="rc-actions" style="margin-top:14px;">
+      <button type="button" class="mini-btn go" onclick="newAssessment('interview', ${p.id})">Send interview link</button>
+      <button type="button" class="mini-btn go" onclick="newAssessment('iq', ${p.id})">Send IQ test link</button>
+    </div>
+    <div class="rc-actions" style="margin-top:8px;">
       <button type="button" class="btn" onclick="saveProfile()">Save</button>
       <a class="mini-btn" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.class_year||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener">Scout this player</a>
       ${p.reports ? `<span class="rc-meta">${p.reports} report${p.reports===1?'':'s'} on file</span>` : ''}
@@ -2069,6 +2254,23 @@ async function saveProfile(){
     buildKnownNames(); MK = null;
     renderProfile(); renderPerf(); renderReports();
     toast('Profile saved');
+  }catch(err){ toast(err.message); }
+}
+async function setVerify(field, remove){
+  if(!PP) return;
+  if(remove){
+    if(!confirm('Remove the verified check on ' + field + '?')) return;
+    try{ const d = await api('setVerification', { prospectId: PP.id, field, remove:true }); PP.verifications = d.verifications; renderProfile(); toast('Check removed'); }catch(err){ toast(err.message); }
+    return;
+  }
+  const value = prompt('Verified value for ' + field + ' (what a coach should see):', PP[field] || '');
+  if(value === null) return;
+  const source = prompt('Where did you confirm it? (MileSplit, Athletic.net, camp, in person)', 'MileSplit');
+  if(source === null) return;
+  const url = prompt('Link to the source (optional):', '') || '';
+  try{
+    const d = await api('setVerification', { prospectId: PP.id, field, value, source, url });
+    PP.verifications = d.verifications; renderProfile(); toast('Verified');
   }catch(err){ toast(err.message); }
 }
 function ppPhoto(){ const i = document.getElementById('ppFile'); if(i) i.click(); }

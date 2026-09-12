@@ -501,6 +501,99 @@ exports.handler = async (event) => {
         return ok({ prospectId: row.id, existed: false });
       }
 
+      /* ---------------- ASSESSMENTS ---------------- */
+      case 'createAssessment': {
+        const crypto2 = require('crypto');
+        const kind = ['interview', 'iq'].includes(body.kind) ? body.kind : 'interview';
+        const prospectId = body.prospectId ? parseInt(body.prospectId, 10) : null;
+        let name = body.name ? String(body.name).trim() : null, school = body.school ? String(body.school).trim() : null, position = body.position || null;
+        if (prospectId) {
+          const [p] = await sql`SELECT name, school, position FROM prospects WHERE id = ${prospectId}`;
+          if (p) { name = name || p.name; school = school || p.school; position = position || p.position; }
+        }
+        if (!name) return fail(400, 'name or prospectId required');
+        await sql`CREATE TABLE IF NOT EXISTS assessments (
+          id SERIAL PRIMARY KEY, token TEXT UNIQUE NOT NULL, prospect_id INTEGER REFERENCES prospects(id) ON DELETE CASCADE,
+          athlete_name TEXT, school TEXT, position TEXT, kind TEXT NOT NULL DEFAULT 'interview', status TEXT NOT NULL DEFAULT 'sent',
+          answers JSONB NOT NULL DEFAULT '{}'::jsonb, score_pct NUMERIC, score_detail JSONB, sent_by TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(), started_at TIMESTAMPTZ, completed_at TIMESTAMPTZ)`;
+        /* reuse an open link for the same athlete and kind rather than stacking them */
+        const [open] = await sql`SELECT token FROM assessments WHERE kind = ${kind} AND status <> 'complete'
+                                 AND (prospect_id = ${prospectId} OR (prospect_id IS NULL AND lower(athlete_name) = ${String(name).toLowerCase()})) LIMIT 1`;
+        const token = open ? open.token : crypto2.randomBytes(16).toString('base64url');
+        if (!open) {
+          await sql`INSERT INTO assessments (token, prospect_id, athlete_name, school, position, kind, sent_by)
+                    VALUES (${token}, ${prospectId}, ${name}, ${school}, ${position}, ${kind}, 'admin')`;
+        }
+        return ok({ token, url: `${siteBase(event)}/assessment.html?t=${token}`, reused: !!open });
+      }
+
+      case 'listAssessments': {
+        try {
+          const rows = await sql`
+            SELECT a.*, to_char(a.created_at,'YYYY-MM-DD') AS created_day, to_char(a.completed_at,'YYYY-MM-DD') AS completed_day
+            FROM assessments a ORDER BY CASE a.status WHEN 'complete' THEN 0 WHEN 'started' THEN 1 ELSE 2 END, a.created_at DESC LIMIT 400`;
+          return ok({ assessments: rows });
+        } catch (e) { if (/does not exist/i.test(e.message)) return ok({ assessments: [] }); throw e; }
+      }
+
+      case 'deleteAssessment': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        await sql`DELETE FROM assessments WHERE id = ${id}`;
+        return ok({ deleted: id });
+      }
+
+      /* ---------------- IQ FILM CLIPS ---------------- */
+      case 'listClips': {
+        try { return ok({ clips: await sql`SELECT * FROM iq_clips ORDER BY sort_order, id` }); }
+        catch (e) { if (/does not exist/i.test(e.message)) return ok({ clips: [] }); throw e; }
+      }
+      case 'saveClip': {
+        await sql`CREATE TABLE IF NOT EXISTS iq_clips (
+          id SERIAL PRIMARY KEY, youtube_id TEXT NOT NULL, question TEXT NOT NULL, options JSONB, answer_index INTEGER,
+          explanation TEXT, position_group TEXT, start_seconds INTEGER DEFAULT 0, active BOOLEAN NOT NULL DEFAULT true,
+          sort_order INTEGER DEFAULT 0, created_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+        const yt = String(body.youtubeId || '').trim();
+        const m = yt.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([A-Za-z0-9_-]{11})/) || yt.match(/^([A-Za-z0-9_-]{11})$/);
+        const ytid = m ? m[1] : null;
+        if (!ytid) return fail(400, 'Paste a YouTube link or an 11-character video id');
+        const q = String(body.question || '').trim(); if (!q) return fail(400, 'question required');
+        const options = Array.isArray(body.options) && body.options.length ? body.options.map(x => String(x).slice(0, 80)).slice(0, 8) : null;
+        const ai = body.answerIndex === '' || body.answerIndex === null || body.answerIndex === undefined ? null : parseInt(body.answerIndex, 10);
+        const id = body.id ? parseInt(body.id, 10) : null;
+        if (id) {
+          const rows = await sql`UPDATE iq_clips SET youtube_id=${ytid}, question=${q}, options=${options ? JSON.stringify(options) : null},
+            answer_index=${ai}, explanation=${body.explanation || null}, position_group=${body.positionGroup || 'ALL'},
+            start_seconds=${parseInt(body.start, 10) || 0}, active=${body.active !== false}, sort_order=${parseInt(body.sortOrder, 10) || 0}
+            WHERE id=${id} RETURNING *`;
+          return ok({ clip: rows[0] });
+        }
+        const rows = await sql`INSERT INTO iq_clips (youtube_id, question, options, answer_index, explanation, position_group, start_seconds, active, sort_order)
+          VALUES (${ytid}, ${q}, ${options ? JSON.stringify(options) : null}, ${ai}, ${body.explanation || null}, ${body.positionGroup || 'ALL'},
+                  ${parseInt(body.start, 10) || 0}, ${body.active !== false}, ${parseInt(body.sortOrder, 10) || 0}) RETURNING *`;
+        return ok({ clip: rows[0] });
+      }
+      case 'deleteClip': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        await sql`DELETE FROM iq_clips WHERE id = ${id}`;
+        return ok({ deleted: id });
+      }
+
+      /* ---------------- VERIFIED MEASURABLES ---------------- */
+      case 'setVerification': {
+        const id = parseInt(body.prospectId, 10); if (!id) return fail(400, 'prospectId required');
+        const field = String(body.field || '').trim().slice(0, 40); if (!field) return fail(400, 'field required');
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS verifications JSONB NOT NULL DEFAULT '{}'::jsonb`;
+        const [p] = await sql`SELECT verifications FROM prospects WHERE id = ${id}`;
+        if (!p) return fail(404, 'Prospect not found');
+        const v = p.verifications || {};
+        if (body.remove) delete v[field];
+        else v[field] = { source: String(body.source || '').slice(0, 60) || 'Verified', url: String(body.url || '').slice(0, 400) || null,
+                          value: body.value != null ? String(body.value).slice(0, 60) : null, at: new Date().toISOString().slice(0, 10) };
+        await sql`UPDATE prospects SET verifications = ${JSON.stringify(v)}, updated_at = now() WHERE id = ${id}`;
+        return ok({ verifications: v });
+      }
+
       /* ---------------- MAP ---------------- */
       case 'listMapPins': {
         const { pins } = require('./lib/mappins');

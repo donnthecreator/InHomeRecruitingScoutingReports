@@ -48,7 +48,16 @@ const cleanTeam = (t) => String(t || '').replace(/^No\.\s*\d+\s*/i, '').replace(
 
 /* Split the whole text into tokens but keep line breaks as a token so
    we can find headers and team names, which are always on their own line. */
+/* pdf.js emits ligatures as separate runs: "Hu ff", "Je ff erson", "Ru ffi n".
+   Stitch them back before any parsing so names come through intact. */
+function mendLigatures(text) {
+  return String(text)
+    .replace(/([A-Za-z])\s+(ffi|ffl|ff|fi|fl)\s+([a-z])/g, '$1$2$3')   // Je ff erson -> Jefferson
+    .replace(/([A-Za-z])\s+(ffi|ffl|ff|fi|fl)(?=[\s,;.]|$)/g, '$1$2');    // Hu ff -> Huff
+}
+
 function parseText(text) {
+  text = mendLigatures(text);
   if (looksNarrative(text)) {
     const { date, teams, playerMap } = parseNarrative(text);
     return { date, teams, players: summarize(playerMap) };
@@ -314,7 +323,7 @@ function parseEntry(chunk) {
 }
 
 function parseNarrative(text) {
-  const flat = String(text).replace(/\r/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  const flat = String(text).replace(/\r/g, '').replace(/^@@COL [LR]$/gm, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 
   /* teams + date from the "A vs. B (M/D/YYYY ...)" header */
   let teams = [], date = null;

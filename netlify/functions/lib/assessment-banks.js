@@ -25,7 +25,7 @@ const INTERVIEW = [
     { id: 'criticism', type: 'scale', q: 'How do you take criticism in front of your teammates?', low: 'It gets to me', high: 'I want it', max: 5 },
     { id: 'correction', type: 'text', q: 'What is the last thing a coach corrected in your technique, and where are you with it now?' },
     { id: 'film_habits', type: 'single', q: 'How often do you watch film on your own, not as a team?',
-      options: ['Never', 'Once in a while', 'Weekly', 'Multiple times a week', 'Daily in season'] },
+      options: ['Rarely or never', 'Once in a while', 'Weekly', 'Several times a week in season'] },
     { id: 'film_what', type: 'text', q: 'When you watch your own film, what are you actually looking for?' }
   ]},
   { section: 'Adversity', items: [
@@ -36,7 +36,8 @@ const INTERVIEW = [
   ]},
   { section: 'Leadership', items: [
     { id: 'lead_style', type: 'single', q: 'How do you lead?',
-      options: ['By example, I am not loud', 'Vocal, I get on people', 'Both depending on who it is', 'I am not a leader yet and I know it'] },
+      options: ['By example, I am not loud', 'Vocal, I get on people when it is needed',
+                'Both, depends on the teammate', 'I am not a leader on this team yet and I know it'] },
     { id: 'lead_example', type: 'text', q: 'Give me one specific time you led when it cost you something.' },
     { id: 'teammate_say', type: 'text', q: 'What would the teammate who likes you least say about you?' }
   ]},
@@ -50,26 +51,35 @@ const INTERVIEW = [
     { id: 'gpa', type: 'short', q: 'Current GPA' },
     { id: 'core_gpa', type: 'short', q: 'Core-course GPA if you know it' },
     { id: 'test', type: 'short', q: 'ACT or SAT if you have taken it' },
-    { id: 'ncaa_id', type: 'single', q: 'Are you registered with the NCAA Eligibility Center?', options: ['Yes', 'No', 'Not sure'] },
+    { id: 'ncaa_id', type: 'single', q: 'Are you registered with the NCAA Eligibility Center?',
+      options: ['Yes, registered and my transcript is uploaded', 'Yes, registered', 'No, not yet', 'I do not know what that is'] },
     { id: 'major', type: 'text', q: 'What do you want to study, and what happens if football ends tomorrow?' }
   ]},
   { section: 'How you are wired', items: [
     { id: 'mb_ei', type: 'single', q: 'After a hard practice, what actually recharges you?',
-      options: ['Being around the guys, talking it out', 'Getting to myself for a while'], mb: 'EI' },
-    { id: 'mb_ei2', type: 'single', q: 'In a new locker room, you are usually',
-      options: ['One of the first guys talking to everybody', 'Quiet at first, I watch and then pick my spots'], mb: 'EI' },
-    { id: 'mb_sn', type: 'single', q: 'A coach installs a new scheme. What helps you more?',
-      options: ['Show me the details, rep by rep, exactly what my job is', 'Show me the big picture first, then I fill in my part'], mb: 'SN' },
-    { id: 'mb_sn2', type: 'single', q: 'When you study film you mostly notice',
-      options: ['What actually happened on the play, step by step', 'What it means for the game plan and what is coming next'], mb: 'SN' },
+      options: ['Being around the guys, talking it all out', 'Grabbing food with a couple teammates',
+                'Riding home by myself with music on', 'Getting in my room and shutting it down'], mb: 'EI' },
+    { id: 'mb_ei2', type: 'single', q: 'First week in a new locker room, you are',
+      options: ['Introducing myself to everybody day one', 'Loud once I get comfortable, which is quick',
+                'Watching first, then I pick my spots', 'Heads down, I let my play talk'], mb: 'EI' },
+    { id: 'mb_sn', type: 'single', q: 'A coach installs a new scheme. What helps you most?',
+      options: ['Walk me through my job rep by rep', 'Give me the checklist and let me drill it',
+                'Show me the concept, then I find my part', 'Tell me what we are trying to do to the defense'], mb: 'SN' },
+    { id: 'mb_sn2', type: 'single', q: 'When you watch film you mostly notice',
+      options: ['My technique on each individual rep', 'Exactly what happened, step by step',
+                'Patterns and tendencies over the whole game', 'What it means for what is coming next'], mb: 'SN' },
     { id: 'mb_tf', type: 'single', q: 'A teammate is not pulling his weight. You',
-      options: ['Tell him straight, the standard is the standard', 'Figure out what is going on with him first'], mb: 'TF' },
-    { id: 'mb_tf2', type: 'single', q: 'What gets more out of you from a coach?',
-      options: ['Hard, direct, no sugar on it', 'Someone who knows me and coaches me that way'], mb: 'TF' },
+      options: ['Call it out in front of everybody', 'Tell him straight one on one, the standard is the standard',
+                'Ask him what is going on first', 'Go through someone he trusts'], mb: 'TF' },
+    { id: 'mb_tf2', type: 'single', q: 'What gets the most out of you from a coach?',
+      options: ['Hard and direct, no sugar on it', 'Honest and consistent, tell me where I stand',
+                'Someone who knows me and coaches me that way', 'Someone who builds me up before he corrects me'], mb: 'TF' },
     { id: 'mb_jp', type: 'single', q: 'Game week, you are',
-      options: ['On a routine, same schedule, everything planned', 'Loose, I go with how the week feels'], mb: 'JP' },
+      options: ['On a strict routine, same everything', 'Planned out but I can adjust',
+                'Loose, I go with how the week feels', 'Different every week, I do not think about it'], mb: 'JP' },
     { id: 'mb_jp2', type: 'single', q: 'The play breaks down. You are at your best when',
-      options: ['I already know the answer because we repped it', 'It is off script and I can just play'], mb: 'JP' },
+      options: ['We repped it and I already know the answer', 'I trust the rules of the play and stay disciplined',
+                'I can feel it out and react', 'It is completely off script and I just play'], mb: 'JP' },
     { id: 'learn_style', type: 'single', q: 'You learn a new install fastest by',
       options: ['Seeing it drawn up', 'Hearing it explained', 'Walking through it on the field', 'Watching someone else rep it first'] },
     { id: 'pressure', type: 'text', q: 'Describe how you actually feel in the last two minutes of a one-score game. Not the answer you think we want.' }
@@ -86,7 +96,8 @@ const INTERVIEW = [
                 'Being close enough that my people can watch me play', 'A degree and what comes after ball'] },
     { id: 'nil_open', type: 'text', q: 'NIL is part of this now, so we ask everybody the same thing straight: how big a factor is money in your decision, and who is helping you think it through?' },
     { id: 'nil_tradeoff', type: 'single', q: 'Two schools want you. One offers real money and you sit two years. One offers less and you compete right away. Today, which way do you lean?',
-      options: ['Take the money, I will get my shot', 'Take the field, the money follows', 'Depends on the school and the coach', 'I honestly do not know yet'] },
+      options: ['Take the money, I will get my shot eventually', 'Take the field, the money follows the tape',
+                'Depends on the school and the position coach', 'I honestly do not know yet'] },
     { id: 'money_advice', type: 'text', q: 'What has your family told you about the money side of this?' },
     { id: 'after_ball', type: 'text', q: 'If football ended after college, what would you want to be doing at 30?' }
   ]},
@@ -95,7 +106,11 @@ const INTERVIEW = [
     { id: 'offers', type: 'text', q: 'Who has offered, and who is actually still talking to you every week?' },
     { id: 'priorities', type: 'text', q: 'What matters most to you in a school? Rank your top three and say why.' },
     { id: 'distance', type: 'single', q: 'How far from home are you willing to go?',
-      options: ['Anywhere', 'Same region', 'Within a few hours', 'Close to home only'] },
+      options: ['Anywhere in the country', 'Same region of the country', 'Within a few hours drive', 'Close enough to come home weekly'] },
+    { id: 'agent_has', type: 'single', q: 'Do you have an agent, an NIL rep, or an advisor working on your behalf?',
+      options: ['No, nobody', 'A family member handles it', 'Yes, a certified agent or NIL rep', 'Yes, a marketing or collective advisor'] },
+    { id: 'agent_who', type: 'short', q: 'If yes, who is it and what agency or group are they with?' },
+    { id: 'agent_role', type: 'text', q: 'What do they handle for you, and who has the final say on where you go?' },
     { id: 'anything_else', type: 'text', q: 'Anything about your game, your situation, or your story a coach should know that we did not ask?' }
   ]}
 ];
@@ -159,7 +174,10 @@ function mbtiType(answers) {
     if (!it.mb) return;
     const v = answers[it.id];
     if (v === undefined || v === null || v === '') return;
-    dims[it.mb][Number(v) === 0 ? 0 : 1]++;
+    const n = Number(v);
+    if (Number.isNaN(n)) return;
+    const half = Math.max(1, Math.floor((it.options || []).length / 2));
+    dims[it.mb][n < half ? 0 : 1]++;
   }));
   const letters = { EI: ['E', 'I'], SN: ['S', 'N'], TF: ['T', 'F'], JP: ['J', 'P'] };
   let type = '', detail = {};

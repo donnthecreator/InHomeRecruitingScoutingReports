@@ -73,8 +73,8 @@
   @media (max-width:700px){ .stat-row{grid-template-columns:repeat(2,1fr);} }
 
   /* ---------- TABS ---------- */
-  .tabs{display:flex; gap:7px; margin-top:20px; flex-wrap:wrap;}
-  .tab-btn{flex:1; min-width:120px; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
+  .tabs{display:flex; gap:7px; margin-top:20px; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;}
+  .tab-btn{flex:0 0 auto; min-width:104px; background:var(--card); border:1.5px solid var(--line); color:var(--mute);
     border-radius:11px; padding:12px 8px; cursor:pointer; text-align:center; font-family:'Anton',sans-serif;
     font-size:13px; letter-spacing:.03em; text-transform:uppercase;}
   .tab-btn .cnt{display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:9.5px;
@@ -300,6 +300,20 @@
   .vrow{display:flex; gap:8px; align-items:center; padding:6px 0; border-top:1px solid var(--line); font-size:12.5px;}
   .clip-card{border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; background:var(--card);}
   .clip-card iframe{width:100%; aspect-ratio:16/9; border:0; border-radius:8px; background:#000;}
+
+  /* ---------- SIDEBAR LAYOUT (desktop) ---------- */
+  @media (min-width: 960px){
+    .wrap{max-width:1280px;}
+    .layout{display:grid; grid-template-columns:200px minmax(0,1fr); gap:22px; align-items:start; margin-top:20px;}
+    .tabs{flex-direction:column; margin-top:0; overflow:visible; gap:4px; position:sticky; top:84px;}
+    .tab-btn{width:100%; min-width:0; text-align:left; padding:11px 14px; display:flex; justify-content:space-between; align-items:center; border-radius:10px; font-size:15px;}
+    .tab-btn .cnt{display:inline; margin:0; font-size:11px; opacity:.85;}
+    .tab-btn.on{border-color:var(--ink); background:var(--card-2); color:var(--ink);}
+    .tab-btn.on .cnt{color:var(--ink);}
+    .tab-btn:hover{border-color:var(--mute);}
+    .panes{min-width:0;}
+    .stat-row{margin-bottom:0;}
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -364,6 +378,7 @@
     <div class="stat-card"><div class="n" id="stWeek">&mdash;</div><div class="l">Filed This Week</div></div>
   </div>
 
+  <div class="layout">
   <div class="tabs">
     <button type="button" class="tab-btn on" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
@@ -377,6 +392,7 @@
     <button type="button" class="tab-btn" id="tbMap" onclick="switchTab('map')">Map<span class="cnt" id="cntMap">&mdash;</span></button>
   </div>
 
+  <div class="panes">
   <!-- ============ ASSIGN ============ -->
   <div class="pane on" id="paneAssign">
     <div class="panel">
@@ -560,6 +576,20 @@
     </div>
 
     <div class="panel">
+      <h3>Clip Checklist</h3>
+      <div class="sub">Every clip from the film guide, position by position. A clip checks off when you upload it and tag it to the item. The ten marked <b>start here</b> cover every position with a real assessment.</div>
+      <div class="tools" style="margin-top:10px;">
+        <select id="ckGroup" onchange="renderChecklist()">
+          <option value="">All positions</option><option value="ALL">Core (everyone)</option>
+          <option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>OL</option><option>DL</option><option>LB</option><option>DB</option>
+        </select>
+        <select id="ckShow" onchange="renderChecklist()"><option value="">Everything</option><option value="todo">Still to cut</option><option value="done">Done</option><option value="start10">Start-here ten</option></select>
+      </div>
+      <div id="ckStats" class="sub" style="margin-top:8px;"></div>
+      <div id="ckList" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="panel">
       <h3>Film Clips for the IQ Test</h3>
       <div class="sub">YouTube-hosted clips the athlete watches and diagnoses. Upload the clip to YouTube as <b>unlisted</b>, paste the link here, write the question and the options, and mark the right answer. Cut the clip before the outcome shows. Eight to twelve seconds is the sweet spot.</div>
       <label class="fl" style="margin-top:12px;">Who sees this clip? <span style="color:var(--warn);text-transform:none;letter-spacing:0;">(required)</span></label>
@@ -571,6 +601,8 @@
         <div><label class="fl">YouTube link or video id</label><input type="text" id="clYt" placeholder="https://youtu.be/..."></div>
         <div><label class="fl">Start at (seconds, optional)</label><input type="text" id="clStart" placeholder="0"></div>
       </div>
+      <label class="fl">Which checklist item is this? <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(optional, checks it off)</span></label>
+      <select id="clGuide"><option value="">Not on the checklist</option></select>
       <label class="fl">Question</label>
       <input type="text" id="clQ" placeholder="What coverage is this and what tells you?">
       <label class="fl">Options (one per line; leave blank to use the standard coverage list)</label>
@@ -680,6 +712,8 @@
       </div>
     </div>
   </div>
+  </div><!-- /panes -->
+  </div><!-- /layout -->
 
 </div>
 
@@ -2061,7 +2095,7 @@ function openPreview(kind){
   const pos = (document.getElementById('pvPos')||{}).value || '';
   window.open('assessment.html?preview=' + kind + (pos ? '&position=' + encodeURIComponent(pos) : ''), '_blank', 'noopener');
 }
-let ASSESS = null, CLIPS = null;
+let ASSESS = null, CLIPS = null, GUIDE = [];
 async function newAssessment(kind, prospectId, name, school){
   const k = kind || document.getElementById('asKind').value;
   const n = name || (document.getElementById('asName')||{}).value;
@@ -2158,7 +2192,8 @@ function viewAssessment(id){
 async function renderClips(){
   const el = document.getElementById('clipList');
   if(CLIPS === null){
-    try{ const d = await api('listClips', {}); CLIPS = d.clips || []; }catch(err){ el.innerHTML = esc(err.message); return; }
+    try{ const d = await api('listClips', {}); CLIPS = d.clips || []; GUIDE = d.guide || GUIDE; }catch(err){ el.innerHTML = esc(err.message); return; }
+    fillGuidePicker(); renderChecklist();
   }
   if(!CLIPS.length){ el.innerHTML = '<div class="empty"><div class="t">No clips yet</div><div class="s">Add one above. Clips show on every Football IQ assessment.</div></div>'; return; }
   el.innerHTML = CLIPS.map(c=>`<div class="clip-card">
@@ -2167,11 +2202,62 @@ async function renderClips(){
     <div class="rc-meta" style="margin-top:4px;">${(c.options||['(standard coverage list)']).map((o,i)=>`${i+1}. ${esc(o)}`).join(' \u00b7 ')}</div>
     <div class="rc-meta">Answer: ${c.answer_index!=null?(c.answer_index+1):'not scored'} \u00b7 <b style="color:var(--ink)">${esc(String(c.position_group||'ALL').replace('ALL','Everyone').replace(/,/g,', '))}</b> \u00b7 ${c.active?'active':'hidden'}</div>
     ${c.explanation?`<div class="rc-meta" style="margin-top:4px;color:#9AA0AA;">${esc(c.explanation)}</div>`:''}
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <span class="rc-meta" style="flex:0 0 auto;">Checklist item</span>
+      <select onchange="tagClip(${c.id}, this.value)" style="flex:1;padding:6px 8px;font-size:12px;${c.guide_id?'':'border-color:var(--warn);'}">
+        <option value="">${c.guide_id?'Untag':'Not tagged yet'}</option>
+        ${GUIDE.map(g=>`<option value="${esc(g.id)}" ${c.guide_id===g.id?'selected':''}>${esc(g.groups.join('/').replace('ALL','Core'))} \u00b7 ${esc(g.title)}</option>`).join('')}
+      </select>
+    </div>
     <div class="rc-actions">
       <button type="button" class="mini-btn" onclick="toggleClip(${c.id}, ${!c.active})">${c.active?'Hide':'Activate'}</button>
       <button type="button" class="mini-btn danger" onclick="deleteClip(${c.id})">Delete</button>
     </div>
   </div>`).join('');
+}
+function fillGuidePicker(){
+  const sel = document.getElementById('clGuide'); if(!sel || !GUIDE.length) return;
+  const keep = sel.value;
+  const done = new Set((CLIPS||[]).map(c=>c.guide_id).filter(Boolean));
+  sel.innerHTML = '<option value="">Not on the checklist</option>' + GUIDE.map(g => `<option value="${esc(g.id)}">${done.has(g.id)?'\u2713 ':''}${esc(g.groups.join('/').replace('ALL','Core'))} \u00b7 ${esc(g.title)}</option>`).join('');
+  if(keep) sel.value = keep;
+}
+function renderChecklist(){
+  const el = document.getElementById('ckList'), st = document.getElementById('ckStats'); if(!el || !GUIDE.length) return;
+  const g = document.getElementById('ckGroup').value, show = document.getElementById('ckShow').value;
+  const byGuide = {}; (CLIPS||[]).forEach(c => { if(c.guide_id) (byGuide[c.guide_id] = byGuide[c.guide_id] || []).push(c); });
+  let list = GUIDE.filter(x => !g || x.groups.includes(g));
+  if(show==='todo') list = list.filter(x=>!byGuide[x.id]);
+  if(show==='done') list = list.filter(x=>byGuide[x.id]);
+  if(show==='start10') list = list.filter(x=>x.start10);
+  const doneAll = GUIDE.filter(x=>byGuide[x.id]).length, doneTen = GUIDE.filter(x=>x.start10 && byGuide[x.id]).length;
+  const untagged = (CLIPS||[]).filter(c=>!c.guide_id).length;
+  st.innerHTML = `<b style="color:var(--ink)">${doneAll} of ${GUIDE.length}</b> on the checklist \u00b7 start-here ten: <b style="color:var(--ink)">${doneTen} of 10</b>` + (untagged ? ` \u00b7 <span style="color:var(--warn)">${untagged} uploaded clip${untagged===1?'':'s'} not tagged to an item yet (tag them below)</span>` : '');
+  let lastGroup = '';
+  el.innerHTML = list.map(x => {
+    const key = x.groups.join('/');
+    const head = key !== lastGroup ? `<div class="rc-meta" style="margin:10px 0 4px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; color:var(--dim)">${esc(key.replace('ALL','Core, everyone').replace('WR/TE','WR and TE'))}</div>` : '';
+    lastGroup = key;
+    const done = byGuide[x.id];
+    return head + `<div class="vrow" style="border-top-color:#1A1A1A;">
+      <span style="width:20px;height:20px;border-radius:5px;border:1.5px solid ${done?'#35C759':'#3A3A3A'};background:${done?'#35C759':'transparent'};color:#000;display:grid;place-items:center;font-weight:900;font-size:12px;flex:0 0 auto;">${done?'\u2713':''}</span>
+      <span style="flex:1;${done?'color:var(--mute);':''}">${esc(x.title)}${x.start10?' <span class="pill" style="font-size:9px;padding:2px 6px;margin-left:6px;border-color:var(--ink);color:var(--ink)">start here</span>':''}${done?` <span class="rc-meta">\u00b7 ${done.length} clip${done.length===1?'':'s'}</span>`:''}</span>
+      ${!done ? `<button type="button" class="mini-btn" onclick="prefillGuide('${esc(x.id)}')">Cut this one</button>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty"><div class="t">Nothing here</div></div>';
+}
+function prefillGuide(id){
+  const g = GUIDE.find(x=>x.id===id); if(!g) return;
+  document.querySelectorAll('#clGroups .chip').forEach(b=>b.classList.toggle('on', g.groups.includes(b.dataset.g)));
+  const sel = document.getElementById('clGuide'); if(sel) sel.value = id;
+  document.getElementById('clQ').value = '';
+  document.getElementById('clYt').focus();
+  document.getElementById('clYt').scrollIntoView({behavior:'smooth', block:'center'});
+  toast('Groups and checklist item set for: ' + g.title);
+}
+async function tagClip(id, guideId){
+  try{ await api('setClipGuide', { id, guideId }); const c = CLIPS.find(x=>x.id===id); if(c) c.guide_id = guideId || null; renderClips(); fillGuidePicker(); renderChecklist(); toast(guideId ? 'Checked off' : 'Untagged'); }
+  catch(err){ toast(err.message); }
 }
 async function saveClip(){
   const opts = (document.getElementById('clOpts').value||'').split('\n').map(x=>x.trim()).filter(Boolean);
@@ -2184,7 +2270,8 @@ async function saveClip(){
     answerIndex: ansRaw === '' ? null : (parseInt(ansRaw,10) - 1),
     explanation: document.getElementById('clWhy').value,
     positionGroup: [...document.querySelectorAll('#clGroups .chip.on')].map(b=>b.dataset.g).join(','),
-    sortOrder: document.getElementById('clOrder').value
+    sortOrder: document.getElementById('clOrder').value,
+    guideId: (document.getElementById('clGuide')||{}).value || null
   };
   if(!body.positionGroup){ toast('Pick who sees this clip first'); document.getElementById('clGroups').scrollIntoView({behavior:'smooth', block:'center'}); return; }
   try{
@@ -2192,13 +2279,14 @@ async function saveClip(){
     CLIPS = null; renderClips();
     ['clYt','clStart','clQ','clOpts','clAns','clWhy','clOrder'].forEach(id=>document.getElementById(id).value='');
     document.querySelectorAll('#clGroups .chip').forEach(b=>b.classList.remove('on'));
+    const gs = document.getElementById('clGuide'); if(gs) gs.value = '';
     toast('Clip added');
   }catch(err){ toast(err.message); }
 }
 async function toggleClip(id, active){
   const c = CLIPS.find(x=>x.id===id); if(!c) return;
   try{ await api('saveClip', { id, youtubeId:c.youtube_id, question:c.question, options:c.options, answerIndex:c.answer_index,
-        explanation:c.explanation, positionGroup:c.position_group, start:c.start_seconds, sortOrder:c.sort_order, active });
+        explanation:c.explanation, positionGroup:c.position_group, start:c.start_seconds, sortOrder:c.sort_order, active, guideId:c.guide_id });
     CLIPS = null; renderClips(); }catch(err){ toast(err.message); }
 }
 async function deleteClip(id){

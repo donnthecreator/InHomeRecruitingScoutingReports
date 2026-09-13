@@ -545,8 +545,17 @@ exports.handler = async (event) => {
 
       /* ---------------- IQ FILM CLIPS ---------------- */
       case 'listClips': {
-        try { return ok({ clips: await sql`SELECT * FROM iq_clips ORDER BY sort_order, id` }); }
-        catch (e) { if (/does not exist/i.test(e.message)) return ok({ clips: [] }); throw e; }
+        try {
+          await sql`ALTER TABLE iq_clips ADD COLUMN IF NOT EXISTS guide_id TEXT`;
+          return ok({ clips: await sql`SELECT * FROM iq_clips ORDER BY sort_order, id`, guide: require('./lib/clip-guide').GUIDE });
+        } catch (e) { if (/does not exist/i.test(e.message)) return ok({ clips: [], guide: require('./lib/clip-guide').GUIDE }); throw e; }
+      }
+      case 'setClipGuide': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        await sql`ALTER TABLE iq_clips ADD COLUMN IF NOT EXISTS guide_id TEXT`;
+        const gid = body.guideId ? String(body.guideId).slice(0, 60) : null;
+        await sql`UPDATE iq_clips SET guide_id = ${gid} WHERE id = ${id}`;
+        return ok({ id, guideId: gid });
       }
       case 'saveClip': {
         await sql`CREATE TABLE IF NOT EXISTS iq_clips (
@@ -560,17 +569,20 @@ exports.handler = async (event) => {
         const q = String(body.question || '').trim(); if (!q) return fail(400, 'question required');
         const options = Array.isArray(body.options) && body.options.length ? body.options.map(x => String(x).slice(0, 80)).slice(0, 8) : null;
         const ai = body.answerIndex === '' || body.answerIndex === null || body.answerIndex === undefined ? null : parseInt(body.answerIndex, 10);
+        await sql`ALTER TABLE iq_clips ADD COLUMN IF NOT EXISTS guide_id TEXT`;
+        const gid = body.guideId ? String(body.guideId).slice(0, 60) : null;
         const id = body.id ? parseInt(body.id, 10) : null;
         if (id) {
           const rows = await sql`UPDATE iq_clips SET youtube_id=${ytid}, question=${q}, options=${options ? JSON.stringify(options) : null},
             answer_index=${ai}, explanation=${body.explanation || null}, position_group=${body.positionGroup || 'ALL'},
-            start_seconds=${parseInt(body.start, 10) || 0}, active=${body.active !== false}, sort_order=${parseInt(body.sortOrder, 10) || 0}
+            start_seconds=${parseInt(body.start, 10) || 0}, active=${body.active !== false}, sort_order=${parseInt(body.sortOrder, 10) || 0},
+            guide_id=COALESCE(${gid}, guide_id)
             WHERE id=${id} RETURNING *`;
           return ok({ clip: rows[0] });
         }
-        const rows = await sql`INSERT INTO iq_clips (youtube_id, question, options, answer_index, explanation, position_group, start_seconds, active, sort_order)
+        const rows = await sql`INSERT INTO iq_clips (youtube_id, question, options, answer_index, explanation, position_group, start_seconds, active, sort_order, guide_id)
           VALUES (${ytid}, ${q}, ${options ? JSON.stringify(options) : null}, ${ai}, ${body.explanation || null}, ${body.positionGroup || 'ALL'},
-                  ${parseInt(body.start, 10) || 0}, ${body.active !== false}, ${parseInt(body.sortOrder, 10) || 0}) RETURNING *`;
+                  ${parseInt(body.start, 10) || 0}, ${body.active !== false}, ${parseInt(body.sortOrder, 10) || 0}, ${gid}) RETURNING *`;
         return ok({ clip: rows[0] });
       }
       case 'deleteClip': {

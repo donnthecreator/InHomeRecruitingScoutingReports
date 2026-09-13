@@ -1687,7 +1687,10 @@ const RECRUIT_SITES = [
   { id:'on3',      name:'On3',      url:n => profileSearch('on3.com/db/', n) },
   { id:'rivals',   name:'Rivals',   url:n => profileSearch('on3.com/rivals/', n) },
   { id:'maxpreps', name:'MaxPreps', url:n => profileSearch('maxpreps.com/athlete/', n) },
-  { id:'hudl',     name:'Hudl',     url:n => profileSearch('hudl.com/profile/', n) }
+  { id:'hudl',     name:'Hudl',     url:n => profileSearch('hudl.com/profile/', n) },
+  /* X: search the name site-wide, newest first. Recruits get found by
+     what they post and who tags them, not by a profile path. */
+  { id:'x',        name:'X',        url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
 function railHTML(name){
   if(!name) return '';

@@ -797,6 +797,7 @@ function demoScouts(){
      On3        on3.com/db/<name-id>   (Rivals merged into On3 in 2025;
                 Rivals-branded profiles live at on3.com/rivals/<name-id>)
      MaxPreps   maxpreps.com/<state>/<city>/<school>/athletes/<name>
+     X          site-wide search on the player's name, newest first
    These are search links, not scrapes: nothing is pulled into this page.
    If a site changes its profile path, edit the path here. */
 const profileSearch = (path, n) =>
@@ -805,7 +806,10 @@ const RECRUIT_SITES = [
   { id:'247',      name:'247Sports', url:n => profileSearch('247sports.com/player/', n) },
   { id:'on3',      name:'On3',       url:n => profileSearch('on3.com/db/', n) },
   { id:'rivals',   name:'Rivals',    url:n => profileSearch('on3.com/rivals/', n) },
-  { id:'maxpreps', name:'MaxPreps',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') }
+  { id:'maxpreps', name:'MaxPreps',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') },
+  /* X search, not a profile-path lookup: recruits are found by what they
+     post and who tags them, so search the whole site for the name. */
+  { id:'x',        name:'X',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
 
 let TOKEN = null;

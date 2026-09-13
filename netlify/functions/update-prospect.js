@@ -16,6 +16,7 @@
 
    ENV: DATABASE_URL
 ===================================================================== */
+const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL);
 
@@ -26,6 +27,16 @@ const fail = (code, msg) => ({ statusCode: code, headers: JSON_HEADERS, body: JS
 const STATUSES = ['uncommitted', 'verbal', 'committed', 'signed', 'decommitted'];
 const SOURCES  = ['social', 'hs_coach', 'athlete', 'parent', 'scout_inference', 'media'];
 
+function verifyAdmin(event) {
+  const secret = process.env.ADMIN_SECRET; if (!secret) return false;
+  const header = (event.headers || {}).authorization || (event.headers || {}).Authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  const [exp, sig] = token.split('.');
+  if (!exp || !sig || !Number(exp) || Date.now() > Number(exp)) return false;
+  const expected = crypto.createHmac('sha256', secret).update(exp).digest('hex');
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 async function resolveScout(accessCode) {
   if (!accessCode || !String(accessCode).trim()) return null;
   const rows = await sql`
@@ -72,7 +83,8 @@ exports.handler = async (event) => {
   const prospectId = parseInt(payload.prospectId, 10);
   if (!prospectId) return fail(400, 'prospectId required');
 
-  const scout = await resolveScout(payload.accessCode);
+  let scout = await resolveScout(payload.accessCode);
+  if (!scout && verifyAdmin(event)) scout = { scout_id: 'admin', name: 'InHome (admin)' };
   if (!scout) return fail(401, 'Invalid access code');
 
   try {

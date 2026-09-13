@@ -44,6 +44,17 @@ exports.handler = async (event) => {
       assessments = rows.map(a => ({ kind: a.kind, pct: a.score_pct != null ? Number(a.score_pct) : null, completed: a.completed,
         diagnosis: a.score_detail ? a.score_detail.diagnosis || null : null, mbti: a.score_detail && a.score_detail.mbti ? a.score_detail.mbti.type : null }));
     } catch (e) {}
+    let offers = [], notes = [];
+    try {
+      offers = (await sql`SELECT o.id, o.school_key, o.school_other, to_char(o.offer_date,'YYYY-MM-DD') AS offer_date, o.status, o.note, prog.short_name AS school_name
+                          FROM prospect_offers o LEFT JOIN programs prog ON prog.school_key = o.school_key WHERE o.prospect_id = ${p.id} ORDER BY o.offer_date DESC NULLS LAST`)
+        .map(o => ({ id: o.id, school: o.school_name || o.school_other || o.school_key, status: o.status, date: o.offer_date, note: o.note }));
+    } catch (e) {}
+    try {
+      notes = (await sql`SELECT id, kind, body, author, to_char(note_date,'YYYY-MM-DD') AS note_date, to_char(created_at,'YYYY-MM-DD') AS created_day
+                         FROM prospect_notes WHERE prospect_id = ${p.id} AND visible_to_coaches = true ORDER BY created_at DESC`)
+        .map(n => ({ id: n.id, kind: n.kind, body: n.body, author: n.author, date: n.note_date || n.created_day }));
+    } catch (e) {}
     let boards = [];
     try { boards = (await sql`SELECT upper(program_code) AS code FROM program_prospects WHERE prospect_id = ${p.id}`).map(r => r.code); } catch (e) {}
 
@@ -54,7 +65,8 @@ exports.handler = async (event) => {
       headshotUrl: p.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}` : null,
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,
       logoUrl: logos[schoolKey(p.school)] || null,
-      boards,
+      boards, offers, notes,
+      commitment: p.commit_status ? { status: p.commit_status, to: p.committed_to || p.committed_to_other || null, date: p.commit_date || null } : null,
       reports: reports.map(r => ({ id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, score: r.inhome_score != null ? Number(r.inhome_score) : null,
         tier: r.recommendation_tier, archetype: r.archetype, position: r.position, date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative })),
       games: games.map(g => ({ date: g.date, statLine: g.stat_line, grade: g.grade != null ? Number(g.grade) : null, link: g.source_link })),

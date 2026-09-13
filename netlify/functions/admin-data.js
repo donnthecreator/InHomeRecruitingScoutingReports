@@ -619,6 +619,30 @@ exports.handler = async (event) => {
         return ok({ request: rows[0] || null });
       }
 
+      /* ---------------- PROSPECT NOTES: interviews, background, anything on file before a scout starts ---------------- */
+      case 'listNotes': {
+        const pid = parseInt(body.prospectId, 10); if (!pid) return fail(400, 'prospectId required');
+        await sql`CREATE TABLE IF NOT EXISTS prospect_notes (id SERIAL PRIMARY KEY, prospect_id INTEGER NOT NULL, kind TEXT NOT NULL DEFAULT 'note', body TEXT NOT NULL,
+                  author TEXT, note_date DATE, visible_to_coaches BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+        const rows = await sql`SELECT id, kind, body, author, to_char(note_date,'YYYY-MM-DD') AS note_date, visible_to_coaches, to_char(created_at,'YYYY-MM-DD') AS created_day FROM prospect_notes WHERE prospect_id = ${pid} ORDER BY created_at DESC`;
+        return ok({ notes: rows });
+      }
+      case 'addNote': {
+        const pid = parseInt(body.prospectId, 10); if (!pid) return fail(400, 'prospectId required');
+        const text = String(body.body || '').trim().slice(0, 6000); if (text.length < 3) return fail(400, 'note is empty');
+        const kind = ['interview', 'background', 'offers', 'note'].includes(body.kind) ? body.kind : 'note';
+        await sql`CREATE TABLE IF NOT EXISTS prospect_notes (id SERIAL PRIMARY KEY, prospect_id INTEGER NOT NULL, kind TEXT NOT NULL DEFAULT 'note', body TEXT NOT NULL,
+                  author TEXT, note_date DATE, visible_to_coaches BOOLEAN NOT NULL DEFAULT true, created_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+        const rows = await sql`INSERT INTO prospect_notes (prospect_id, kind, body, author, note_date, visible_to_coaches)
+          VALUES (${pid}, ${kind}, ${text}, ${body.author ? String(body.author).slice(0, 80) : 'InHome'}, ${body.date || null}, ${body.visibleToCoaches !== false}) RETURNING id`;
+        return ok({ id: rows[0].id });
+      }
+      case 'deleteNote': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        await sql`DELETE FROM prospect_notes WHERE id = ${id}`;
+        return ok({ deleted: id });
+      }
+
       /* ---------------- MAP ---------------- */
       case 'listMapPins': {
         const { pins } = require('./lib/mappins');

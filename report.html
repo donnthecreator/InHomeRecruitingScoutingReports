@@ -777,6 +777,11 @@
   </div>
 
 
+<div id="onFilePanel" style="display:none; margin:14px 0; padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--card);">
+  <div class="ca-title">Already on file</div>
+  <div class="ca-note">Filled in by InHome before you started. Offers, commitment, verified measurables, and any interview or background notes. Build on it; you do not have to repeat it.</div>
+  <div id="onFileBody" style="font-size:13px; line-height:1.55;"></div>
+</div>
 <div id="caPanel">
   <div class="ca-title">Recruitment Status</div>
   <div class="ca-note">Optional, but gold if you have it. Where does his recruitment stand right now? Saves with the report, rides with the player everywhere, and coaches see who reported it and how you know. Skip it if you don't know, never guess.</div>
@@ -935,6 +940,7 @@
 
 <div class="footer-bar">
   <div class="fb-status" id="fbStatus">Fill out all sections to submit</div>
+  <button class="pdf-btn" id="draftBtn" onclick="saveDraft(false)">Save draft</button>
   <button class="pdf-btn" id="pdfBtn" onclick="sendPDF()">Save & Send PDF</button>
   <button class="submit-btn" id="submitBtn" onclick="submitReport()">Submit Report</button>
 </div>
@@ -1627,11 +1633,7 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-async function submitReport(){
-  const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = 'Submitting...';
-
+function collectPayload(){
   const payload = {
     reportId: state.editingReportId || null,
     prospect: gv('fProspect'),
@@ -1683,6 +1685,15 @@ async function submitReport(){
         : []
     }
   };
+  return payload;
+}
+
+async function submitReport(){
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const payload = collectPayload();
 
   try{
     const res = await fetch('/.netlify/functions/submit-report', {
@@ -1700,6 +1711,7 @@ async function submitReport(){
          is safely saved. If either fails, the report is already in
          the database. */
       state.savedReportId = data.reportId;
+      state.submitted = true; DRAFT_DIRTY = false; deleteDraftAfterSubmit();
       uploadFrames(data.reportId);
       uploadHeadshot(data.reportId);
       if(typeof initCommitAfter === 'function') initCommitAfter(data.prospectId);
@@ -2486,6 +2498,85 @@ function collectPrompts(){
 renderPrompts();
 prefillFromURL();
 loadReportForEdit();
+loadDraftFromURL();
+loadOnFile();
+
+/* What InHome already knows about this player: prefill blank fields and
+   show offers, commitment, verified measurables, and interview notes. */
+async function loadOnFile(){
+  const name = gv('fProspect'), school = gv('fSchool');
+  if(!name) return;
+  try{
+    const res = await fetch('/.netlify/functions/player?name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(school||''), { cache:'no-store' });
+    if(!res.ok) return;
+    const p = await res.json();
+    /* prefill only what is blank */
+    const fill = (id, v) => { const el = document.getElementById(id); if(el && !el.value && v) el.value = v; };
+    fill('fHeight', p.height); fill('fWeight', p.weight); fill('fFilm', p.filmLink); fill('fHomeCity', p.homeCity); fill('fHomeState', p.homeState); fill('fClass', p.classYear);
+    const v = p.verifications || {};
+    const chk = (f) => v[f] ? ` <span title="Verified by InHome${v[f].source?' \u00b7 '+esc(v[f].source):''}" style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#1D9BF0;color:#fff;font-size:8px;font-weight:900;vertical-align:1px;">\u2713</span>` : '';
+    const bits = [];
+    if((p.offers||[]).length) bits.push(`<div><b>Offers (${p.offers.length}):</b> ${p.offers.map(o=>esc(o.school)+(o.date?' <span style="color:var(--dim)">'+esc(o.date)+'</span>':'')).join(', ')}</div>`);
+    if(p.commitment) bits.push(`<div><b>Commitment:</b> ${esc(p.commitment.status)}${p.commitment.to?' to '+esc(p.commitment.to):''}</div>`);
+    const meas = [['Height',p.height,'height'],['Weight',p.weight,'weight'],['Wingspan',p.wingspan,'wingspan'],['Track',v.track&&v.track.value,'track'],['40',v.forty&&v.forty.value,'forty'],['GPA',v.gpa&&v.gpa.value,'gpa']].filter(x=>x[1]);
+    if(meas.length) bits.push(`<div><b>Measurables:</b> ${meas.map(x=>x[0]+' '+esc(x[1])+chk(x[2])).join(' \u00b7 ')}</div>`);
+    (p.notes||[]).forEach(n => bits.push(`<div style="margin-top:8px;padding:8px 10px;border-left:2px solid var(--ink);"><div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700;">InHome ${esc(n.kind)}${n.author?' \u00b7 '+esc(n.author):''}${n.date?' \u00b7 '+esc(n.date):''}</div><div style="white-space:pre-wrap;color:#D6D6D6;">${esc(n.body)}</div></div>`));
+    if((p.reports||[]).length) bits.push(`<div style="margin-top:6px;color:var(--mute);">${p.reports.length} InHome report${p.reports.length===1?'':'s'} already filed on him${p.reports[0].scoutName?' (latest by '+esc(p.reports[0].scoutName)+')':''}. Yours adds to the consensus.</div>`);
+    if(!bits.length) return;
+    document.getElementById('onFileBody').innerHTML = bits.join('');
+    document.getElementById('onFilePanel').style.display = '';
+  }catch(e){}
+}
+document.getElementById('fProspect').addEventListener('change', loadOnFile);
+
+/* =====================================================================
+   DRAFTS: save where you are, come back later. Autosaves every 30s once
+   there is a name on the form, plus the Save draft button. Submitting
+   the finished report deletes the draft.
+===================================================================== */
+let DRAFT_ID = parseInt(new URLSearchParams(window.location.search).get('draft'), 10) || null;
+let DRAFT_DIRTY = false, DRAFT_SAVING = false;
+function draftCode(){ return (typeof SCOUT_CODE === 'string' && SCOUT_CODE) || (typeof accessCode === 'function' ? accessCode() : '') || localStorage.getItem('inhome_scout_code') || ''; }
+async function saveDraft(quiet){
+  if(DRAFT_SAVING) return;
+  const code = draftCode(); if(!code) return;
+  let payload; try{ payload = collectPayload(); }catch(e){ return; }
+  if(!payload.prospect){ if(!quiet) showToast('Add the player\'s name first'); return; }
+  DRAFT_SAVING = true;
+  const btn = document.getElementById('draftBtn'); if(btn && !quiet){ btn.textContent = 'Saving...'; }
+  try{
+    const res = await fetch('/.netlify/functions/report-draft', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accessCode: code, action:'save', id: DRAFT_ID, payload }) });
+    const d = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(d.error || ('HTTP ' + res.status));
+    DRAFT_ID = d.id; DRAFT_DIRTY = false;
+    if(btn) btn.textContent = 'Saved \u2713 ' + (d.progress!=null ? d.progress + '%' : '');
+    if(!quiet) showToast('Draft saved. Pick it up from your dashboard any time.');
+    setTimeout(()=>{ if(btn) btn.textContent = 'Save draft'; }, 2500);
+  }catch(err){ if(btn) btn.textContent = 'Save draft'; if(!quiet) showToast('Draft not saved: ' + err.message); }
+  DRAFT_SAVING = false;
+}
+async function loadDraftFromURL(){
+  if(!DRAFT_ID) return;
+  const code = draftCode(); if(!code) return;
+  try{
+    const res = await fetch('/.netlify/functions/report-draft?accessCode=' + encodeURIComponent(code) + '&id=' + DRAFT_ID);
+    const d = await res.json(); if(!res.ok) throw new Error(d.error || 'Draft not found');
+    const p = d.draft.payload || {};
+    hydrateFromReport(Object.assign({ id: p.reportId || null }, p));
+    if(p.reportId) state.editingReportId = p.reportId;
+    showToast('Draft loaded. Finish it and submit when it is ready.');
+  }catch(err){ showToast('Could not load that draft: ' + err.message); }
+}
+document.addEventListener('input', ()=>{ DRAFT_DIRTY = true; });
+document.addEventListener('click', (e)=>{ if(e.target && e.target.closest && e.target.closest('button')) DRAFT_DIRTY = true; });
+setInterval(()=>{ if(DRAFT_DIRTY && !state.submitted) saveDraft(true); }, 30000);
+window.addEventListener('beforeunload', (e)=>{ if(DRAFT_DIRTY && (gv('fProspect')||'') && !state.submitted){ e.preventDefault(); e.returnValue=''; } });
+async function deleteDraftAfterSubmit(){
+  if(!DRAFT_ID) return; const code = draftCode(); if(!code) return;
+  try{ await fetch('/.netlify/functions/report-draft', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ accessCode: code, action:'delete', id: DRAFT_ID }) }); }catch(e){}
+  DRAFT_ID = null; DRAFT_DIRTY = false;
+}
 
 /* =====================================================================
    EDIT MODE
@@ -2511,11 +2602,19 @@ async function loadReportForEdit(){
     return;
   }
 
-  /* Position drives which traits exist, so it must load first. */
+  state.editingReportId = r.id;
+  hydrateFromReport(r);
+  document.getElementById('submitBtn').textContent = 'Update Report';
+  document.title = 'InHome | Edit Report #' + r.id;
+  showToast('Editing report #' + r.id);
+}
+
+/* Fill every field from a report-shaped object (a filed report or a
+   saved draft). Same setters the scout would click, so state and the
+   UI stay in sync and the score recomputes. */
+function hydrateFromReport(r){
   const pos = (r.position || '').toUpperCase();
   if(pos && POSITIONS[pos] && pos !== state.position) loadPosition(pos);
-
-  state.editingReportId = r.id;
 
   setVal('fProspect', r.prospect);
   setVal('fSchool', r.school);
@@ -2599,9 +2698,6 @@ async function loadReportForEdit(){
 
   computeScores();
   updateStatus();
-  document.getElementById('submitBtn').textContent = 'Update Report';
-  document.title = 'InHome | Edit Report #' + r.id;
-  showToast('Editing report #' + r.id);
 }
 
 /* Pre-fills the prospect name / school / class year when arriving from

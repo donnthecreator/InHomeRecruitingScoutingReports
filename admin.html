@@ -2475,6 +2475,7 @@ async function openProfile(id){
 function closeProfile(){ document.getElementById('ppOverlay').classList.remove('on'); PP = null; }
 function renderProfile(){
   const p = PP; const card = document.getElementById('ppCard');
+  setTimeout(ppLoadOffersNotes, 0);
   const photo = p.headshot_key ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}" alt="">` : initials(p.name);
   const perf = performances.filter(x => nkey(x.name)===nkey(p.name)).sort((a,b)=>dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date)));
   const graded = perf.filter(e=>e.grade!=null && e.grade!=='').map(e=>Number(e.grade));
@@ -2520,6 +2521,27 @@ function renderProfile(){
         </div>`;
       }).join('')}
     </div>
+    <div style="margin-top:14px;">
+      <div class="rc-meta" style="margin-bottom:4px;">Offers on file <span style="color:var(--dim)">— what the scout sees before he starts</span></div>
+      <div id="ppOffers" class="rc-meta">Loading...</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <input type="text" id="ppOfferSchool" placeholder="School (type to search)" list="ppProgList" style="flex:2;min-width:160px;">
+        <datalist id="ppProgList"></datalist>
+        <input type="date" id="ppOfferDate" style="flex:1;min-width:130px;">
+        <button type="button" class="mini-btn go" onclick="ppAddOffer()">Add offer</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;">
+      <div class="rc-meta" style="margin-bottom:4px;">Interview and background notes <span style="color:var(--dim)">— shows to the scout on the form and to coaches on the profile</span></div>
+      <div id="ppNotes" class="rc-meta">Loading...</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <select id="ppNoteKind" style="flex:0 0 auto;width:auto;"><option value="interview">Interview</option><option value="background">Background</option><option value="offers">Recruiting note</option><option value="note">General</option></select>
+        <input type="date" id="ppNoteDate" style="flex:0 0 auto;width:auto;">
+        <label class="rc-meta" style="display:flex;align-items:center;gap:4px;"><input type="checkbox" id="ppNoteVisible" checked style="width:auto;"> coaches can see</label>
+      </div>
+      <textarea id="ppNoteBody" placeholder="Interview notes, who you spoke to, what you learned. Write it the way a coach would want to read it." style="margin-top:6px;min-height:80px;"></textarea>
+      <button type="button" class="mini-btn go" style="margin-top:6px;" onclick="ppAddNote()">Save note</button>
+    </div>
     <div class="rc-actions" style="margin-top:14px;">
       <button type="button" class="mini-btn go" onclick="newAssessment('full', ${p.id})">Send full assessment</button>
       <button type="button" class="mini-btn" onclick="newAssessment('interview', ${p.id})">Interview only</button>
@@ -2564,6 +2586,59 @@ async function setVerify(field, remove){
     PP.verifications = d.verifications; renderProfile(); toast('Verified');
   }catch(err){ toast(err.message); }
 }
+/* offers + notes inside the profile */
+let CA_PROGRAMS_ADMIN = null;
+async function ppLoadPrograms(){
+  if(CA_PROGRAMS_ADMIN) return CA_PROGRAMS_ADMIN;
+  try{ const r = await fetch('/.netlify/functions/list-programs'); const d = await r.json(); CA_PROGRAMS_ADMIN = Array.isArray(d) ? d : (d.programs||[]); }catch(e){ CA_PROGRAMS_ADMIN = []; }
+  const dl = document.getElementById('ppProgList'); if(dl) dl.innerHTML = CA_PROGRAMS_ADMIN.map(x=>`<option value="${esc(x.short_name||x.name||x.school_key)}">`).join('');
+  return CA_PROGRAMS_ADMIN;
+}
+async function ppLoadOffersNotes(){
+  if(!PP) return;
+  ppLoadPrograms();
+  try{
+    const r = await fetch('/.netlify/functions/player?id=' + PP.id, {cache:'no-store'}); const d = await r.json();
+    const el = document.getElementById('ppOffers');
+    if(el) el.innerHTML = (d.offers||[]).length ? d.offers.map(o=>`<div class="vrow"><span style="flex:1;">${esc(o.school)}${o.status && o.status!=='open' ? ` <span class="pill">${esc(o.status)}</span>` : ''}${o.date?` <span class="rc-meta">\u00b7 ${esc(o.date)}</span>`:''}</span><button type="button" class="mini-btn danger" onclick="ppRemoveOffer(${o.id})">\u2715</button></div>`).join('')
+      + (d.commitment ? `<div class="rc-meta" style="margin-top:4px;">Commitment: <b style="color:var(--ink)">${esc(d.commitment.status)}${d.commitment.to?' \u00b7 '+esc(d.commitment.to):''}</b></div>` : '') : 'No offers on file.';
+  }catch(e){}
+  try{
+    const d = await api('listNotes', { prospectId: PP.id });
+    const el = document.getElementById('ppNotes');
+    if(el) el.innerHTML = (d.notes||[]).length ? d.notes.map(n=>`<div style="padding:8px 0;border-top:1px solid var(--line);"><div class="rc-meta"><b style="color:var(--ink);text-transform:capitalize;">${esc(n.kind)}</b> \u00b7 ${esc(n.author||'')}${n.note_date?' \u00b7 '+esc(n.note_date):''}${n.visible_to_coaches?'':' \u00b7 <span style="color:var(--warn)">internal only</span>'} <a href="#" onclick="ppDeleteNote(${n.id}); return false;" style="color:var(--dim);margin-left:6px;">delete</a></div><div style="font-size:13px;color:#D6D6D6;line-height:1.55;white-space:pre-wrap;margin-top:3px;">${esc(n.body)}</div></div>`).join('') : 'No notes yet.';
+  }catch(e){}
+}
+async function ppAddOffer(){
+  if(!PP) return;
+  const name = (document.getElementById('ppOfferSchool').value||'').trim(); if(!name){ toast('Type the school'); return; }
+  const progs = await ppLoadPrograms();
+  const match = progs.find(x => [x.short_name, x.name, x.school_key].filter(Boolean).some(v => String(v).toLowerCase() === name.toLowerCase()));
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ action:'addOffer', prospectId: PP.id, schoolKey: match ? match.school_key : null, schoolOther: match ? null : name, offerDate: document.getElementById('ppOfferDate').value || null }) });
+    const d = await res.json().catch(()=>({})); if(!res.ok) throw new Error(d.error||('HTTP '+res.status));
+    document.getElementById('ppOfferSchool').value=''; toast('Offer added'); ppLoadOffersNotes();
+  }catch(err){ toast(err.message); }
+}
+async function ppRemoveOffer(offerId){
+  if(!PP || !confirm('Remove this offer?')) return;
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ action:'removeOffer', prospectId: PP.id, offerId }) });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    ppLoadOffersNotes();
+  }catch(err){ toast(err.message); }
+}
+async function ppAddNote(){
+  if(!PP) return;
+  const body = (document.getElementById('ppNoteBody').value||'').trim(); if(body.length < 3){ toast('Write the note first'); return; }
+  try{
+    await api('addNote', { prospectId: PP.id, kind: document.getElementById('ppNoteKind').value, body, date: document.getElementById('ppNoteDate').value || null, visibleToCoaches: document.getElementById('ppNoteVisible').checked, author: 'InHome' });
+    document.getElementById('ppNoteBody').value=''; toast('Note saved'); ppLoadOffersNotes();
+  }catch(err){ toast(err.message); }
+}
+async function ppDeleteNote(id){ if(!confirm('Delete this note?')) return; try{ await api('deleteNote', { id }); ppLoadOffersNotes(); }catch(err){ toast(err.message); } }
 function ppPhoto(){ const i = document.getElementById('ppFile'); if(i) i.click(); }
 async function ppUpload(file){
   if(!file || !PP) return;

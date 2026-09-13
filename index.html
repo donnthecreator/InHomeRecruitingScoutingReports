@@ -647,6 +647,7 @@
   </div>
 
   <div class="tab-pane" id="paneReports">
+    <div id="draftsBox"></div>
     <div class="tools">
       <input type="text" id="reportSearch" placeholder="Search your reports..." oninput="renderReports()">
     </div>
@@ -967,6 +968,29 @@ async function uploadScoutPhoto(file, kind){
     applyScout();
     if(typeof showToast === 'function') showToast(kind==='scoutcover' ? 'Cover saved. You will see it next time you log in.' : 'Photo saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+/* ---------------- DRAFTS: reports started but not submitted ---------------- */
+async function loadDrafts(){
+  const el = document.getElementById('draftsBox'); if(!el || !SCOUT_CODE) return;
+  try{
+    const r = await fetch('/.netlify/functions/report-draft?accessCode=' + encodeURIComponent(SCOUT_CODE), {cache:'no-store'});
+    const d = await r.json(); const list = d.drafts || [];
+    if(!list.length){ el.innerHTML = ''; return; }
+    el.innerHTML = `<div class="panel" style="margin-bottom:12px;border-color:var(--warn);">
+      <h3 style="margin:0 0 6px;">In progress (${list.length})</h3>
+      <div class="sub" style="margin-bottom:8px;">Reports you started. Pick up where you left off; nothing posts until you submit.</div>
+      ${list.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);">
+        <div style="flex:1;min-width:0;"><b>${esc(x.prospect||'Unnamed')}</b> <span class="sub" style="display:inline;margin:0;">${esc(x.position||'')}${x.school?' \u00b7 '+esc(x.school):''}${x.classYear?' \u00b7 '+esc(x.classYear):''}</span><div class="sub" style="margin:2px 0 0;font-size:11px;">${x.progress||0}% complete \u00b7 saved ${esc(x.updated||'')}</div></div>
+        <a class="new-report-btn" style="width:auto;margin:0;padding:9px 12px;font-size:12px;" href="report.html?draft=${x.id}${x.position?'&position='+encodeURIComponent(x.position):''}">Resume</a>
+        <button type="button" class="board-move" title="Discard draft" onclick="discardDraft(${x.id})">\u2715</button>
+      </div>`).join('')}
+    </div>`;
+  }catch(e){ el.innerHTML = ''; }
+}
+async function discardDraft(id){
+  if(!confirm('Discard this draft? The report is not filed and this cannot be undone.')) return;
+  try{ await fetch('/.netlify/functions/report-draft', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ accessCode: SCOUT_CODE, action:'delete', id }) }); loadDrafts(); }catch(e){}
 }
 
 /* ---------------- JUCO TRACKER: identical to the coach portal and admin market ---------------- */
@@ -1332,6 +1356,7 @@ async function loadData(){
   buildPosChips();
   renderReports();
   renderTargets();
+  loadDrafts();
   if(activeTab === 'market') renderMarket();
   initBoard();
 }

@@ -87,6 +87,41 @@ const DEF = {
   ]
 };
 
+/* Motion scenarios: `motion` is where named defenders end up after the
+   snap. The page shows the pre-snap look, the athlete hits Snap, the
+   dots move, then he answers. Replay is unlimited. */
+const MOTION = [
+  { id: 'm_sky', groups: ['ALL'], off: 'gun11', def: 'nickel2high', mode: 'choice', snap: true,
+    motion: { SS: { x: 452, y: 122 }, FS: { x: 300, y: 48 }, NB: { x: 470, y: 178 } }, duration: 900,
+    q: 'Two high before the snap. Watch the safeties. What is the coverage after the snap?',
+    options: ['Cover 3, strong safety rotated down', 'Cover 2, nothing changed', 'Cover 0, everybody came', 'Quarters'], answer: 0,
+    why: 'The strong safety drops into the box and the free safety spins to the middle. Two high became single high: a Cover 3 rotation, sometimes called Sky.' },
+  { id: 'm_stay', groups: ['ALL'], off: 'gun10', def: 'nickel2high', mode: 'choice', snap: true,
+    motion: { FS: { x: 186, y: 56 }, SS: { x: 414, y: 56 } }, duration: 800,
+    q: 'Two high before the snap. Watch the safeties. What is the coverage after the snap?',
+    options: ['Cover 2 or Quarters, they stayed two high', 'Cover 3, one rotated', 'Cover 1, one rotated', 'Cover 0'], answer: 0,
+    why: 'Both safeties held their depth and width. Two high stayed two high. Corner depth is what separates 2 from Quarters from here.' },
+  { id: 'm_spin', groups: ['ALL'], off: 'gun10', def: 'single1', mode: 'choice', snap: true,
+    motion: { FS: { x: 190, y: 56 }, SS: { x: 410, y: 58 }, LC: { x: 62, y: 170 }, RC: { x: 545, y: 170 }, NB: { x: 452, y: 152 } }, duration: 900,
+    q: 'Single high before the snap. Watch it. What happened?',
+    options: ['They spun to two high, it was a disguise', 'It stayed single high', 'Everybody blitzed', 'The corners came off'], answer: 0,
+    why: 'The strong safety bailed from the box to a deep half and the corners backed off. Single-high look, two-high coverage. This is how they bait a post throw.' },
+  { id: 'm_zero_bluff', groups: ['QB', 'RB', 'OL', 'WR'], off: 'gun11', def: 'nickelBlitz', mode: 'choice', snap: true,
+    motion: { NB: { x: 470, y: 150 }, SS: { x: 300, y: 48 }, FS: { x: 300, y: 48 } }, duration: 800,
+    q: 'The nickel is walked up showing blitz. Watch the snap. Did he come?',
+    options: ['No, he bailed to coverage and a safety got deep', 'Yes, six came', 'Yes, and it is Cover 0', 'Cannot tell'], answer: 0,
+    why: 'Walked up, then out. The nickel dropped and the safety got to the middle. The show was the bluff; your hot answer was not needed.' },
+  { id: 'm_blitz_real', groups: ['QB', 'RB', 'OL', 'WR'], off: 'gun11', def: 'nickelBlitz', mode: 'tap', snap: true,
+    motion: { NB: { x: 445, y: 195 }, M: { x: 300, y: 170 }, FS: { x: 300, y: 48 }, SS: { x: 150, y: 110 } }, duration: 700,
+    q: 'Same look. Watch the snap. Tap the defender who came that your five linemen cannot account for.', answer: 'NB',
+    why: 'Four down plus the Mike is five, which the line handles. The nickel off the edge is the sixth. He is the one your hot rule answers.' },
+  { id: 'm_lb_pull', groups: ['LB', 'DL'], off: 'gun11', def: 'over43', mode: 'choice', snap: true,
+    motion: { LG: { x: 372, y: 224 } }, offMotion: true, duration: 700,
+    q: 'Watch the left guard at the snap. Where is the ball going?',
+    options: ['Right, behind the puller', 'Left, away from him', 'It is a pass', 'Up the middle'], answer: 0,
+    why: 'The left guard pulled across the formation. The puller is the play. Fit off him.' }
+];
+
 const SCENARIOS = [
   /* ---------- everyone: fronts and shells ---------- */
   { id: 'd_front_over', groups: ['ALL'], off: 'gun11', def: 'over43', mode: 'choice',
@@ -163,8 +198,10 @@ const SCENARIOS = [
 ];
 
 function scenariosFor(group) {
-  return SCENARIOS.filter(s => s.groups.includes('ALL') || (group && s.groups.includes(group)))
+  const pick = (list) => list.filter(s => s.groups.includes('ALL') || (group && s.groups.includes(group)))
     .map(s => ({ ...s, offense: OFF[s.off], defense: DEF[s.def] }));
+  /* static looks first, then the ones that move */
+  return pick(SCENARIOS).concat(pick(MOTION));
 }
 
-module.exports = { OFF, DEF, SCENARIOS, scenariosFor };
+module.exports = { OFF, DEF, SCENARIOS, MOTION, scenariosFor };

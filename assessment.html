@@ -62,6 +62,12 @@
   .dot.reveal .ring, .dot.reveal .tri{stroke:#35C759; stroke-width:3.5; stroke-dasharray:4 3;}
   .off .ball{fill:#FFF;}
   .off text{fill:#000; font:700 11px 'Inter',sans-serif; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+  .snapbar{display:flex; gap:8px; align-items:center; margin:-2px 0 10px;}
+  .snapbtn{background:#FFF; color:#000; border:none; border-radius:9px; padding:10px 18px; font-family:'Anton',sans-serif; font-size:15px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;}
+  .snapbtn.ghost{background:transparent; color:#EDEDED; border:1.5px solid #3A3A3A; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:none; padding:9px 14px;}
+  .snapbtn:disabled{opacity:.4;}
+  .snaphint{font-size:12px; color:#8A8A8A;}
+  .dot .ring, .dot .tri, .off circle, .off text{transition:none;}
   .verdict{border-radius:10px; padding:11px 13px; font-size:14px; margin-top:8px; display:none;}
   .verdict.ok{display:block; background:#0E2A19; border:1px solid #1E6B3A; color:#CFF5DB;}
   .verdict.no{display:block; background:#2A0E0E; border:1px solid #6B1E1E; color:#F5CFCF;}
@@ -150,10 +156,44 @@ function fieldSVG(sc){
     const shape = d.t === 'dl'
       ? `<polygon class="tri" points="${d.x},${d.y-13} ${d.x+13},${d.y+10} ${d.x-13},${d.y+10}"/>`
       : `<circle class="ring" cx="${d.x}" cy="${d.y}" r="12"/>`;
-    return `<g class="${cls}" data-def="${d.id}" data-sc="${esc(sc.id)}">${shape}<circle cx="${d.x}" cy="${d.y}" r="20" fill="transparent"/></g>`;
+    return `<g class="${cls}" data-def="${d.id}" data-sc="${esc(sc.id)}" data-x="${d.x}" data-y="${d.y}">${shape}<circle class="hit" cx="${d.x}" cy="${d.y}" r="20" fill="transparent"/></g>`;
   }).join('');
-  const offs = (sc.offense||[]).map(o => `<g class="off"><circle class="ball" cx="${o.x}" cy="${o.y}" r="12"/><text x="${o.x}" y="${o.y}">${esc(o.l)}</text></g>`).join('');
-  return `<div class="field"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}${defs}${offs}</svg></div>`;
+  const offs = (sc.offense||[]).map(o => `<g class="off" data-off="${o.id}" data-sc="${esc(sc.id)}" data-x="${o.x}" data-y="${o.y}"><circle class="ball" cx="${o.x}" cy="${o.y}" r="12"/><text x="${o.x}" y="${o.y}">${esc(o.l)}</text></g>`).join('');
+  const snap = sc.snap ? `<div class="snapbar"><button type="button" class="snapbtn" data-snap="${esc(sc.id)}">Snap</button><button type="button" class="snapbtn ghost" data-reset="${esc(sc.id)}" disabled>Reset</button><span class="snaphint">Watch the movement, then answer. Replay as many times as you want.</span></div>` : '';
+  return `<div class="field" id="fld_${esc(sc.id)}"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}${defs}${offs}</svg></div>${snap}`;
+}
+/* Move dots from their pre-snap spot to sc.motion targets over sc.duration ms. */
+function moveGroup(g, tx, ty, t){
+  const x0 = +g.dataset.x, y0 = +g.dataset.y;
+  const x = x0 + (tx - x0) * t, y = y0 + (ty - y0) * t;
+  const tri = g.querySelector('.tri'); if(tri) tri.setAttribute('points', `${x},${y-13} ${x+13},${y+10} ${x-13},${y+10}`);
+  g.querySelectorAll('circle').forEach(c => { c.setAttribute('cx', x); c.setAttribute('cy', y); });
+  const tx2 = g.querySelector('text'); if(tx2){ tx2.setAttribute('x', x); tx2.setAttribute('y', y); }
+}
+function snapPlay(scId){
+  const sc = (DATA.dots||[]).find(x => x.id === scId); if(!sc || !sc.motion) return;
+  const fld = document.getElementById('fld_' + scId); if(!fld) return;
+  const btn = document.querySelector(`[data-snap="${scId}"]`), rst = document.querySelector(`[data-reset="${scId}"]`);
+  if(btn) btn.disabled = true;
+  const targets = Object.entries(sc.motion).map(([id, to]) => {
+    const g = fld.querySelector(`[data-def="${id}"]`) || fld.querySelector(`[data-off="${id}"]`);
+    return g ? { g, to } : null;
+  }).filter(Boolean);
+  const dur = sc.duration || 800, t0 = performance.now();
+  const ease = (t) => t < .5 ? 2*t*t : -1 + (4 - 2*t) * t;
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / dur);
+    targets.forEach(({g, to}) => moveGroup(g, to.x, to.y, ease(t)));
+    if(t < 1) requestAnimationFrame(step); else { if(rst) rst.disabled = false; }
+  };
+  requestAnimationFrame(step);
+}
+function snapReset(scId){
+  const sc = (DATA.dots||[]).find(x => x.id === scId); if(!sc || !sc.motion) return;
+  const fld = document.getElementById('fld_' + scId); if(!fld) return;
+  Object.keys(sc.motion).forEach(id => { const g = fld.querySelector(`[data-def="${id}"]`) || fld.querySelector(`[data-off="${id}"]`); if(g) moveGroup(g, +g.dataset.x, +g.dataset.y, 1); });
+  const btn = document.querySelector(`[data-snap="${scId}"]`), rst = document.querySelector(`[data-reset="${scId}"]`);
+  if(btn) btn.disabled = false; if(rst) rst.disabled = true;
 }
 function dotVerdict(sc, ok, given){
   const box = document.getElementById('dv_' + sc.id);
@@ -212,7 +252,7 @@ function render(){
           <div class="q-text">${n+1}. ${esc(sc.q)}</div>
           ${fieldSVG(sc)}
           ${sc.mode === 'choice' ? `<div class="opts">${(sc.options||[]).map((o,i)=>`<button type="button" class="opt ${String(ANSWERS['dot_'+sc.id])===String(i)?'on':''}" data-dot="${esc(sc.id)}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`
-                                : `<div class="fine">Tap a defender on the field.</div>`}
+                                : `<div class="fine">${sc.snap ? 'Hit Snap, then tap a defender on the field.' : 'Tap a defender on the field.'}</div>`}
           <div class="verdict" id="dv_${esc(sc.id)}"></div>
         </div>`).join('')}
     ` : ''}
@@ -238,6 +278,8 @@ function render(){
       <button type="button" class="btn" id="submitBtn" onclick="submitAll()">Submit</button>
     </div><div class="status" id="statusLine"></div></div>`;
 
+  document.querySelectorAll('[data-snap]').forEach(el => el.addEventListener('click', () => snapPlay(el.dataset.snap)));
+  document.querySelectorAll('[data-reset]').forEach(el => el.addEventListener('click', () => snapReset(el.dataset.reset)));
   document.querySelectorAll('[data-def]').forEach(el => {
     el.addEventListener('click', () => {
       const sc = (DATA.dots||[]).find(x => x.id === el.dataset.sc); if(!sc || sc.mode !== 'tap') return;

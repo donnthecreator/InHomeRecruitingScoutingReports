@@ -2122,7 +2122,19 @@ function viewAssessment(id){
   const det = (a.score_detail && a.score_detail.detail) || [];
   const written = Object.entries(ans).filter(([k])=>!det.some(d=>d.id===k));
   const mb = a.score_detail && a.score_detail.mbti;
+  const dg = a.score_detail && a.score_detail.diagnosis;
   host.innerHTML =
+    (dg ? `<div class="pp-rank" style="margin:0 0 10px; border-color:var(--ink);">
+      <div class="rc-meta">Football IQ Diagnosis</div>
+      <div style="display:flex;gap:14px;align-items:baseline;margin:4px 0 8px;">
+        <div style="font-family:'Anton',sans-serif;font-size:30px;line-height:1;">${dg.overall}%</div>
+        <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:${dg.band==='elite'?'#35C759':dg.band==='strong'?'var(--ink)':dg.band==='developing'?'var(--warn)':'#FF5A5A'}">${esc(dg.band)}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${(dg.categories||[]).map(c=>`<span class="pill" style="border-color:${c.pct>=80?'#35C759':c.pct<60?'#FF5A5A':'var(--line)'}">${esc(c.name)} ${c.correct}/${c.total}</span>`).join('')}</div>
+      <div style="font-size:13px;color:#D6D6D6;line-height:1.55;">${esc(dg.summary)}</div>
+      ${dg.profile?`<div style="font-size:13px;color:#D6D6D6;line-height:1.55;margin-top:8px;">${esc(dg.profile)}</div>`:''}
+      <div class="rc-meta" style="margin-top:6px;color:var(--dim)">${esc(dg.note||'')}</div>
+    </div>` : '') +
     (mb && mb.complete ? `<div class="pp-rank" style="margin:0 0 10px;">
       <div class="rc-meta">Mental profile</div>
       <div style="display:flex;gap:16px;align-items:baseline;margin-top:4px;">

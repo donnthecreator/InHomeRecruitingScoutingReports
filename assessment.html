@@ -229,11 +229,12 @@ function render(){
       <b style="color:#E0A419;">Preview</b> <span class="fine">— ${esc(DATA.kind)} version${DATA.positionGroup?', '+esc(DATA.positionGroup)+' module':', core only'}, ${totalQuestions()} questions. Nothing you type here is saved and no athlete sees this page.${DATA.admin?' Correct answers are shown because you are signed into admin.':' Sign into admin first to see the answer key.'}</span>
     </div>` : ''}
     <h1>${isIQ ? 'Football IQ Assessment' : isFull ? 'InHome Athlete Assessment' : 'InHome Athlete Interview'}</h1>
+    <p class="lede">These are the questions college and NFL coaches have told us they want answered before they spend a visit on a player. Not a recruiting quiz. The stuff they actually ask.</p>
     <p class="lede">${isIQ
-      ? 'Some of this is multiple choice, some of it is film. Watch each clip and tell us what you see. There is no time limit and you can leave and come back.'
+      ? 'Written questions, live reads on a whiteboard where you tap the defender, and real film you diagnose. There is no time limit and you can leave and come back.'
       : isFull
-      ? 'Two parts. First we ask about you: how you are wired, how you take coaching, what drives you. Then the football: written questions, live reads on a whiteboard where you tap the defender, and real film you diagnose. No time limit, and you can leave and come back.'
-      : 'These are the questions a college coach would ask you sitting at your kitchen table. Answer them straight. The ones that sound uncomfortable are the ones that help you most.'}</p>
+      ? 'Two parts. First about you: how you are wired, how you take coaching, what drives you. Then the football: written questions, live reads where you tap the defender on a whiteboard, and real film you diagnose. Most guys finish in under thirty minutes. No time limit, and you can leave and come back.'
+      : 'How you are wired, how you take coaching, what drives you. Answer them straight. The ones that sound uncomfortable are the ones that help you most.'}</p>
     <p class="fine">${isIQ || isFull
       ? 'On the football questions, answer without looking anything up. A wrong answer you reasoned through is worth more to us than a right one you searched.'
       : 'Nobody is grading your grammar. Type the way you talk.'} Your answers save as you go.</p>

@@ -153,6 +153,7 @@ exports.handler = async (event) => {
         rows.forEach(x => { (assess[x.prospect_id] = assess[x.prospect_id] || []).push({
           kind: x.kind, pct: x.score_pct != null ? Number(x.score_pct) : null,
           correct: x.score_detail ? x.score_detail.correct : null, total: x.score_detail ? x.score_detail.total : null,
+          diagnosis: x.score_detail ? (x.score_detail.diagnosis || null) : null, mbti: x.score_detail ? (x.score_detail.mbti || null) : null,
           completed: x.completed_day, answers: x.answers || {} }); });
       } catch (e) { /* table may not exist yet */ }
     }

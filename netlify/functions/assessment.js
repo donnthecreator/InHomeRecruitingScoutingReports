@@ -135,6 +135,7 @@ exports.handler = async (event) => {
     }
     const sc = score(a.kind, clean, clips, a.position);
     if (a.kind === 'interview' || a.kind === 'full') sc.mbti = mbtiType(clean);
+    try { sc.diagnosis = require('./lib/diagnosis').diagnosis(a.kind, sc, clean, a.position, sc.mbti); } catch (e) { sc.diagnosis = null; }
     await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'complete', completed_at = now(),
               score_pct = ${sc.total ? sc.pct : null}, score_detail = ${JSON.stringify(sc)} WHERE id = ${a.id}`;
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ done: true, scored: sc.total > 0, pct: sc.pct, correct: sc.correct, total: sc.total }) };

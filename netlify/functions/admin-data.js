@@ -504,7 +504,7 @@ exports.handler = async (event) => {
       /* ---------------- ASSESSMENTS ---------------- */
       case 'createAssessment': {
         const crypto2 = require('crypto');
-        const kind = ['interview', 'iq'].includes(body.kind) ? body.kind : 'interview';
+        const kind = ['interview', 'iq', 'full'].includes(body.kind) ? body.kind : 'full';
         const prospectId = body.prospectId ? parseInt(body.prospectId, 10) : null;
         let name = body.name ? String(body.name).trim() : null, school = body.school ? String(body.school).trim() : null, position = body.position || null;
         if (prospectId) {

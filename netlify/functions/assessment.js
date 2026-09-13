@@ -12,7 +12,22 @@
 ===================================================================== */
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
-const { bank, score, mbtiType, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const crypto2 = require('crypto');
+const { bank, score, mbtiType, usesClips, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+
+/* Preview reveals the correct answers, so it is admin only. Same token
+   check as admin-data.js. Without it a preview still renders, just
+   without the answer key. */
+function isAdmin(event) {
+  const secret = process.env.ADMIN_SECRET; if (!secret) return false;
+  const header = (event.headers || {}).authorization || (event.headers || {}).Authorization || '';
+  const token = header.replace(/^Bearer\s+/i, '').trim();
+  const [exp, sig] = token.split('.');
+  if (!exp || !sig || !Number(exp) || Date.now() > Number(exp)) return false;
+  const expected = crypto2.createHmac('sha256', secret).update(exp).digest('hex');
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  return a.length === b.length && crypto2.timingSafeEqual(a, b);
+}
 const sql = neon(process.env.DATABASE_URL);
 
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -63,12 +78,30 @@ exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: { ...HEADERS, 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' }, body: '' };
   try {
     await ensure();
-    const token = String((event.queryStringParameters || {}).t || (JSON.parse(event.body || '{}').t) || '').trim();
+    const qs = event.queryStringParameters || {};
+
+    /* ---- preview: no token, nothing saved ---- */
+    if (qs.preview) {
+      const kind = ['interview', 'iq', 'full'].includes(qs.preview) ? qs.preview : 'full';
+      const admin = isAdmin(event);
+      const clips = usesClips(kind) ? await activeClips(null) : [];
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
+        preview: true, admin, kind,
+        athlete: 'Preview', school: 'Nothing here is saved', position: null, status: 'open',
+        sections: bank(kind).map(sec => ({ section: sec.section, items: sec.items.map(it => admin ? it : (({ answer, why, mb, ...rest }) => rest)(it)) })),
+        clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
+          options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT,
+          answer: admin ? c.answer_index : undefined, why: admin ? c.explanation : undefined })),
+        answers: {}
+      }) };
+    }
+
+    const token = String(qs.t || (JSON.parse(event.body || '{}').t) || '').trim();
     if (!token || token.length < 12) return fail(400, 'Missing link key');
     const [a] = await sql`SELECT * FROM assessments WHERE token = ${token}`;
     if (!a) return fail(404, 'This link is not valid');
 
-    const clips = a.kind === 'iq' ? await activeClips(a.position) : [];
+    const clips = usesClips(a.kind) ? await activeClips(a.position) : [];
 
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
@@ -95,7 +128,7 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ saved: true }) };
     }
     const sc = score(a.kind, clean, clips);
-    if (a.kind === 'interview') sc.mbti = mbtiType(clean);
+    if (a.kind === 'interview' || a.kind === 'full') sc.mbti = mbtiType(clean);
     await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'complete', completed_at = now(),
               score_pct = ${sc.total ? sc.pct : null}, score_detail = ${JSON.stringify(sc)} WHERE id = ${a.id}`;
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ done: true, scored: sc.total > 0, pct: sc.pct, correct: sc.correct, total: sc.total }) };

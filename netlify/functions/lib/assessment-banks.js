@@ -172,9 +172,15 @@ function mbtiType(answers) {
   return { type, detail, complete: !type.includes('-') };
 }
 
+/* 'full' is the one-link version: the interview and the football IQ test
+   back to back. Sections keep their own order so a kid warms up on
+   himself before he gets to the film. */
 function bank(kind) {
-  return kind === 'iq' ? IQ_WRITTEN : INTERVIEW;
+  if (kind === 'iq') return IQ_WRITTEN;
+  if (kind === 'full') return INTERVIEW.concat(IQ_WRITTEN);
+  return INTERVIEW;
 }
+function usesClips(kind) { return kind === 'iq' || kind === 'full'; }
 /* Auto-scored questions only: single-select with a defined answer. */
 function score(kind, answers, clips) {
   let correct = 0, total = 0;
@@ -199,4 +205,4 @@ function score(kind, answers, clips) {
   return { correct, total, pct: total ? Math.round((correct / total) * 100) : null, detail };
 }
 
-module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType };
+module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType, usesClips };

@@ -72,7 +72,9 @@
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-const TOKEN = new URLSearchParams(location.search).get('t') || '';
+const QS = new URLSearchParams(location.search);
+const TOKEN = QS.get('t') || '';
+const PREVIEW = QS.get('preview') || '';
 let DATA = null, ANSWERS = {}, DIRTY = false;
 
 function totalQuestions(){
@@ -110,8 +112,17 @@ function qHTML(it){
   return `<textarea data-q="${esc(it.id)}" placeholder="Take your time. Specific beats long.">${esc(v||'')}</textarea>`;
 }
 
+function keyHTML(it){
+  if(!DATA.preview || !DATA.admin) return '';
+  const bits = [];
+  if(it.answer !== undefined && it.options) bits.push('Answer: ' + (it.answer+1) + '. ' + it.options[it.answer]);
+  if(it.why) bits.push(it.why);
+  if(it.mb) bits.push('Personality dimension: ' + it.mb);
+  return bits.length ? `<div class="fine" style="margin-top:8px;color:#E0A419;">${esc(bits.join(' \u2014 '))}</div>` : '';
+}
 function render(){
   const isIQ = DATA.kind === 'iq';
+  const isFull = DATA.kind === 'full';
   $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
   const clipOpts = (c) => `<div class="opts">${(c.options||[]).map((o,i)=>
     `<button type="button" class="opt ${String(ANSWERS['clip_'+c.id])===String(i)?'on':''}" data-q="clip_${c.id}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`;
@@ -120,18 +131,23 @@ function render(){
     <div class="bar"><div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
       <div class="bar-txt"><span id="barTxt"></span><span id="saveState"></span></div></div>
 
-    <h1>${isIQ ? 'Football IQ Assessment' : 'InHome Athlete Interview'}</h1>
+    ${DATA.preview ? `<div style="background:#1A1206;border:1px solid #4A3410;border-radius:10px;padding:12px 14px;margin-top:16px;">
+      <b style="color:#E0A419;">Preview</b> <span class="fine">— ${esc(DATA.kind)} version, ${totalQuestions()} questions. Nothing you type here is saved and no athlete sees this page.${DATA.admin?' Correct answers are shown because you are signed into admin.':' Sign into admin first to see the answer key.'}</span>
+    </div>` : ''}
+    <h1>${isIQ ? 'Football IQ Assessment' : isFull ? 'InHome Athlete Assessment' : 'InHome Athlete Interview'}</h1>
     <p class="lede">${isIQ
       ? 'Some of this is multiple choice, some of it is film. Watch each clip and tell us what you see. There is no time limit and you can leave and come back.'
+      : isFull
+      ? 'Two parts. First we ask about you: how you are wired, how you take coaching, what drives you. Then we test what you see on a football field, including film you will diagnose. No time limit, and you can leave and come back.'
       : 'These are the questions a college coach would ask you sitting at your kitchen table. Answer them straight. The ones that sound uncomfortable are the ones that help you most.'}</p>
-    <p class="fine">${isIQ
-      ? 'Answer honestly without looking anything up. A wrong answer you reasoned through is worth more to us than a right one you searched.'
+    <p class="fine">${isIQ || isFull
+      ? 'On the football questions, answer without looking anything up. A wrong answer you reasoned through is worth more to us than a right one you searched.'
       : 'Nobody is grading your grammar. Type the way you talk.'} Your answers save as you go.</p>
 
     ${(DATA.sections||[]).map(sec => `
       <div class="sec-title">${esc(sec.section)}</div>
       <div class="sec-count">${sec.items.length} question${sec.items.length===1?'':'s'}</div>
-      ${sec.items.map(it => `<div class="q"><div class="q-text">${esc(it.q)}</div>${qHTML(it)}</div>`).join('')}
+      ${sec.items.map(it => `<div class="q"><div class="q-text">${esc(it.q)}</div>${qHTML(it)}${keyHTML(it)}</div>`).join('')}
     `).join('')}
 
     ${(DATA.clips||[]).length ? `
@@ -144,11 +160,13 @@ function render(){
             <div class="body"><div class="q-text" style="margin:0;">${esc(c.question)}</div></div>
           </div>
           ${clipOpts(c)}
+          ${(DATA.preview && DATA.admin && c.answer!=null) ? `<div class="fine" style="margin-top:8px;color:#E0A419;">Answer: ${c.answer+1}. ${esc((c.options||[])[c.answer]||'')}${c.why?' \u2014 '+esc(c.why):''}</div>` : ''}
         </div>`).join('')}
     ` : ''}
 
     <div style="height:90px;"></div>
-    <div class="save"><div class="inner">
+    ${DATA.preview ? '<div class="fine" style="text-align:center;padding:20px 0 40px;">End of preview. Close this tab when you are done.</div>' : ''}
+    <div class="save" ${DATA.preview?'style="display:none;"':''}><div class="inner">
       <button type="button" class="btn ghost" onclick="saveNow(false)">Save</button>
       <button type="button" class="btn" id="submitBtn" onclick="submitAll()">Submit</button>
     </div><div class="status" id="statusLine"></div></div>`;
@@ -204,9 +222,13 @@ async function submitAll(){
 }
 
 (async function(){
-  if(!TOKEN){ $('app').innerHTML = '<div class="done"><div class="big">Missing link key</div><p>Ask InHome for a fresh link.</p></div>'; return; }
+  if(!TOKEN && !PREVIEW){ $('app').innerHTML = '<div class="done"><div class="big">Missing link key</div><p>Ask InHome for a fresh link.</p></div>'; return; }
   try{
-    const res = await fetch('/.netlify/functions/assessment?t=' + encodeURIComponent(TOKEN));
+    let adminTok = null;
+    try{ adminTok = sessionStorage.getItem('inhome_admin_token'); }catch(e){}
+    const url = PREVIEW ? '/.netlify/functions/assessment?preview=' + encodeURIComponent(PREVIEW)
+                        : '/.netlify/functions/assessment?t=' + encodeURIComponent(TOKEN);
+    const res = await fetch(url, adminTok ? { headers:{ 'Authorization':'Bearer ' + adminTok } } : undefined);
     const d = await res.json();
     if(!res.ok) throw new Error(d.error || 'This link is not valid');
     DATA = d; ANSWERS = d.answers || {};

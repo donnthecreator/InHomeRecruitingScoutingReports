@@ -18,6 +18,9 @@ exports.handler = async (event) => {
   const reportId = parseInt(qs.id, 10) || null;
   const base = siteBase(event);
   try {
+    /* columns added by later features; harmless if they already exist */
+    try { await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS verifications JSONB NOT NULL DEFAULT '{}'::jsonb`; } catch (e) {}
+
     const rows = reportId
       ? await sql`
           SELECT r.id, r.prospect_name, r.position, r.position_label, r.archetype, r.class_year, r.school,

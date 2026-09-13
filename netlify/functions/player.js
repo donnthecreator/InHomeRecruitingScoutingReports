@@ -15,6 +15,9 @@ const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Orig
 
 exports.handler = async (event) => {
   try {
+    /* columns added by later features; harmless if they already exist */
+    try { await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS verifications JSONB NOT NULL DEFAULT '{}'::jsonb`; } catch (e) {}
+
     const h = event.headers || {};
     const base = `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
     const qs = event.queryStringParameters || {};

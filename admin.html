@@ -700,7 +700,7 @@
 
   <!-- ============ MAP ============ -->
   <div class="pane" id="paneMap">
-    <div id="mapKeyWarn" class="banner" style="display:none;">
+    <div id="mapKeyWarn" class="banner" style="display:none !important;">
       Google Maps key not set. Open admin.html and put your key in <b>MAPS_API_KEY</b> near the top of the script.
     </div>
 
@@ -1009,7 +1009,8 @@ function switchTab(t){
   if(t==='assess'){ renderAssessments(); renderClips(); }
   if(t==='market') renderMarket();
   /* Google Maps renders at zero size if it initialized while hidden. */
-  if(t==='map' && window.gmap){
+  if(t==='map' && window.gmap){ setTimeout(()=>{ try{ window.gmap.invalidateSize(); if(window.gmapBounds && window.gmapBounds.length) window.gmap.fitBounds(window.gmapBounds, { padding:[30,30], maxZoom:9 }); }catch(e){} }, 60); }
+  if(false){
     setTimeout(()=>{
       google.maps.event.trigger(window.gmap,'resize');
       if(window.gmapBounds && !window.gmapBounds.isEmpty()) window.gmap.fitBounds(window.gmapBounds);
@@ -1738,7 +1739,6 @@ async function loadMapPins(){
 }
 async function locateSchools(){
   if(geoRunning) return;
-  if(!geocoder){ toast('Map not ready yet'); return; }
   if(MAP_PINS === null) await loadMapPins();
   if(!MAP_MISSING.length){ toast('Every school already has a location'); return; }
   geoRunning = true;
@@ -1748,31 +1748,23 @@ async function locateSchools(){
     const kind = level === 'JUCO' ? ' community college' : level === 'COLLEGE' ? ' university' : ' high school';
     const q = m.school + (/(college|university|hs|high school|academy|prep)\b/i.test(m.school) ? '' : kind) + (m.state ? ', ' + m.state : '') + ', USA';
     try{
-      const res = await new Promise((resolve,reject)=>{
-        geocoder.geocode({ address: q, region: 'us' }, (r,status)=>{
-          if(status==='OK' && r && r[0]) resolve(r[0]);
-          else if(status==='OVER_QUERY_LIMIT') reject(new Error('OVER_QUERY_LIMIT'));
-          else resolve(null);
-        });
-      });
-      if(res){
-        const lat = res.geometry.location.lat(), lng = res.geometry.location.lng();
-        const st = (res.address_components||[]).find(c => c.types.includes('administrative_area_level_1'));
-        await api('saveSchoolLocation', { school: m.school, lat, lng, state: st ? st.short_name : m.state });
+      const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=' + encodeURIComponent(q), { headers:{ 'Accept':'application/json' } });
+      const arr = res.ok ? await res.json() : [];
+      if(arr && arr[0]){
+        const st = m.state || ((arr[0].display_name||'').match(/,\s*([A-Z][a-z]+(?: [A-Z][a-z]+)?),\s*\d{5}/) || [])[1] || null;
+        await api('saveSchoolLocation', { school: m.school, lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon), state: st });
         saved++;
       }
-    }catch(err){
-      if(err.message==='OVER_QUERY_LIMIT'){ setMapStatus('Rate limited after ' + done + '. Tap Locate Schools again in a minute.'); break; }
-    }
+    }catch(err){ console.error('geocode', m.school, err.message); }
     done++;
     setMapStatus('Locating schools... ' + done + ' of ' + MAP_MISSING.length);
-    await new Promise(r=>setTimeout(r, 120));
+    await new Promise(r=>setTimeout(r, 1100));   /* OpenStreetMap asks for about one lookup per second */
   }
   geoRunning = false;
   setMapStatus('');
   MAP_PINS = null;
   await drawMap();
-  toast('Located ' + saved + ' school' + (saved===1?'':'s'));
+  toast('Located ' + saved + ' of ' + done + ' school' + (done===1?'':'s'));
 }
 function setMapStatus(txt){
   const el = document.getElementById('mapStatus');
@@ -1781,26 +1773,21 @@ function setMapStatus(txt){
   el.style.display = txt ? 'block' : 'none';
 }
 
-/* ---- markers ---- */
-function dot(color, size){
-  return { path: google.maps.SymbolPath.CIRCLE, fillColor: color, fillOpacity: 0.95, strokeColor: '#000', strokeWeight: 1.2, scale: size };
-}
-function clearMarkers(){ gmarkers.forEach(m=>m.setMap(null)); gmarkers = []; }
+/* ---- markers (Leaflet, no key) ---- */
+function clearMarkers(){ gmarkers.forEach(m=>{ try{ m.remove(); }catch(e){} }); gmarkers = []; }
 const PIN_COLOR = { scouted:'#35C759', board:'#FF0000', tracked:'#E0A419', prospect:'#8A8A8A' };
 
 async function drawMap(){
   if(!window.gmap) return;
   if(MAP_PINS === null){ setMapStatus('Loading prospects...'); await loadMapPins(); setMapStatus(''); buildMapFilters(); }
   clearMarkers();
-  const bounds = new google.maps.LatLngBounds();
   const q = (document.getElementById('mSearch').value||'').trim().toLowerCase();
   const stF = document.getElementById('mState').value;
   const posF = document.getElementById('mPos').value;
   const statF = document.getElementById('mStatus').value;
   const lv = { HS: document.getElementById('mLayerHS').checked, JUCO: document.getElementById('mLayerJUCO').checked, College: document.getElementById('mLayerCollege').checked };
   let shown = 0, unplaced = 0, rough = 0;
-  /* jitter pins that share a school so they don't stack into one dot */
-  const seenAt = {};
+  const seenAt = {}; const bounds = [];
   MAP_PINS.forEach(p => {
     const level = (p.level||'HS');
     const lvKey = level === 'JUCO' ? 'JUCO' : level === 'HS' ? 'HS' : 'College';
@@ -1814,32 +1801,31 @@ async function drawMap(){
     const k = p.lat.toFixed(3) + ',' + p.lng.toFixed(3);
     const n = (seenAt[k] = (seenAt[k]||0) + 1);
     const ang = n * 2.399, rad = n > 1 ? 0.012 * Math.sqrt(n) : 0;
-    const pos = { lat: p.lat + Math.sin(ang)*rad, lng: p.lng + Math.cos(ang)*rad };
-    const m = new google.maps.Marker({ position: pos, map: window.gmap, icon: dot(PIN_COLOR[p.status]||'#8A8A8A', p.exact ? 7 : 6), opacity: p.exact ? 1 : 0.6, title: p.name + ' — ' + (p.school||'') });
-    m.addListener('click', ()=>openPinPop(p, m));
-    gmarkers.push(m); bounds.extend(pos); shown++;
+    const lat = p.lat + Math.sin(ang)*rad, lng = p.lng + Math.cos(ang)*rad;
+    const m = L.circleMarker([lat, lng], { radius: p.exact ? 8 : 7, color:'#000', weight:1, fillColor: PIN_COLOR[p.status]||'#8A8A8A', fillOpacity: p.exact ? 0.95 : 0.55 }).addTo(window.gmap);
+    m.bindPopup(pinPopHTML(p), { maxWidth: 260 });
+    gmarkers.push(m); bounds.push([lat,lng]); shown++;
   });
   document.getElementById('cntMap').textContent = shown;
   document.getElementById('mapCount').textContent = shown + ' on the map' + (rough ? ' \u00b7 ' + rough + ' placed at their school' : '') + (unplaced ? ' \u00b7 ' + unplaced + ' need a school location' : '');
   window.gmapBounds = bounds;
-  if(!bounds.isEmpty()) window.gmap.fitBounds(bounds);
+  if(bounds.length) window.gmap.fitBounds(bounds, { padding:[30,30], maxZoom: 9 });
   setMapStatus(unplaced ? unplaced + ' prospect' + (unplaced===1?'':'s') + ' not placed yet \u2014 tap Locate Schools' : '');
 }
 
-function openPinPop(p, marker){
-  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p.name)}" target="_blank" rel="noopener">${s.name}</a>`).join('');
+function pinPopHTML(p){
+  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p.name)}" target="_blank" rel="noopener" style="margin-right:8px;font-size:11px;color:#FF0000">${s.name}</a>`).join('');
   const face = p.headshotUrl ? `<img src="${esc(p.headshotUrl)}" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;float:right;margin-left:8px" onerror="this.style.display='none'">` : '';
   const logo = p.logoUrl ? `<img src="${esc(p.logoUrl)}" alt="" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px;margin-right:4px" onerror="this.remove()">` : '';
-  infoWin.setContent(`<div class="gm-pop">${face}
-    <h4>${esc(p.name)}</h4>
-    <div class="gm-meta">${esc(p.position||'')} &middot; ${logo}${esc(p.school||'')}${p.classYear?' &middot; Class of '+esc(p.classYear):''}<br>
+  return `<div style="font-family:Inter,system-ui,sans-serif;min-width:200px;color:#111">${face}
+    <div style="font-size:14px;font-weight:800;">${esc(p.name)}</div>
+    <div style="font-size:11.5px;color:#555;margin-top:2px;">${esc(p.position||'')} &middot; ${logo}${esc(p.school||'')}${p.classYear?' &middot; Class of '+esc(p.classYear):''}<br>
       ${esc(p.level||'HS')}${p.boards?' &middot; '+esc(p.boards):''}${p.score!=null?' &middot; Score '+p.score.toFixed(1):''}<br>
-      ${p.exact ? 'Exact location' : 'Placed at the school'}</div>
-    <div>${links}</div>
-    ${p.id ? `<button onclick="openProfile(${p.id})">Profile</button>` : ''}
-    <a href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;">Scout this player</a>
-  </div>`);
-  infoWin.open(window.gmap, marker);
+      <span style="color:#888">${p.exact ? 'Exact location' : 'Placed at the school'}</span></div>
+    <div style="margin:8px 0 6px;">${links}</div>
+    ${p.id ? `<a href="#" onclick="openProfile(${p.id}); return false;" style="font-size:12px;font-weight:700;color:#111;margin-right:10px;">Profile</a>` : ''}
+    <a href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:#FF0000;">Scout this player</a>
+  </div>`;
 }
 
 function buildMapFilters(){
@@ -1854,6 +1840,22 @@ function buildMapFilters(){
   const positions = [...new Set(pins.map(p=>p.position).filter(Boolean))].sort();
   posSel.innerHTML = '<option value="All">All positions</option>' + positions.map(x=>`<option value="${x}">${x}</option>`).join('');
   if(keepP && [...posSel.options].some(o=>o.value===keepP)) posSel.value = keepP;
+}
+
+/* ---- boot ---- */
+function initMap(){
+  if(window.gmap) return;
+  window.gmap = L.map('gmap-canvas', { preferCanvas:true }).setView([32.8, -88.0], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19 }).addTo(window.gmap);
+  buildMapFilters();
+  drawMap();
+}
+function loadMapsScript(){
+  if(window.L){ initMap(); return; }
+  const css = document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+  const js = document.createElement('script'); js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; js.onload = initMap;
+  js.onerror = ()=>{ setMapStatus('Map library could not load. Check your connection.'); };
+  document.head.appendChild(js);
 }
 
 /* ---- boot ---- */

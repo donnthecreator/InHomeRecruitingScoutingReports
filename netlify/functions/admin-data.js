@@ -632,6 +632,7 @@ exports.handler = async (event) => {
                  p.home_city, p.height, p.weight, p.wingspan, p.film_link,
                  p.headshot_key, p.wingspan_key,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
+                 (SELECT r.inhome_score FROM reports r WHERE r.prospect_id = p.id ORDER BY r.created_at DESC LIMIT 1) AS latest_score,
                  (SELECT string_agg(DISTINCT upper(pp.program_code), ', ') FROM program_prospects pp WHERE pp.prospect_id = p.id) AS boards
           FROM prospects p
           ORDER BY p.name`;

@@ -314,6 +314,9 @@
     .panes{min-width:0;}
     .stat-row{margin-bottom:0;}
   }
+
+  .plink{cursor:pointer; text-decoration:none; border-bottom:1px dotted transparent;}
+  .plink:hover{border-bottom-color:var(--ink);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -380,7 +383,8 @@
 
   <div class="layout">
   <div class="tabs">
-    <button type="button" class="tab-btn on" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
+    <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Players<span class="cnt" id="cntPlayers">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
@@ -393,8 +397,35 @@
   </div>
 
   <div class="panes">
+  <!-- ============ PLAYERS (master board) ============ -->
+  <div class="pane on" id="panePlayers">
+    <div class="panel">
+      <h3>Master Board</h3>
+      <div class="sub">Every player in the system, one list. Scouted, on a program board, in the performance log, or submitted through the public page. Tap a name anywhere in admin to open his profile.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="plSearch" placeholder="Search name, school, state, board code" oninput="renderPlayers(true)">
+        <select id="plLevel" onchange="renderPlayers(true)"><option value="">All levels</option><option value="HS">HS</option><option value="JUCO">JUCO</option><option value="College">College</option></select>
+        <select id="plPos" onchange="renderPlayers(true)"><option value="">All positions</option></select>
+        <select id="plHas" onchange="renderPlayers(true)">
+          <option value="">Any status</option><option value="report">Has a report</option><option value="noreport">No report yet</option>
+          <option value="board">On a program board</option><option value="photo">Has a headshot</option><option value="nophoto">No headshot</option>
+          <option value="assess">Completed an assessment</option>
+        </select>
+        <select id="plSort" onchange="renderPlayers(true)"><option value="name">Name</option><option value="score">InHome Score</option><option value="recent">Recently added</option><option value="school">School</option></select>
+        <button type="button" class="mini-btn" onclick="PLAYERS=null; renderPlayers()">Refresh</button>
+      </div>
+      <div class="rc-actions" style="margin-top:8px;">
+        <input type="text" id="plNewName" placeholder="New player name" style="flex:1;">
+        <input type="text" id="plNewSchool" placeholder="School" style="flex:1;">
+        <button type="button" class="btn" onclick="createPlayerQuick()">Create profile</button>
+      </div>
+      <div id="plStats" class="sub" style="margin-top:8px;"></div>
+      <div id="plList" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
   <!-- ============ ASSIGN ============ -->
-  <div class="pane on" id="paneAssign">
+  <div class="pane" id="paneAssign">
     <div class="panel">
       <h3>Assign a Player</h3>
       <div class="sub">Adds to the scout's Unscouted list. They see it next time they open Scout Home.</div>
@@ -931,6 +962,7 @@ function renderAll(){
   loadProgramBoards();
   buildKnownNames();
   fillBadSchools();
+  if(document.getElementById('panePlayers').classList.contains('on')) renderPlayers();
   if(!KNOWN_PROSPECTS.length) loadKnownProspects().then(()=>renderPerf());
   loadLogos().then(()=>renderPerf());
 }
@@ -962,10 +994,11 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     document.getElementById('tb'+cap).classList.toggle('on', k===t);
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
+  if(t==='players') renderPlayers();
   if(t==='intake') renderIntake();
   if(t==='assess'){ renderAssessments(); renderClips(); }
   if(t==='market') renderMarket();
@@ -1102,7 +1135,7 @@ function renderAssignments(){
       <div class="rc-top">
         <div class="rc-avatar">${initials(a.name)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(a.name)}</div>
+          <div class="rc-name"><span class="plink" data-pid="${a.prospect_id||''}" data-pname="${esc(a.name)}" data-pschool="${esc(a.school||'')}" data-ppos="${esc(a.position||'')}" data-pclass="${esc(a.class_year||'')}">${esc(a.name)}</span></div>
           <div class="rc-meta">${esc(a.position||'')} &middot; ${esc(a.school||'—')} &middot; Class of ${esc(a.class_year||'—')}</div>
           <span class="pill ${a.level==='JUCO'?'juco':'hs'}">${esc(a.level||'HS')}</span>
           ${a.priority==='high'?'<span class="pill high">High Priority</span>':''}
@@ -1591,7 +1624,7 @@ function renderBoard(){
       <div class="b-top">
         <div class="b-num">${i+1}</div>
         <div class="b-mid">
-          <div class="b-name">${esc(p[0])}</div>
+          <div class="b-name"><span class="plink" data-pid="${(p[6]&&p[6].prospectId)||''}" data-pname="${esc(p[0])}" data-pschool="${esc(p[2]||'')}" data-ppos="${esc(p[1]||'')}" data-pclass="${esc((p[6]&&p[6].classYear)||'')}">${esc(p[0])}</span></div>
           <div class="b-meta">${esc(meta)}</div>
           ${scouted}
         </div>
@@ -2065,7 +2098,7 @@ function renderReports(){
       <div class="rc-top">
         <div class="rc-avatar">${reportPhotoUrl(r)?`<img src="${reportPhotoUrl(r)}" alt="" onerror="this.style.display='none';this.parentElement.textContent='${initials(r.prospect)}';">`:initials(r.prospect)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(r.prospect)}</div>
+          <div class="rc-name"><span class="plink" data-pid="${r.prospect_id||''}" data-pname="${esc(r.prospect)}" data-pschool="${esc(r.school||'')}" data-ppos="${esc(r.position||'')}" data-pclass="${esc(r.class_year||'')}">${esc(r.prospect)}</span></div>
           <div class="rc-meta">${esc(r.position_label||r.position||'')} &middot; ${esc(r.school||'—')} &middot; Class of ${esc(r.class_year||'—')}</div>
           ${(r.home_city||r.home_state) ? `<div class="rc-meta">${esc([r.home_city, r.home_state].filter(Boolean).join(', '))}</div>` : ''}
           <div class="rc-meta">Filed by ${esc(r.scout_name||scoutName(r.scout_id))} &middot; ${fmtDate(r.date_evaluated||r.created_at)}</div>
@@ -2088,6 +2121,67 @@ function renderReports(){
         <span class="rc-meta" id="repStatus-${r.id}" style="align-self:center;"></span>
       </div>
     </div>`).join('');
+}
+
+/* ---------------- PLAYERS: master board ---------------- */
+let PLAYERS = null;
+async function renderPlayers(skipFetch){
+  const el = document.getElementById('plList'), st = document.getElementById('plStats');
+  if(PLAYERS === null && !skipFetch){
+    el.innerHTML = '<div class="empty"><div class="t">Loading...</div></div>';
+    try{
+      const d = await api('listProspects', {});
+      KNOWN_PROSPECTS = d.prospects || [];
+      PLAYERS = (d.prospects||[]).concat((d.pending||[]).map(p=>Object.assign({}, p, { id:null, pending:true })));
+      buildKnownNames();
+      const posSel = document.getElementById('plPos');
+      if(posSel.options.length<=1) [...new Set(PLAYERS.map(p=>p.position).filter(Boolean))].sort().forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; posSel.appendChild(o); });
+    }catch(err){ el.innerHTML = `<div class="empty"><div class="t">Could not load</div><div class="s">${esc(err.message)}</div></div>`; return; }
+  }
+  if(!PLAYERS) return;
+  document.getElementById('cntPlayers').textContent = PLAYERS.length;
+  const q = (document.getElementById('plSearch').value||'').trim().toLowerCase();
+  const lv = document.getElementById('plLevel').value, pos = document.getElementById('plPos').value, has = document.getElementById('plHas').value, sort = document.getElementById('plSort').value;
+  const assessed = new Set((ASSESS||[]).filter(a=>a.status==='complete'&&a.prospect_id).map(a=>String(a.prospect_id)));
+  let list = PLAYERS.filter(p=>{
+    if(lv && (p.level||'HS')!==lv) return false;
+    if(pos && p.position!==pos) return false;
+    if(has==='report' && !p.reports) return false;
+    if(has==='noreport' && p.reports) return false;
+    if(has==='board' && !p.boards) return false;
+    if(has==='photo' && !p.headshot_key) return false;
+    if(has==='nophoto' && p.headshot_key) return false;
+    if(has==='assess' && !assessed.has(String(p.id))) return false;
+    if(!q) return true;
+    return [p.name,p.school,p.home_state,p.boards,p.position].some(v=>(v||'').toLowerCase().includes(q));
+  });
+  const sorters = { name:(a,b)=>(a.name||'').localeCompare(b.name||''), school:(a,b)=>(a.school||'').localeCompare(b.school||'')||(a.name||'').localeCompare(b.name||''),
+                    score:(a,b)=>(Number(b.latest_score)||-1)-(Number(a.latest_score)||-1), recent:(a,b)=>(b.id||0)-(a.id||0) };
+  list.sort(sorters[sort]||sorters.name);
+  st.textContent = `${list.length} shown \u00b7 ${PLAYERS.filter(p=>p.reports).length} with reports \u00b7 ${PLAYERS.filter(p=>p.headshot_key).length} with headshots \u00b7 ${PLAYERS.filter(p=>p.pending).length} from the performance log only`;
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No players match</div></div>'; return; }
+  el.innerHTML = list.slice(0, 400).map(p=>`<div class="row-card" style="padding:10px 12px;">
+    <div class="rc-top">
+      <div class="rc-avatar">${p.headshot_key?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}" alt="" onerror="this.remove()">`:initials(p.name)}</div>
+      <div class="rc-mid">
+        <div class="rc-name"><span class="plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">${esc(p.name)}</span> <span class="rc-meta">${esc(p.position||'')}</span></div>
+        <div class="rc-meta">${esc(p.school||'\u2014')}${p.class_year?' \u00b7 Class of '+esc(p.class_year):''}${p.home_state?' \u00b7 '+esc(p.home_state):''} \u00b7 ${esc(p.level||'HS')}</div>
+        ${p.boards?`<span class="pill">${esc(p.boards)}</span>`:''}${p.reports?`<span class="pill" style="border-color:var(--good);color:var(--good)">${p.reports} report${p.reports===1?'':'s'}</span>`:''}${assessed.has(String(p.id))?'<span class="pill" style="border-color:var(--ink);color:var(--ink)">assessed</span>':''}${p.pending?'<span class="pill" style="color:var(--warn);border-color:var(--warn)">performance log only</span>':''}
+      </div>
+      <div class="rc-right"><button type="button" class="mini-btn plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">Open</button></div>
+    </div>
+  </div>`).join('') + (list.length>400?`<div class="rc-meta" style="padding:10px;">Showing 400 of ${list.length}. Narrow the search.</div>`:'');
+}
+async function createPlayerQuick(){
+  const name = document.getElementById('plNewName').value.trim(), school = document.getElementById('plNewSchool').value.trim();
+  if(!name){ toast('Enter a name'); return; }
+  try{
+    const d = await api('createProspectFromPerformance', { name, school });
+    document.getElementById('plNewName').value=''; document.getElementById('plNewSchool').value='';
+    PLAYERS = null; renderPlayers();
+    openProfile(d.prospectId);
+    toast(d.existed ? 'Already existed, opened it' : 'Profile created');
+  }catch(err){ toast(err.message); }
 }
 
 /* ---------------- ASSESSMENTS + FILM CLIPS ---------------- */
@@ -2129,7 +2223,7 @@ async function renderAssessments(){
       <div class="rc-top">
         <div class="rc-avatar">${initials(a.athlete_name)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(a.athlete_name||'')}</div>
+          <div class="rc-name"><span class="plink" data-pid="${a.prospect_id||''}" data-pname="${esc(a.athlete_name||'')}" data-pschool="${esc(a.school||'')}" data-ppos="${esc(a.position||'')}">${esc(a.athlete_name||'')}</span></div>
           <div class="rc-meta">${esc(a.school||'')}${a.position?' \u00b7 '+esc(a.position):''} \u00b7 sent ${fmtDate(a.created_day)}</div>
           <span class="pill">${a.kind==='iq'?'Football IQ':a.kind==='full'?'Full assessment':'Interview'}</span>
           <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(a.status)}</span>
@@ -2295,6 +2389,14 @@ async function deleteClip(id){
 }
 
 /* ---------------- PLAYER PROFILE (edit any prospect from anywhere) ---------------- */
+document.addEventListener('click', (e) => {
+  const el = e.target.closest && e.target.closest('.plink');
+  if(!el) return;
+  e.preventDefault(); e.stopPropagation();
+  const pid = el.dataset.pid;
+  if(pid) openProfile(pid);
+  else openProfileByName(el.dataset.pname, el.dataset.pschool || '', { position: el.dataset.ppos || '', class_year: el.dataset.pclass || '', level: el.dataset.plevel || 'HS' });
+});
 let PP = null;
 async function openProfileByName(name, school, extra){
   /* performance-log players may not be prospects yet: create on the fly */
@@ -2456,7 +2558,7 @@ async function renderIntake(skipFetch){
       <div class="rc-top">
         <div class="rc-avatar">${initials(r.player_name)}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(r.player_name||'(no name)')} <span class="rc-meta">${esc(r.player_position||'')}</span></div>
+          <div class="rc-name"><span class="plink" data-pid="${r.prospect_id||''}" data-pname="${esc(r.player_name||'')}" data-pschool="${esc(r.school||'')}" data-ppos="${esc(r.player_position||'')}" data-pclass="${esc(r.class_year||'')}">${esc(r.player_name||'(no name)')}</span> <span class="rc-meta">${esc(r.player_position||'')}</span></div>
           <div class="rc-meta">${esc(r.school||'\u2014')}${r.class_year?' \u00b7 Class of '+esc(r.class_year):''}${(r.home_city||r.home_state)?' \u00b7 '+esc([r.home_city,r.home_state].filter(Boolean).join(', ')):''}</div>
           <div class="rc-meta">${[r.height,r.weight,r.gpa?'GPA '+esc(r.gpa):''].filter(Boolean).map(esc).join(' \u00b7 ')}</div>
           <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(r.status)}</span>
@@ -2586,7 +2688,7 @@ function marketRowHTML(p, i){
   return `<div class="xg-row ${p.dir}" data-mk="${i}">
       <div class="xg-sym" style="flex-direction:row; align-items:center; gap:9px;">
         ${p.headshotUrl ? `<img class="mk-face" src="${esc(p.headshotUrl)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="mk-face" style="display:grid;place-items:center;font-size:10px;color:#7A8094;font-weight:700;">${initials(p.name)}</div>`}
-        <div style="display:flex;flex-direction:column;gap:2px;min-width:0;"><b>${esc(p.sym)}</b><span>${p.logoUrl?`<img class="mk-logo" src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0;"><b>${esc(p.sym)}</b><span>${p.logoUrl?`<img class="mk-logo" src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}<span class="plink" data-pid="${p.prospectId||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.classYear||'')}" data-plevel="${esc(p.level||'')}">${esc(p.name)}</span> \u00b7 ${esc(p.school||'')}</span></div>
       </div>
       <div class="xg-pos">${esc(p.position||'')}</div>
       <div class="xg-price">${p.price.toFixed(1)}</div>
@@ -3226,7 +3328,7 @@ function renderPerf(){
         <div class="rank-num ${rank<3?'top':''}">${rankVal==null ? '\u2014' : (rank+1)}</div>
         <div class="rc-avatar">${(()=>{ const pr = (KNOWN_PROSPECTS||[]).find(x => nkey(x.name)===nkey(g.name) && x.headshot_key); return pr ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(pr.headshot_key)}" alt="" onerror="this.remove()">` : initials(g.name); })()}</div>
         <div class="rc-mid">
-          <div class="rc-name">${esc(g.name)}${g.avg!=null ? ` <span class="rc-meta">avg ${g.avg.toFixed(1)} \u00b7 best ${g.best.toFixed(1)}</span>` : ''}</div>
+          <div class="rc-name"><span class="plink" data-pname="${esc(g.name)}" data-pschool="${esc(g.school||'')}" data-ppos="${esc(g.position||'')}" data-pclass="${esc(g.class_year||'')}" data-plevel="${esc(g.level||'')}">${esc(g.name)}</span>${g.avg!=null ? ` <span class="rc-meta">avg ${g.avg.toFixed(1)} \u00b7 best ${g.best.toFixed(1)}</span>` : ''}</div>
           <div class="rc-meta">${esc(g.position||'')} &middot; ${LOGOS[schoolKey(g.school)]?`<img class="mk-logo" src="${esc(LOGOS[schoolKey(g.school)])}" alt="" onerror="this.remove()">`:''}${esc(g.school||'\u2014')} &middot; Class of ${esc(g.class_year||'\u2014')}</div>
           <span class="pill ${g.level==='JUCO'?'juco':'hs'}">${esc(g.level||'HS')}</span>
           <span class="pill">${g.entries.length} game${g.entries.length===1?'':'s'}</span>

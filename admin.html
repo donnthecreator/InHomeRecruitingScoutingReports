@@ -539,8 +539,14 @@
       <div class="tools" style="margin-top:12px;">
         <input type="text" id="asName" placeholder="Athlete name">
         <input type="text" id="asSchool" placeholder="School">
-        <select id="asKind"><option value="interview">Interview</option><option value="iq">Football IQ</option></select>
+        <select id="asKind"><option value="full">Full assessment (interview + IQ)</option><option value="interview">Interview only</option><option value="iq">Football IQ only</option></select>
         <button type="button" class="btn" onclick="newAssessment()">Create link</button>
+      </div>
+      <div class="rc-actions" style="margin-top:8px;">
+        <span class="rc-meta">Preview exactly what the athlete sees:</span>
+        <a class="mini-btn" href="assessment.html?preview=full" target="_blank" rel="noopener">Full</a>
+        <a class="mini-btn" href="assessment.html?preview=interview" target="_blank" rel="noopener">Interview</a>
+        <a class="mini-btn" href="assessment.html?preview=iq" target="_blank" rel="noopener">Football IQ</a>
       </div>
       <div id="asStatus" class="sub" style="margin-top:8px;"></div>
       <div id="asList" style="margin-top:10px;"></div>
@@ -2051,7 +2057,7 @@ async function newAssessment(kind, prospectId, name, school){
     ASSESS = null; if(currentView==='assess') renderAssessments();
     let copied = false;
     try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
-    const label = k==='iq' ? 'Football IQ' : 'Interview';
+    const label = k==='iq' ? 'Football IQ' : k==='full' ? 'Full assessment' : 'Interview';
     if(copied) toast(label + ' link copied' + (d.reused ? ' (existing open link)' : ''));
     else prompt('Copy this ' + label + ' link:', d.url);
     const st = document.getElementById('asStatus'); if(st) st.textContent = d.url;
@@ -2076,7 +2082,7 @@ async function renderAssessments(){
         <div class="rc-mid">
           <div class="rc-name">${esc(a.athlete_name||'')}</div>
           <div class="rc-meta">${esc(a.school||'')}${a.position?' \u00b7 '+esc(a.position):''} \u00b7 sent ${fmtDate(a.created_day)}</div>
-          <span class="pill">${a.kind==='iq'?'Football IQ':'Interview'}</span>
+          <span class="pill">${a.kind==='iq'?'Football IQ':a.kind==='full'?'Full assessment':'Interview'}</span>
           <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(a.status)}</span>
           ${a.score_pct!=null?`<span class="pill" style="border-color:var(--ink);color:var(--ink);font-weight:800;">${Number(a.score_pct)}%</span>`:''}
         </div>
@@ -2240,8 +2246,9 @@ function renderProfile(){
       }).join('')}
     </div>
     <div class="rc-actions" style="margin-top:14px;">
-      <button type="button" class="mini-btn go" onclick="newAssessment('interview', ${p.id})">Send interview link</button>
-      <button type="button" class="mini-btn go" onclick="newAssessment('iq', ${p.id})">Send IQ test link</button>
+      <button type="button" class="mini-btn go" onclick="newAssessment('full', ${p.id})">Send full assessment</button>
+      <button type="button" class="mini-btn" onclick="newAssessment('interview', ${p.id})">Interview only</button>
+      <button type="button" class="mini-btn" onclick="newAssessment('iq', ${p.id})">IQ only</button>
     </div>
     <div class="rc-actions" style="margin-top:8px;">
       <button type="button" class="btn" onclick="saveProfile()">Save</button>

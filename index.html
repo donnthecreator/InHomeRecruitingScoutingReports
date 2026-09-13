@@ -405,6 +405,9 @@
   #ihWelcome::before{content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,.92) 100%);}
   #ihWelcome > *{position:relative; z-index:1;}
   #ihWelcome.hascover .face{border-width:3px; box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  #ihWelcome .mark{width:min(56vw,300px); height:auto; opacity:0; animation:ihIn .7s ease 0s forwards;}
+  #ihWelcome.hascover .mark{mix-blend-mode:screen; opacity:0; animation:ihInSoft .9s ease 0s forwards;}
+  @keyframes ihInSoft{to{opacity:.82;}}
   .prof-hero{position:relative; overflow:hidden;}
   .prof-cover{position:absolute; inset:0; background:center/cover no-repeat; opacity:.35; pointer-events:none;}
   .prof-cover::after{content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.85));}
@@ -504,7 +507,7 @@
 </div>
 
 <div id="ihWelcome">
-  <img src="inhome-logo.png" alt="InHome" style="width:min(56vw,300px); height:auto; opacity:0; animation:ihIn .7s ease 0s forwards;">
+  <img class="mark" src="inhome-logo.png" alt="InHome">
   <div class="face" id="ihWelcomeFace"></div>
   <div class="hi" id="ihWelcomeHi"></div>
   <div class="sub" id="ihWelcomeSub">InHome Scout</div>

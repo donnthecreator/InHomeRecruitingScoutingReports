@@ -20,7 +20,7 @@ const sql = neon(process.env.DATABASE_URL);
 
 exports.handler = async (event) => {
   try {
-    try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`; } catch (e) {}
+    try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`; await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS cover_key TEXT`; } catch (e) {}
     const rows = await sql`SELECT * FROM scouts WHERE access_code IS NOT NULL`;
     const h = (event && event.headers) || {};
     const base = `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
@@ -34,7 +34,8 @@ exports.handler = async (event) => {
         name:   r.name || r.scout_id,
         role:   r.role || r.scout_role || 'Regional Scout',
         region: r.region || r.scout_region || 'Unassigned',
-        headshotUrl: r.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(r.headshot_key)}` : null
+        headshotUrl: r.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(r.headshot_key)}` : null,
+        coverUrl: r.cover_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(r.cover_key)}` : null
       };
     }
 

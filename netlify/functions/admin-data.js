@@ -752,6 +752,13 @@ exports.handler = async (event) => {
         const posList = Array.isArray(body.positions) && body.positions.length ? body.positions.map(x => String(x).toUpperCase()) : null;
         const POS_EXPAND = { DB: ['DB','CB','S','SS','FS','SAF','NB'], DL: ['DL','DE','DT','NG','NT','EDGE','JACK'], LB: ['LB','ILB','OLB','MLB'], OL: ['OL','OT','OG','C'], RB: ['RB','FB'], WR: ['WR'], TE: ['TE'], QB: ['QB'], K: ['K','P','LS'] };
         const posSet = posList ? [...new Set(posList.flatMap(x => POS_EXPAND[x] || [x]))] : null;
+        const posCsv = posSet ? posSet.join(',') : '';   // empty string = no filter (avoids array params)
+        /* what is on the board, and which of those match the position filter */
+        const [cnt] = await sql`
+          SELECT count(*)::int AS on_board,
+                 count(*) FILTER (WHERE ${posCsv} = '' OR upper(COALESCE(p.position,'')) = ANY(string_to_array(${posCsv}, ',')))::int AS matched,
+                 string_agg(DISTINCT upper(COALESCE(p.position,'?')), ', ') AS positions_present
+          FROM program_prospects pp JOIN prospects p ON p.id = pp.prospect_id WHERE upper(pp.program_code) = ${program}`;
         const rows = scoutId
           ? await sql`
               INSERT INTO scout_assignments
@@ -760,7 +767,7 @@ exports.handler = async (event) => {
                      'normal', ${note}, 'open', p.id, now()
               FROM program_prospects pp JOIN prospects p ON p.id = pp.prospect_id
               WHERE upper(pp.program_code) = ${program}
-                AND (${posSet}::text[] IS NULL OR upper(COALESCE(p.position,'')) = ANY(${posSet}::text[]))
+                AND (${posCsv} = '' OR upper(COALESCE(p.position,'')) = ANY(string_to_array(${posCsv}, ',')))
                 AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = ${scoutId} AND a.prospect_id = p.id)
               RETURNING id`
           : await sql`
@@ -773,10 +780,12 @@ exports.handler = async (event) => {
               CROSS JOIN scouts s
               WHERE upper(pp.program_code) = ${program}
                 AND s.access_code IS NOT NULL
-                AND (${posSet}::text[] IS NULL OR upper(COALESCE(p.position,'')) = ANY(${posSet}::text[]))
+                AND (${posCsv} = '' OR upper(COALESCE(p.position,'')) = ANY(string_to_array(${posCsv}, ',')))
                 AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = s.scout_id AND a.prospect_id = p.id)
               RETURNING id`;
-        return ok({ created: rows.length, positions: posSet });
+        let already = 0;
+        if (scoutId) { const [a] = await sql`SELECT count(*)::int AS n FROM scout_assignments a JOIN program_prospects pp ON pp.prospect_id = a.prospect_id WHERE upper(pp.program_code) = ${program} AND a.scout_id = ${scoutId}`; already = a.n; }
+        return ok({ created: rows.length, positions: posSet, onBoard: cnt.on_board, matched: cnt.matched, positionsPresent: cnt.positions_present, nowAssigned: already, scoutId });
       }
 
       /* Undo assignProgramBoard: removes OPEN assignments for a program's

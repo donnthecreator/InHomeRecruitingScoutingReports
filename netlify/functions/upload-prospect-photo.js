@@ -63,8 +63,8 @@ exports.handler = async (event) => {
   catch { return fail(400, 'Bad request'); }
 
   const kind = payload.kind;
-  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto'].includes(kind)) {
-    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, or scoutphoto');
+  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto', 'scoutcover'].includes(kind)) {
+    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, scoutphoto, or scoutcover');
   }
 
   let scout = await resolveScout(payload.accessCode);
@@ -72,7 +72,8 @@ exports.handler = async (event) => {
   if (!scout) return fail(401, 'Invalid access code');
 
   /* ------- scout's own photo (the scout, or admin for any scout) ------- */
-  if (kind === 'scoutphoto') {
+  if (kind === 'scoutphoto' || kind === 'scoutcover') {
+    const col = kind === 'scoutcover' ? 'cover_key' : 'headshot_key';
     const target = scout.scout_id === 'admin' ? String(payload.scoutId || '') : scout.scout_id;
     if (!target) return fail(400, 'scoutId required');
     const contentType = payload.contentType || 'image/jpeg';
@@ -82,12 +83,15 @@ exports.handler = async (event) => {
     if (!buf.length || buf.length > MAX_BYTES) return fail(413, 'Image too large');
     try {
       await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`;
+      await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS cover_key TEXT`;
       const store = frameStore();
-      const key = `scout_${target.replace(/[^A-Za-z0-9_-]/g, '')}_${Date.now()}`;
+      const key = `scout_${kind === 'scoutcover' ? 'cover_' : ''}${target.replace(/[^A-Za-z0-9_-]/g, '')}_${Date.now()}`;
       await store.set(key, buf, { metadata: { contentType } });
-      const [old] = await sql`SELECT headshot_key FROM scouts WHERE scout_id = ${target}`;
-      await sql`UPDATE scouts SET headshot_key = ${key} WHERE scout_id = ${target}`;
-      if (old && old.headshot_key) { try { await store.delete(old.headshot_key); } catch (e) {} }
+      const [old] = await sql`SELECT headshot_key, cover_key FROM scouts WHERE scout_id = ${target}`;
+      if (kind === 'scoutcover') await sql`UPDATE scouts SET cover_key = ${key} WHERE scout_id = ${target}`;
+      else await sql`UPDATE scouts SET headshot_key = ${key} WHERE scout_id = ${target}`;
+      const prev = old ? old[col] : null;
+      if (prev) { try { await store.delete(prev); } catch (e) {} }
       return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
     } catch (err) { console.error('scout photo error:', err); return fail(500, err.message); }
   }

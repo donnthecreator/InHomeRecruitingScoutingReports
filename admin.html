@@ -904,6 +904,7 @@ function normalizeScouts(rows){
     pkId: s.pkId !== undefined ? s.pkId : s.id,
     id: s.scout_id || s.id,
     headshotKey: s.headshot_key || s.headshotKey || null,
+    coverKey: s.cover_key || s.coverKey || null,
     accessCode: s.access_code || s.accessCode || '',
     name: s.name, role: s.role, region: s.region,
     active: s.active !== undefined ? s.active : true
@@ -1546,7 +1547,12 @@ async function assignWholeBoard(){
   if(!confirm(`Put ${what} on ${who}'s target list?`)) return;
   try{
     const d = await api('assignProgramBoard', { program: LIVE_BOARD_CODE, scoutId, positions: positions.length ? positions : null });
-    toast(`Created ${d.created} assignment(s) for ${who}${positions.length ? ' (' + positions.join(', ') + ')' : ''}`);
+    const msg = `${d.created} new assignment${d.created===1?'':'s'} for ${who}.` +
+      ` Board has ${d.onBoard} players; ${d.matched} matched ${positions.length ? positions.join('/') : 'all positions'}.` +
+      (scoutId ? ` ${who} now has ${d.nowAssigned} from this board.` : '') +
+      (d.created===0 && d.matched>0 ? ' All matched players were already on the list.' : '') +
+      (d.matched===0 ? ` Positions on this board: ${d.positionsPresent||'none'}.` : '');
+    alert(msg); toast(`${d.created} assigned`);
     loadAll();
   }catch(err){ toast(err.message); }
 }
@@ -1948,7 +1954,7 @@ function renderRoster(){
     + sorted.map(s=>`
     <div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's photo" onclick="scoutPhotoPick('${esc(s.id)}')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
+        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's profile photo" onclick="scoutPhotoPick('${esc(s.id)}','scoutphoto')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role||'')} &middot; ${esc(s.region||'')}</div>
@@ -1961,6 +1967,8 @@ function renderRoster(){
       </div>
       <div class="rc-actions">
         <button type="button" class="mini-btn" onclick="copyCode('${esc(s.accessCode)}')">Copy Code</button>
+        <button type="button" class="mini-btn" onclick="scoutPhotoPick('${esc(s.id)}','scoutphoto')">Profile photo</button>
+        <button type="button" class="mini-btn" onclick="scoutPhotoPick('${esc(s.id)}','scoutcover')">${s.coverKey?'Change cover':'Cover photo'}</button>
         ${s.active
           ? `<button type="button" class="mini-btn danger" onclick="toggleScoutActive('${s.pkId}', false)">Deactivate</button>`
           : `<button type="button" class="mini-btn" onclick="toggleScoutActive('${s.pkId}', true)">Reactivate</button>`}
@@ -2081,7 +2089,7 @@ function renderScouts(){
     const boardInRegion = cov.reduce((n,st)=>n+BOARD_DATA.filter(p=>p[3]===st).length,0);
     return `<div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's photo" onclick="scoutPhotoPick('${esc(s.id)}')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
+        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's profile photo" onclick="scoutPhotoPick('${esc(s.id)}','scoutphoto')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role)} &middot; ${esc(s.region)}${cov.length?` (${cov.join(', ')})`:''}</div>
@@ -2413,24 +2421,24 @@ async function deleteClip(id){
 }
 
 /* ---------------- SCOUT PHOTOS (admin sets any scout's picture) ---------------- */
-let _scoutPhotoTarget = null;
-function scoutPhotoPick(scoutId){
-  _scoutPhotoTarget = scoutId;
+let _scoutPhotoTarget = null, _scoutPhotoKind = 'scoutphoto';
+function scoutPhotoPick(scoutId, kind){
+  _scoutPhotoTarget = scoutId; _scoutPhotoKind = kind || 'scoutphoto';
   let input = document.getElementById('scoutPhotoInput');
   if(!input){ input = document.createElement('input'); input.type='file'; input.accept='image/*'; input.id='scoutPhotoInput'; input.style.display='none';
     input.onchange = async () => { if(input.files && input.files[0]) await uploadScoutPhotoAdmin(input.files[0]); input.value=''; }; document.body.appendChild(input); }
   input.click();
 }
 async function uploadScoutPhotoAdmin(file){
-  const img = await resizeImage(file, 1000);
+  const img = await resizeImage(file, _scoutPhotoKind==='scoutcover' ? 1600 : 1000);
   if(!img){ alert('Could not read that image.'); return; }
   try{
     const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-      body: JSON.stringify({ kind:'scoutphoto', scoutId:_scoutPhotoTarget, dataBase64: img.base64, contentType: img.contentType }) });
+      body: JSON.stringify({ kind:_scoutPhotoKind, scoutId:_scoutPhotoTarget, dataBase64: img.base64, contentType: img.contentType }) });
     const d = await res.json().catch(()=>({}));
     if(!res.ok) throw new Error(d.error || ('HTTP '+res.status));
-    (SCOUT_ROSTER||[]).forEach(x => { if(x.id===_scoutPhotoTarget) x.headshotKey = d.key; });
-    renderRoster(); renderScouts(); toast('Scout photo saved');
+    (SCOUT_ROSTER||[]).forEach(x => { if(x.id===_scoutPhotoTarget){ if(_scoutPhotoKind==='scoutcover') x.coverKey = d.key; else x.headshotKey = d.key; } });
+    renderRoster(); renderScouts(); toast(_scoutPhotoKind==='scoutcover' ? 'Cover photo saved' : 'Scout photo saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
 }
 

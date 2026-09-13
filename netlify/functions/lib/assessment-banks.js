@@ -53,6 +53,44 @@ const INTERVIEW = [
     { id: 'ncaa_id', type: 'single', q: 'Are you registered with the NCAA Eligibility Center?', options: ['Yes', 'No', 'Not sure'] },
     { id: 'major', type: 'text', q: 'What do you want to study, and what happens if football ends tomorrow?' }
   ]},
+  { section: 'How you are wired', items: [
+    { id: 'mb_ei', type: 'single', q: 'After a hard practice, what actually recharges you?',
+      options: ['Being around the guys, talking it out', 'Getting to myself for a while'], mb: 'EI' },
+    { id: 'mb_ei2', type: 'single', q: 'In a new locker room, you are usually',
+      options: ['One of the first guys talking to everybody', 'Quiet at first, I watch and then pick my spots'], mb: 'EI' },
+    { id: 'mb_sn', type: 'single', q: 'A coach installs a new scheme. What helps you more?',
+      options: ['Show me the details, rep by rep, exactly what my job is', 'Show me the big picture first, then I fill in my part'], mb: 'SN' },
+    { id: 'mb_sn2', type: 'single', q: 'When you study film you mostly notice',
+      options: ['What actually happened on the play, step by step', 'What it means for the game plan and what is coming next'], mb: 'SN' },
+    { id: 'mb_tf', type: 'single', q: 'A teammate is not pulling his weight. You',
+      options: ['Tell him straight, the standard is the standard', 'Figure out what is going on with him first'], mb: 'TF' },
+    { id: 'mb_tf2', type: 'single', q: 'What gets more out of you from a coach?',
+      options: ['Hard, direct, no sugar on it', 'Someone who knows me and coaches me that way'], mb: 'TF' },
+    { id: 'mb_jp', type: 'single', q: 'Game week, you are',
+      options: ['On a routine, same schedule, everything planned', 'Loose, I go with how the week feels'], mb: 'JP' },
+    { id: 'mb_jp2', type: 'single', q: 'The play breaks down. You are at your best when',
+      options: ['I already know the answer because we repped it', 'It is off script and I can just play'], mb: 'JP' },
+    { id: 'learn_style', type: 'single', q: 'You learn a new install fastest by',
+      options: ['Seeing it drawn up', 'Hearing it explained', 'Walking through it on the field', 'Watching someone else rep it first'] },
+    { id: 'pressure', type: 'text', q: 'Describe how you actually feel in the last two minutes of a one-score game. Not the answer you think we want.' }
+  ]},
+
+  { section: 'What drives you', items: [
+    { id: 'motiv_rank', type: 'single', q: 'Be honest: which of these matters most to you right now?',
+      options: ['Playing time as early as possible', 'The best coaching and development I can get',
+                'Winning at the highest level', 'NIL and what I can earn',
+                'Being close enough that my people can watch me play', 'A degree and what comes after ball'] },
+    { id: 'motiv_second', type: 'single', q: 'And second?',
+      options: ['Playing time as early as possible', 'The best coaching and development I can get',
+                'Winning at the highest level', 'NIL and what I can earn',
+                'Being close enough that my people can watch me play', 'A degree and what comes after ball'] },
+    { id: 'nil_open', type: 'text', q: 'NIL is part of this now, so we ask everybody the same thing straight: how big a factor is money in your decision, and who is helping you think it through?' },
+    { id: 'nil_tradeoff', type: 'single', q: 'Two schools want you. One offers real money and you sit two years. One offers less and you compete right away. Today, which way do you lean?',
+      options: ['Take the money, I will get my shot', 'Take the field, the money follows', 'Depends on the school and the coach', 'I honestly do not know yet'] },
+    { id: 'money_advice', type: 'text', q: 'What has your family told you about the money side of this?' },
+    { id: 'after_ball', type: 'text', q: 'If football ended after college, what would you want to be doing at 30?' }
+  ]},
+
   { section: 'Recruitment', items: [
     { id: 'offers', type: 'text', q: 'Who has offered, and who is actually still talking to you every week?' },
     { id: 'priorities', type: 'text', q: 'What matters most to you in a school? Rank your top three and say why.' },
@@ -110,6 +148,30 @@ const IQ_WRITTEN = [
 
 const CLIP_OPTIONS_DEFAULT = ['Cover 0', 'Cover 1', 'Cover 2', 'Cover 3', 'Cover 4 / Quarters', 'Cover 6', 'Man free', 'Zone blitz'];
 
+/* Forced-choice pairs -> a four letter type. This is a conversation
+   starter for a position coach, not a psychometric instrument: MBTI-style
+   typing has weak test-retest reliability and is never scored, ranked,
+   or used to filter a prospect. The per-dimension lean is more honest
+   than the letters, so both are returned. */
+function mbtiType(answers) {
+  const dims = { EI: [0, 0], SN: [0, 0], TF: [0, 0], JP: [0, 0] };
+  INTERVIEW.forEach(sec => sec.items.forEach(it => {
+    if (!it.mb) return;
+    const v = answers[it.id];
+    if (v === undefined || v === null || v === '') return;
+    dims[it.mb][Number(v) === 0 ? 0 : 1]++;
+  }));
+  const letters = { EI: ['E', 'I'], SN: ['S', 'N'], TF: ['T', 'F'], JP: ['J', 'P'] };
+  let type = '', detail = {};
+  Object.keys(dims).forEach(k => {
+    const [a, b] = dims[k];
+    if (!a && !b) { type += '-'; detail[k] = null; return; }
+    type += a >= b ? letters[k][0] : letters[k][1];
+    detail[k] = { pick: a >= b ? letters[k][0] : letters[k][1], split: `${a}-${b}`, clear: Math.abs(a - b) > 0 };
+  });
+  return { type, detail, complete: !type.includes('-') };
+}
+
 function bank(kind) {
   return kind === 'iq' ? IQ_WRITTEN : INTERVIEW;
 }
@@ -137,4 +199,4 @@ function score(kind, answers, clips) {
   return { correct, total, pct: total ? Math.round((correct / total) * 100) : null, detail };
 }
 
-module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score };
+module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType };

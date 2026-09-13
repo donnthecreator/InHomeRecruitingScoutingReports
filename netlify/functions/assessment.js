@@ -12,7 +12,7 @@
 ===================================================================== */
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
-const { bank, score, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const { bank, score, mbtiType, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
 const sql = neon(process.env.DATABASE_URL);
 
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -95,6 +95,7 @@ exports.handler = async (event) => {
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ saved: true }) };
     }
     const sc = score(a.kind, clean, clips);
+    if (a.kind === 'interview') sc.mbti = mbtiType(clean);
     await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'complete', completed_at = now(),
               score_pct = ${sc.total ? sc.pct : null}, score_detail = ${JSON.stringify(sc)} WHERE id = ${a.id}`;
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ done: true, scored: sc.total > 0, pct: sc.pct, correct: sc.correct, total: sc.total }) };

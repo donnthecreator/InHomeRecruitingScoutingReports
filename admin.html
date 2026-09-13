@@ -2104,7 +2104,16 @@ function viewAssessment(id){
   const ans = a.answers || {};
   const det = (a.score_detail && a.score_detail.detail) || [];
   const written = Object.entries(ans).filter(([k])=>!det.some(d=>d.id===k));
+  const mb = a.score_detail && a.score_detail.mbti;
   host.innerHTML =
+    (mb && mb.complete ? `<div class="pp-rank" style="margin:0 0 10px;">
+      <div class="rc-meta">Mental profile</div>
+      <div style="display:flex;gap:16px;align-items:baseline;margin-top:4px;">
+        <div style="font-family:'Anton',sans-serif;font-size:26px;letter-spacing:.06em;">${esc(mb.type)}</div>
+        <div class="rc-meta">${Object.entries(mb.detail||{}).map(([k,v])=>v?`${esc(v.pick)} ${esc(v.split)}`:'').filter(Boolean).join(' \u00b7 ')}</div>
+      </div>
+      <div class="rc-meta" style="margin-top:4px;color:var(--dim)">A conversation starter for a position coach, not a score. Even splits mean he sits in the middle on that trait.</div>
+    </div>` : '') +
     (det.length ? `<div class="rc-meta" style="margin-bottom:6px;">Scored ${a.score_detail.correct} of ${a.score_detail.total}</div>` +
       det.map(d=>`<div class="vrow"><span style="color:${d.correct?'var(--good)':'#FF5A5A'};font-weight:800;">${d.correct?'\u2713':'\u2717'}</span>
         <span style="flex:1;"><b style="font-weight:600;">${esc(d.q)}</b><br>

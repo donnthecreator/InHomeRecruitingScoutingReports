@@ -535,11 +535,11 @@
   <a class="new-report-btn" href="report.html">+ New Scouting Report</a>
 
   <div class="tabs">
-    <button type="button" class="tab-btn on" id="tabBtnProfile" onclick="switchTab('profile')">
+    <button type="button" class="tab-btn" id="tabBtnProfile" onclick="switchTab('profile')">
       Profile<span class="cnt" id="tabCntProfile">Home</span>
     </button>
     <button type="button" class="tab-btn" id="tabBtnBoard" onclick="switchTab('board')">
-      Board<span class="cnt" id="tabCntBoard">&mdash;</span>
+      Big Board<span class="cnt" id="tabCntBoard">&mdash;</span>
     </button>
     <button type="button" class="tab-btn" id="tabBtnReports" onclick="switchTab('reports')">
       Reports<span class="cnt" id="tabCntReports">&mdash;</span>
@@ -547,15 +547,27 @@
     <button type="button" class="tab-btn" id="tabBtnTargets" onclick="switchTab('targets')">
       Unscouted<span class="cnt" id="tabCntTargets">&mdash;</span>
     </button>
-    <button type="button" class="tab-btn" id="tabBtnMarket" onclick="switchTab('market')">
+    <button type="button" class="tab-btn on" id="tabBtnMarket" onclick="switchTab('market')">
       JUCO Tracker<span class="cnt" id="tabCntMarket">&mdash;</span>
     </button>
     <button type="button" class="tab-btn" id="tabBtnConnect" onclick="switchTab('connect')">
       Connect<span class="cnt" id="tabCntConnect">&mdash;</span>
     </button>
+    <button type="button" class="tab-btn" id="tabBtnMap" onclick="switchTab('map')">
+      Map<span class="cnt" id="tabCntMap">&mdash;</span>
+    </button>
   </div>
 
-  <div class="tab-pane" id="paneMarket">
+  <div class="tab-pane" id="paneMap">
+    <div class="panel">
+      <h3 style="margin:0 0 4px;">Your Map</h3>
+      <div class="sub" style="margin-bottom:10px;">Every player you have scouted or been assigned, where he plays. Green is a filed report, red is on your list to scout. Faded pins are placed at the school.</div>
+      <div id="scoutMapStats" class="sub" style="margin:0 0 8px;"></div>
+      <div id="scoutMap" style="height:520px; border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#0B0B0B;"></div>
+    </div>
+  </div>
+
+  <div class="tab-pane on" id="paneMarket">
     <div class="panel">
       <h3 style="margin:0 0 4px;">JUCO Tracker</h3>
       <div class="sub" style="margin-bottom:10px;">The same board the college staffs are looking at, live. Every tracked player's Production Grade, his move since last game, top risers and fallers. Tap a name to file a report on him.</div>
@@ -588,7 +600,7 @@
     <div id="cxList"></div>
   </div>
 
-  <div class="tab-pane on" id="paneProfile">
+  <div class="tab-pane" id="paneProfile">
     <div class="prof-hero">
       <div class="prof-headshot" id="profHeadshot">&mdash;</div>
       <div class="prof-id">
@@ -618,11 +630,12 @@
   </div>
 
   <div class="tab-pane" id="paneBoard">
+    <div class="sub" style="margin:0 0 10px; line-height:1.55;">This is your Big Board: your national ranking of the players you have evaluated, by position and by class, the way a draft board ranks a position group. Your InHome Score sets the order. Coaches on the platform see your board under your name.</div>
     <div class="chip-row" id="boardPosChips"></div>
     <div class="depth-banner">
       <div>
         <div class="depth-banner-pos" id="depthBannerPos">&mdash;</div>
-        <div class="depth-banner-sub" id="depthBannerSub">Depth Chart</div>
+        <div class="depth-banner-sub" id="depthBannerSub">Big Board</div>
       </div>
       <div class="depth-banner-count">
         <div class="n" id="depthBannerCount">&mdash;</div>
@@ -857,7 +870,7 @@ let reportsError = null;
 let targets = [];
 let usingDemoReports = false;
 let usingDemoTargets = false;
-let activeTab = 'reports';
+let activeTab = 'market';
 let reportPosFilter = 'All';
 let targetPosFilter = 'All';
 
@@ -1319,6 +1332,7 @@ async function loadData(){
   buildPosChips();
   renderReports();
   renderTargets();
+  if(activeTab === 'market') renderMarket();
   initBoard();
 }
 
@@ -1414,11 +1428,11 @@ function renderBoard(){
   const el = document.getElementById('boardList');
   if(!boardPos){
     document.getElementById('depthBannerPos').textContent = '\u2014';
-    document.getElementById('depthBannerSub').textContent = 'Depth Chart';
+    document.getElementById('depthBannerSub').textContent = 'Big Board';
     document.getElementById('depthBannerCount').textContent = '\u2014';
     document.getElementById('boardClassTabs').innerHTML = '';
     el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F3C8}</div><div class="t">No board yet</div>
-      <div class="s">File reports and your evaluated players show up here to rank.</div></div>`;
+      <div class="s">File reports and your evaluated players rank themselves here by InHome Score. This becomes your national board for the position.</div></div>`;
     return;
   }
 
@@ -1430,7 +1444,7 @@ function renderBoard(){
 
   const list = orderedBoard(boardPos, boardClass);
   document.getElementById('depthBannerPos').textContent = boardPos;
-  document.getElementById('depthBannerSub').textContent = SCOUT.name.split(' ')[0] + "'s Depth Chart \u00b7 Class of " + boardClass;
+  document.getElementById('depthBannerSub').textContent = SCOUT.name.split(' ')[0] + "'s Big Board \u00b7 " + (boardPos||'') + " \u00b7 Class of " + boardClass;
   document.getElementById('depthBannerCount').textContent = list.length;
 
   if(!list.length){
@@ -1512,10 +1526,54 @@ function switchTab(tab){
   document.getElementById('paneTargets').classList.toggle('on', tab==='targets');
   document.getElementById('tabBtnMarket').classList.toggle('on', tab==='market');
   document.getElementById('tabBtnConnect').classList.toggle('on', tab==='connect');
+  document.getElementById('tabBtnMap').classList.toggle('on', tab==='map');
   document.getElementById('paneMarket').classList.toggle('on', tab==='market');
   document.getElementById('paneConnect').classList.toggle('on', tab==='connect');
+  document.getElementById('paneMap').classList.toggle('on', tab==='map');
   if(tab==='market') renderMarket();
   if(tab==='connect'){ buildProgramList(); loadConnect(); }
+  if(tab==='map') renderScoutMap();
+}
+
+/* ---------------- MAP: his scouted + assigned players (Leaflet, no key needed) ---------------- */
+let _scoutLeaflet = null, MAP_PINS = null;
+function loadLeaflet(){
+  return new Promise((resolve, reject) => {
+    if(window.L) return resolve();
+    const css = document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+    const js = document.createElement('script'); js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; js.onload=resolve; js.onerror=reject; document.head.appendChild(js);
+  });
+}
+async function renderScoutMap(){
+  const host = document.getElementById('scoutMap'), st = document.getElementById('scoutMapStats');
+  try{
+    await loadLeaflet();
+    if(MAP_PINS === null){ const r = await fetch('/.netlify/functions/list-map', {cache:'no-store'}); const d = await r.json(); MAP_PINS = d.pins || []; }
+  }catch(e){ st.textContent = 'Map could not load. Check your signal.'; return; }
+  /* his players: ids from filed reports and assignments, names as fallback */
+  const mineIds = new Set([...reports.map(r=>r.prospectId), ...targets.map(t=>t.prospect_id||t.prospectId)].filter(Boolean).map(String));
+  const nk = (n)=>String(n||'').toLowerCase().replace(/[^a-z]/g,'');
+  const mineNames = new Set([...reports.map(r=>nk(r.prospect)), ...targets.map(t=>nk(t.name))].filter(Boolean));
+  const scoutedIds = new Set(reports.map(r=>String(r.prospectId)).filter(Boolean));
+  const scoutedNames = new Set(reports.map(r=>nk(r.prospect)));
+  const mine = MAP_PINS.filter(p => (p.id && mineIds.has(String(p.id))) || mineNames.has(nk(p.name)));
+  const placed = mine.filter(p => p.lat!=null && p.lng!=null);
+  document.getElementById('tabCntMap').textContent = mine.length;
+  st.textContent = `${mine.length} players \u00b7 ${placed.length} on the map` + (mine.length-placed.length ? ` \u00b7 ${mine.length-placed.length} without a location yet` : '');
+  if(_scoutLeaflet){ try{ _scoutLeaflet.remove(); }catch(e){} _scoutLeaflet = null; }
+  _scoutLeaflet = L.map(host, { preferCanvas:true }).setView([32.8,-88.0], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19 }).addTo(_scoutLeaflet);
+  const seen = {}; const bounds = [];
+  placed.forEach(p => {
+    const k = p.lat.toFixed(3)+','+p.lng.toFixed(3); const n = (seen[k]=(seen[k]||0)+1); const ang = n*2.399, rad = n>1 ? 0.012*Math.sqrt(n) : 0;
+    const lat = p.lat + Math.sin(ang)*rad, lng = p.lng + Math.cos(ang)*rad;
+    const scouted = (p.id && scoutedIds.has(String(p.id))) || scoutedNames.has(nk(p.name));
+    const m = L.circleMarker([lat,lng], { radius: scouted?8:7, color:'#000', weight:1, fillColor: scouted?'#35C759':'#FF0000', fillOpacity: p.exact?0.95:0.55 }).addTo(_scoutLeaflet);
+    const link = 'report.html?' + new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:p.position||'' }).toString();
+    m.bindPopup(`<div style="font-family:sans-serif;min-width:170px"><b style="font-size:14px">${esc(p.name)}</b><br><span style="font-size:12px;color:#555">${esc(p.position||'')} \u00b7 ${esc(p.school||'')}${p.classYear?' \u00b7 '+esc(p.classYear):''}</span><br><span style="font-size:11px;color:#888">${scouted ? 'Report filed'+(p.score!=null?' \u00b7 '+p.score.toFixed(1):'') : 'On your list'}${p.exact?'':' \u00b7 placed at the school'}</span><br><a href="${link}" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#FF0000">${scouted?'File a follow-up':'Scout him'}</a></div>`, { maxWidth:220 });
+    bounds.push([lat,lng]);
+  });
+  if(bounds.length) _scoutLeaflet.fitBounds(bounds, { padding:[40,40], maxZoom:9 });
 }
 
 /* ---------------- POSITION CHIPS ---------------- */

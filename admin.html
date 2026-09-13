@@ -562,6 +562,11 @@
     <div class="panel">
       <h3>Film Clips for the IQ Test</h3>
       <div class="sub">YouTube-hosted clips the athlete watches and diagnoses. Upload the clip to YouTube as <b>unlisted</b>, paste the link here, write the question and the options, and mark the right answer. Cut the clip before the outcome shows. Eight to twelve seconds is the sweet spot.</div>
+      <label class="fl" style="margin-top:12px;">Who sees this clip? <span style="color:var(--warn);text-transform:none;letter-spacing:0;">(required)</span></label>
+      <div class="chip-row" id="clGroups">
+        ${['ALL','QB','RB','WR','TE','OL','DL','LB','DB'].map(g=>`<button type="button" class="chip" data-g="${g}" onclick="this.classList.toggle('on'); if('${g}'==='ALL'&&this.classList.contains('on')) document.querySelectorAll('#clGroups .chip:not([data-g=ALL])').forEach(b=>b.classList.remove('on')); else if(this.classList.contains('on')) document.querySelector('#clGroups [data-g=ALL]').classList.remove('on');">${g==='ALL'?'Everyone':g==='DL'?'DL / EDGE':g}</button>`).join('')}
+      </div>
+      <div class="rc-meta" style="margin-top:4px;">A coverage clip usually goes to QB, WR, TE, LB and DB. A protection clip to QB, RB and OL. Pick every group that has to read it.</div>
       <div class="grid2" style="margin-top:10px;">
         <div><label class="fl">YouTube link or video id</label><input type="text" id="clYt" placeholder="https://youtu.be/..."></div>
         <div><label class="fl">Start at (seconds, optional)</label><input type="text" id="clStart" placeholder="0"></div>
@@ -570,9 +575,8 @@
       <input type="text" id="clQ" placeholder="What coverage is this and what tells you?">
       <label class="fl">Options (one per line; leave blank to use the standard coverage list)</label>
       <textarea id="clOpts" placeholder="Cover 0&#10;Cover 1&#10;Cover 2&#10;Cover 3&#10;Cover 4 / Quarters"></textarea>
-      <div class="grid3" style="margin-top:8px;">
+      <div class="grid2" style="margin-top:8px;">
         <div><label class="fl">Correct option number</label><input type="text" id="clAns" placeholder="1 = first option"></div>
-        <div><label class="fl">Position group</label><select id="clPos"><option>ALL</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>OL</option><option>DL</option><option>LB</option><option>DB</option></select></div>
         <div><label class="fl">Order</label><input type="text" id="clOrder" placeholder="0"></div>
       </div>
       <label class="fl">Why that is the answer (shown to you, never to the athlete)</label>
@@ -2161,7 +2165,7 @@ async function renderClips(){
     <iframe src="https://www.youtube-nocookie.com/embed/${esc(c.youtube_id)}?rel=0${c.start_seconds?'&start='+c.start_seconds:''}" allowfullscreen loading="lazy"></iframe>
     <div style="margin-top:8px;font-size:13.5px;font-weight:600;">${esc(c.question)}</div>
     <div class="rc-meta" style="margin-top:4px;">${(c.options||['(standard coverage list)']).map((o,i)=>`${i+1}. ${esc(o)}`).join(' \u00b7 ')}</div>
-    <div class="rc-meta">Answer: ${c.answer_index!=null?(c.answer_index+1):'not scored'} \u00b7 ${esc(c.position_group||'ALL')} \u00b7 ${c.active?'active':'hidden'}</div>
+    <div class="rc-meta">Answer: ${c.answer_index!=null?(c.answer_index+1):'not scored'} \u00b7 <b style="color:var(--ink)">${esc(String(c.position_group||'ALL').replace('ALL','Everyone').replace(/,/g,', '))}</b> \u00b7 ${c.active?'active':'hidden'}</div>
     ${c.explanation?`<div class="rc-meta" style="margin-top:4px;color:#9AA0AA;">${esc(c.explanation)}</div>`:''}
     <div class="rc-actions">
       <button type="button" class="mini-btn" onclick="toggleClip(${c.id}, ${!c.active})">${c.active?'Hide':'Activate'}</button>
@@ -2179,13 +2183,15 @@ async function saveClip(){
     options: opts.length ? opts : null,
     answerIndex: ansRaw === '' ? null : (parseInt(ansRaw,10) - 1),
     explanation: document.getElementById('clWhy').value,
-    positionGroup: document.getElementById('clPos').value,
+    positionGroup: [...document.querySelectorAll('#clGroups .chip.on')].map(b=>b.dataset.g).join(','),
     sortOrder: document.getElementById('clOrder').value
   };
+  if(!body.positionGroup){ toast('Pick who sees this clip first'); document.getElementById('clGroups').scrollIntoView({behavior:'smooth', block:'center'}); return; }
   try{
     const d = await api('saveClip', body);
     CLIPS = null; renderClips();
     ['clYt','clStart','clQ','clOpts','clAns','clWhy','clOrder'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('#clGroups .chip').forEach(b=>b.classList.remove('on'));
     toast('Clip added');
   }catch(err){ toast(err.message); }
 }

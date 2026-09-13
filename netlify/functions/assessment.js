@@ -69,8 +69,11 @@ async function ensure() {
 async function activeClips(positionGroup) {
   try {
     const rows = await sql`SELECT * FROM iq_clips WHERE active = true ORDER BY sort_order, id`;
-    if (!positionGroup) return rows;
-    return rows.filter(c => !c.position_group || c.position_group === 'ALL' || c.position_group === positionGroup);
+    if (!positionGroup) return rows.filter(c => !c.position_group || String(c.position_group).split(',').includes('ALL'));
+    return rows.filter(c => {
+      const groups = String(c.position_group || 'ALL').split(',').map(x => x.trim());
+      return groups.includes('ALL') || groups.includes(positionGroup);
+    });
   } catch (e) { return []; }
 }
 

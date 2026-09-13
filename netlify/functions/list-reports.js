@@ -151,8 +151,9 @@ exports.handler = async (event) => {
     const assess = {};
     if (pids.length) {
       try {
+        const pidCsv = pids.join(',');
         const rows = await sql`SELECT prospect_id, kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed_day
-                               FROM assessments WHERE status = 'complete' AND prospect_id = ANY(${pids})`;
+                               FROM assessments WHERE status = 'complete' AND prospect_id = ANY(string_to_array(${pidCsv}, ',')::int[])`;
         rows.forEach(x => { (assess[x.prospect_id] = assess[x.prospect_id] || []).push({
           kind: x.kind, pct: x.score_pct != null ? Number(x.score_pct) : null,
           correct: x.score_detail ? x.score_detail.correct : null, total: x.score_detail ? x.score_detail.total : null,

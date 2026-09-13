@@ -108,12 +108,23 @@ function useToken(){
 }
 
 /* ---------------- program boards ---------------- */
+function sessionExpired(){
+  TOKEN = null;
+  try{ sessionStorage.removeItem('inhome_admin_token'); }catch(e){}
+  document.getElementById('mainBox').classList.add('hide');
+  document.getElementById('boardBox').classList.add('hide');
+  document.getElementById('logoBox').classList.add('hide');
+  document.getElementById('loginBox').classList.remove('hide');
+  log('Your admin session expired (they last 12 hours). Sign in again and retry.', 'bad');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 async function adminApi(action, body){
   const res = await fetch('/.netlify/functions/admin-data', {
     method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
     body: JSON.stringify(Object.assign({ action }, body||{}))
   });
   const data = await res.json().catch(()=>({}));
+  if(res.status === 401){ sessionExpired(); throw new Error('Session expired, sign in again'); }
   if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
   return data;
 }
@@ -293,6 +304,7 @@ async function go(){
     });
     const text = await res.text();
     let data = {}; try{ data = JSON.parse(text); }catch(e){}
+    if(res.status === 401){ sessionExpired(); return; }
     log('HTTP ' + res.status + '\nRaw response:\n' + text.slice(0, 800), res.ok ? 'ok' : 'bad');
     if(res.ok && data.key){
       const url = location.origin + '/.netlify/functions/frame?key=' + encodeURIComponent(data.key);

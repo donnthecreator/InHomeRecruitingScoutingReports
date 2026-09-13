@@ -167,7 +167,7 @@ exports.handler = async (event) => {
                    r.prospect_id, p.headshot_key, p.wingspan_key, p.wingspan
             FROM reports r
             LEFT JOIN prospects p ON p.id = r.prospect_id
-            ORDER BY COALESCE(r.date_evaluated::timestamptz, r.created_at) DESC
+            ORDER BY r.created_at DESC
             LIMIT 500`;
         } catch (e) {
           console.error('reports join query failed:', e.message);

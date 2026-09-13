@@ -48,7 +48,7 @@ exports.handler = async (event) => {
         SELECT id, inhome_score, recommendation_tier, archetype, scout_name, date_evaluated, created_at
         FROM reports
         WHERE prospect_id = p.id
-        ORDER BY COALESCE(date_evaluated::timestamptz, created_at) DESC
+        ORDER BY created_at DESC
         LIMIT 1
       ) r ON true
       WHERE upper(pp.program_code) = ${program}

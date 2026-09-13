@@ -50,7 +50,7 @@ exports.handler = async (event) => {
           FROM reports r
           LEFT JOIN prospects p ON p.id = r.prospect_id
           WHERE r.scout_id = ${scoutId}
-          ORDER BY COALESCE(r.date_evaluated::timestamptz, r.created_at) DESC
+          ORDER BY r.created_at DESC
           LIMIT 500`
       : await sql`
           SELECT r.id, r.prospect_name, r.position, r.position_label, r.archetype, r.class_year, r.school,

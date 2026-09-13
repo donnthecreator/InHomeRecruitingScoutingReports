@@ -842,7 +842,7 @@ async function refreshScouts(){
     if(data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length){
       SCOUTS = { ...SCOUTS_FALLBACK, ...data };
       /* if a scout is already signed in from the fallback, upgrade him to the live record (photos, cover) */
-      if(SCOUT && SCOUT_CODE && SCOUTS[SCOUT_CODE]){ SCOUT = SCOUTS[SCOUT_CODE]; applyScoutIdentity(); }
+      if(SCOUT && SCOUT_CODE && SCOUTS[SCOUT_CODE]){ SCOUT = SCOUTS[SCOUT_CODE]; applyScoutIdentity(); splashPaint(); }
     }
   }catch(err){
     console.error('list-scouts unreachable, using fallback roster:', err.message);
@@ -881,20 +881,39 @@ async function tryGate(){
   applyScout();
   loadData();
 }
-/* First thing a scout sees: his own face, his name, the mark. */
-function welcomeSplash(){
-  const el = document.getElementById('ihWelcome'); if(!el) return;
-  /* every login. The cover is his playing days; the face is who he is now. */
+/* First thing a scout sees: his own face, his name, the mark. Shows the
+   instant he is signed in, fills in the cover and face the moment the
+   live roster arrives, and holds long enough to actually be seen. */
+let _splashTimer = null, _splashShownAt = 0;
+function splashPaint(){
+  const el = document.getElementById('ihWelcome'); if(!el || !SCOUT) return;
   el.classList.toggle('hascover', !!SCOUT.coverUrl);
   el.style.backgroundImage = SCOUT.coverUrl ? `url("${SCOUT.coverUrl}")` : '';
   const face = document.getElementById('ihWelcomeFace');
   face.innerHTML = SCOUT.headshotUrl ? `<img src="${SCOUT.headshotUrl}" alt="">` : SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   document.getElementById('ihWelcomeHi').textContent = 'Welcome back, ' + SCOUT.name.split(' ')[0] + '.';
   document.getElementById('ihWelcomeSub').textContent = (SCOUT.role || 'InHome Scout') + (SCOUT.region ? ' \u00b7 ' + SCOUT.region : '');
-  el.style.display = 'flex';
-  const kill = () => { el.style.opacity = '0'; setTimeout(()=>{ el.style.display='none'; el.style.opacity='1'; }, 560); };
-  el.onclick = kill; setTimeout(kill, SCOUT.coverUrl ? 3200 : 2400);
 }
+function splashKill(){
+  const el = document.getElementById('ihWelcome'); if(!el || el.style.display === 'none') return;
+  el.style.opacity = '0'; setTimeout(()=>{ el.style.display='none'; el.style.opacity='1'; }, 560);
+}
+function welcomeSplash(){
+  const el = document.getElementById('ihWelcome'); if(!el || !SCOUT) return;
+  splashPaint();
+  el.style.display = 'flex'; el.style.opacity = '1';
+  _splashShownAt = Date.now();
+  el.onclick = splashKill;
+  clearTimeout(_splashTimer);
+  /* hold: 3.2s after the live roster (photos) has landed, minimum 2.4s on screen */
+  const schedule = () => { const left = Math.max(0, 2400 - (Date.now() - _splashShownAt)); clearTimeout(_splashTimer); _splashTimer = setTimeout(splashKill, Math.max(left, SCOUT.coverUrl ? 3200 : 2400)); };
+  if(SCOUTS_READY && typeof SCOUTS_READY.then === 'function') SCOUTS_READY.then(()=>{ if(el.style.display!=='none'){ splashPaint(); schedule(); } }).catch(schedule);
+  else schedule();
+  /* hard cap so a stalled roster fetch never leaves the splash up */
+  setTimeout(splashKill, 7000);
+}
+/* Back-forward cache restore (swipe back, reopen a tab) skips page load: replay the welcome. */
+window.addEventListener('pageshow', (e) => { if(e.persisted && SCOUT) welcomeSplash(); });
 function scoutFaceHTML(){
   return SCOUT.headshotUrl ? `<img src="${SCOUT.headshotUrl}" alt="${SCOUT.name}">` : SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 }
@@ -1233,19 +1252,15 @@ function signOut(){
 document.getElementById('gateCode').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); tryGate(); }
 });
-(async function autoSignIn(){
+(function autoSignIn(){
   const saved = localStorage.getItem('inhome_scout_code');
-  if(!saved) return;
-  /* wait for the live roster so the splash has his photos, but never hang */
-  try{ await Promise.race([SCOUTS_READY, new Promise(r=>setTimeout(r, 2500))]); }catch(e){}
-  if(SCOUTS[saved]){
-    SCOUT = SCOUTS[saved];
-    SCOUT_CODE = saved;
-    document.getElementById('gate').classList.add('hide');
-    welcomeSplash();
-    applyScout();
-    loadData();
-  }
+  if(!saved || !SCOUTS[saved]) return;
+  SCOUT = SCOUTS[saved];
+  SCOUT_CODE = saved;
+  document.getElementById('gate').classList.add('hide');
+  welcomeSplash();            /* instantly, with whatever we have; refreshScouts repaints when the live record lands */
+  applyScout();
+  loadData();
 })();
 
 /* ---------------- DEMO FALLBACK DATA ---------------- */

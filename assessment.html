@@ -214,10 +214,34 @@ function keyHTML(it){
   if(it.mb) bits.push('Personality dimension: ' + it.mb);
   return bits.length ? `<div class="fine" style="margin-top:8px;color:#E0A419;">${esc(bits.join(' \u2014 '))}</div>` : '';
 }
+const POS_LIST = [['QB','Quarterback'],['RB','Running back'],['WR','Wide receiver'],['TE','Tight end'],['OL','Offensive line'],['DL','Defensive line / edge'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety'],['K','Kicker / punter']];
+function renderPositionPick(){
+  $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
+  $('app').innerHTML = `
+    <h1>What position do you play?</h1>
+    <p class="lede">The football section is built for your position. A corner and a quarterback both have to read coverage, but only one of them gets asked to set a protection.</p>
+    <p class="fine">If you play more than one, pick the one colleges are recruiting you at.</p>
+    <div class="opts" style="margin-top:16px;">${POS_LIST.map(([c,n]) => `<button type="button" class="opt" data-pos="${c}"><i></i><span><b>${c}</b> &nbsp; ${n}</span></button>`).join('')}</div>
+    <div class="status" id="posStatus"></div>`;
+  document.querySelectorAll('[data-pos]').forEach(b => b.addEventListener('click', async () => {
+    document.querySelectorAll('[data-pos]').forEach(x => x.classList.toggle('on', x === b));
+    $('posStatus').textContent = 'Setting up your test...';
+    try{
+      const res = await fetch('/.netlify/functions/assessment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, setPosition: b.dataset.pos }) });
+      const d = await res.json();
+      if(!res.ok) throw new Error(d.error || 'Could not set position');
+      Object.assign(DATA, d, { needsPosition:false });
+      render();
+      window.scrollTo({top:0});
+    }catch(err){ $('posStatus').textContent = err.message; }
+  }));
+}
 function render(){
+  if(DATA.needsPosition){ renderPositionPick(); return; }
   const isIQ = DATA.kind === 'iq';
   const isFull = DATA.kind === 'full';
-  $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
+  $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}${DATA.position && !DATA.preview ? ` &middot; ${esc(DATA.position)} <a href="#" id="chgPos" style="color:#8A8A8A;">change</a>` : ''}`;
+  setTimeout(()=>{ const a = $('chgPos'); if(a) a.addEventListener('click', (e)=>{ e.preventDefault(); DATA.needsPosition = true; render(); window.scrollTo({top:0}); }); }, 0);
   const clipOpts = (c) => `<div class="opts">${(c.options||[]).map((o,i)=>
     `<button type="button" class="opt ${String(ANSWERS['clip_'+c.id])===String(i)?'on':''}" data-q="clip_${c.id}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`;
 

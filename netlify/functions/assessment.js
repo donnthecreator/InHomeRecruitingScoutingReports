@@ -112,7 +112,8 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
-        kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position,
+        kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position, positionGroup: groupFor(a.position),
+        needsPosition: usesClips(a.kind) && !groupFor(a.position),
         status: a.status === 'complete' ? 'complete' : 'open',
         sections: bank(a.kind, a.position),
         /* dot scenarios carry their answers because the page grades on the spot,
@@ -127,6 +128,22 @@ exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') return fail(405, 'Method not allowed');
     if (a.status === 'complete') return fail(409, 'This assessment was already submitted');
     const body = JSON.parse(event.body || '{}');
+
+    /* athlete sets or corrects his position before the football section loads */
+    if (body.setPosition) {
+      const pos = String(body.setPosition).toUpperCase().slice(0, 6);
+      if (!groupFor(pos)) return fail(400, 'Pick a position from the list');
+      await sql`UPDATE assessments SET position = ${pos} WHERE id = ${a.id}`;
+      if (a.prospect_id) { try { await sql`UPDATE prospects SET position = COALESCE(position, ${pos}), updated_at = now() WHERE id = ${a.prospect_id}`; } catch (e) {} }
+      const clips2 = usesClips(a.kind) ? await activeClips(groupFor(pos)) : [];
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
+        position: pos, positionGroup: groupFor(pos),
+        sections: bank(a.kind, pos),
+        dots: usesClips(a.kind) ? scenariosFor(groupFor(pos)) : [],
+        clips: clips2.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
+                                  options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT }))
+      }) };
+    }
     const answers = (body.answers && typeof body.answers === 'object') ? body.answers : {};
     /* cap any single answer so a paste bomb can't fill the row */
     const clean = {};

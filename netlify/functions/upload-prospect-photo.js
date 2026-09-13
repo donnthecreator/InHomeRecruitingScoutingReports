@@ -63,13 +63,34 @@ exports.handler = async (event) => {
   catch { return fail(400, 'Bad request'); }
 
   const kind = payload.kind;
-  if (!['headshot', 'wingspan', 'measure', 'schoollogo'].includes(kind)) {
-    return fail(400, 'kind must be headshot, wingspan, measure, or schoollogo');
+  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto'].includes(kind)) {
+    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, or scoutphoto');
   }
 
   let scout = await resolveScout(payload.accessCode);
   if (!scout && verifyAdmin(event)) scout = { scout_id: 'admin', name: 'Admin' };
   if (!scout) return fail(401, 'Invalid access code');
+
+  /* ------- scout's own photo (the scout, or admin for any scout) ------- */
+  if (kind === 'scoutphoto') {
+    const target = scout.scout_id === 'admin' ? String(payload.scoutId || '') : scout.scout_id;
+    if (!target) return fail(400, 'scoutId required');
+    const contentType = payload.contentType || 'image/jpeg';
+    if (!ALLOWED_TYPES.includes(contentType)) return fail(400, 'Only JPEG, PNG, or WebP images');
+    if (!payload.dataBase64) return fail(400, 'dataBase64 required');
+    let buf; try { buf = Buffer.from(payload.dataBase64, 'base64'); } catch { return fail(400, 'Bad image data'); }
+    if (!buf.length || buf.length > MAX_BYTES) return fail(413, 'Image too large');
+    try {
+      await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`;
+      const store = frameStore();
+      const key = `scout_${target.replace(/[^A-Za-z0-9_-]/g, '')}_${Date.now()}`;
+      await store.set(key, buf, { metadata: { contentType } });
+      const [old] = await sql`SELECT headshot_key FROM scouts WHERE scout_id = ${target}`;
+      await sql`UPDATE scouts SET headshot_key = ${key} WHERE scout_id = ${target}`;
+      if (old && old.headshot_key) { try { await store.delete(old.headshot_key); } catch (e) {} }
+      return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
+    } catch (err) { console.error('scout photo error:', err); return fail(500, err.message); }
+  }
 
   /* ------- school logo (admin) ------- */
   if (kind === 'schoollogo') {

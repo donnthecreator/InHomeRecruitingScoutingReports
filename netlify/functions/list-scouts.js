@@ -18,9 +18,12 @@
 const { neon } = require('@neondatabase/serverless');
 const sql = neon(process.env.DATABASE_URL);
 
-exports.handler = async () => {
+exports.handler = async (event) => {
   try {
+    try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`; } catch (e) {}
     const rows = await sql`SELECT * FROM scouts WHERE access_code IS NOT NULL`;
+    const h = (event && event.headers) || {};
+    const base = `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
 
     const roster = {};
     for (const r of rows) {
@@ -30,7 +33,8 @@ exports.handler = async () => {
         id:     r.scout_id,
         name:   r.name || r.scout_id,
         role:   r.role || r.scout_role || 'Regional Scout',
-        region: r.region || r.scout_region || 'Unassigned'
+        region: r.region || r.scout_region || 'Unassigned',
+        headshotUrl: r.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(r.headshot_key)}` : null
       };
     }
 

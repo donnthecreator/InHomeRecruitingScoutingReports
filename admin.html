@@ -577,6 +577,11 @@
       <div id="inStats" class="sub" style="margin-top:8px;"></div>
       <div id="inList" style="margin-top:10px;"></div>
     </div>
+    <div class="panel">
+      <h3>Scout Contact Requests</h3>
+      <div class="sub">A scout asking to be connected with a program. Nothing reaches the school until you approve it and make the introduction. Your note goes back to the scout.</div>
+      <div id="sxList" style="margin-top:10px;"></div>
+    </div>
   </div>
 
   <div class="pane" id="paneAssess">
@@ -672,7 +677,8 @@
       <div class="tools" style="margin-top:12px;">
         <select id="boardProgram" onchange="switchBoard(this.value)"><option value="__samford">Samford WR board (static)</option></select>
         <select id="boardAssignScout"><option value="">Choose a scout...</option><option value="__all">Every scout (all of them)</option></select>
-        <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign whole board</button>
+        <span id="boardPosPick" class="chip-row" style="display:none; gap:4px;">${['QB','RB','WR','TE','OL','DL','LB','DB','K'].map(x=>`<button type="button" class="chip" data-bp="${x}" onclick="this.classList.toggle('on')">${x}</button>`).join('')}</span>
+        <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign to scout</button>
         <button type="button" class="mini-btn danger" id="boardUnassignAll" onclick="unassignWholeBoard()" style="display:none;">Remove board from scout lists</button>
       </div>
       <div class="board-progress">
@@ -899,6 +905,7 @@ function normalizeScouts(rows){
   return (rows||[]).map(s=>({
     pkId: s.pkId !== undefined ? s.pkId : s.id,
     id: s.scout_id || s.id,
+    headshotKey: s.headshot_key || s.headshotKey || null,
     accessCode: s.access_code || s.accessCode || '',
     name: s.name, role: s.role, region: s.region,
     active: s.active !== undefined ? s.active : true
@@ -999,7 +1006,7 @@ function switchTab(t){
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
   if(t==='players') renderPlayers();
-  if(t==='intake') renderIntake();
+  if(t==='intake'){ renderIntake(); renderScoutRequests(); }
   if(t==='assess'){ renderAssessments(); renderClips(); }
   if(t==='market') renderMarket();
   /* Google Maps renders at zero size if it initialized while hidden. */
@@ -1487,6 +1494,7 @@ async function switchBoard(code){
     document.getElementById('boardTitle').textContent = 'Samford WR Board';
     document.getElementById('boardAssignAll').style.display = 'none';
     document.getElementById('boardUnassignAll').style.display = 'none';
+    document.getElementById('boardPosPick').style.display = 'none';
     initBoard(); return;
   }
   LIVE_BOARD_CODE = code;
@@ -1500,6 +1508,7 @@ async function switchBoard(code){
       { prospectId:x.prospectId, status:x.status, score:x.inhomeScore, tier:x.recommendationTier, classYear:x.classYear, reportId:x.reportId, headshotUrl:x.headshotUrl }]);
     document.getElementById('boardAssignAll').style.display = '';
     document.getElementById('boardUnassignAll').style.display = '';
+    document.getElementById('boardPosPick').style.display = 'inline-flex';
     initBoard();
   }catch(err){
     LIVE_BOARD = [];
@@ -1519,10 +1528,12 @@ async function assignWholeBoard(){
   if(!LIVE_BOARD_CODE) return;
   const scoutId = boardScoutChoice(); if(scoutId===undefined) return;
   const who = boardScoutName(scoutId);
-  if(!confirm(`Put the entire ${LIVE_BOARD_CODE} board (${boardRows().length} players) on ${who}'s target list?`)) return;
+  const positions = [...document.querySelectorAll('#boardPosPick .chip.on')].map(b=>b.dataset.bp);
+  const what = positions.length ? `the ${positions.join('/')} players on the ${LIVE_BOARD_CODE} board` : `the entire ${LIVE_BOARD_CODE} board (${boardRows().length} players)`;
+  if(!confirm(`Put ${what} on ${who}'s target list?`)) return;
   try{
-    const d = await api('assignProgramBoard', { program: LIVE_BOARD_CODE, scoutId });
-    toast(`Created ${d.created} assignment(s) for ${who}`);
+    const d = await api('assignProgramBoard', { program: LIVE_BOARD_CODE, scoutId, positions: positions.length ? positions : null });
+    toast(`Created ${d.created} assignment(s) for ${who}${positions.length ? ' (' + positions.join(', ') + ')' : ''}`);
     loadAll();
   }catch(err){ toast(err.message); }
 }
@@ -1924,7 +1935,7 @@ function renderRoster(){
     + sorted.map(s=>`
     <div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar">${initials(s.name)}</div>
+        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's photo" onclick="scoutPhotoPick('${esc(s.id)}')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role||'')} &middot; ${esc(s.region||'')}</div>
@@ -2057,7 +2068,7 @@ function renderScouts(){
     const boardInRegion = cov.reduce((n,st)=>n+BOARD_DATA.filter(p=>p[3]===st).length,0);
     return `<div class="row-card">
       <div class="rc-top">
-        <div class="rc-avatar">${initials(s.name)}</div>
+        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this scout's photo" onclick="scoutPhotoPick('${esc(s.id)}')">${s.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(s.headshotKey)}" alt="" onerror="this.remove()">`:initials(s.name)}</div>
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role)} &middot; ${esc(s.region)}${cov.length?` (${cov.join(', ')})`:''}</div>
@@ -2388,6 +2399,28 @@ async function deleteClip(id){
   try{ await api('deleteClip', { id }); CLIPS = CLIPS.filter(c=>c.id!==id); renderClips(); toast('Deleted'); }catch(err){ toast(err.message); }
 }
 
+/* ---------------- SCOUT PHOTOS (admin sets any scout's picture) ---------------- */
+let _scoutPhotoTarget = null;
+function scoutPhotoPick(scoutId){
+  _scoutPhotoTarget = scoutId;
+  let input = document.getElementById('scoutPhotoInput');
+  if(!input){ input = document.createElement('input'); input.type='file'; input.accept='image/*'; input.id='scoutPhotoInput'; input.style.display='none';
+    input.onchange = async () => { if(input.files && input.files[0]) await uploadScoutPhotoAdmin(input.files[0]); input.value=''; }; document.body.appendChild(input); }
+  input.click();
+}
+async function uploadScoutPhotoAdmin(file){
+  const img = await resizeImage(file, 1000);
+  if(!img){ alert('Could not read that image.'); return; }
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ kind:'scoutphoto', scoutId:_scoutPhotoTarget, dataBase64: img.base64, contentType: img.contentType }) });
+    const d = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(d.error || ('HTTP '+res.status));
+    (SCOUT_ROSTER||[]).forEach(x => { if(x.id===_scoutPhotoTarget) x.headshotKey = d.key; });
+    renderRoster(); renderScouts(); toast('Scout photo saved');
+  }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
 /* ---------------- PLAYER PROFILE (edit any prospect from anywhere) ---------------- */
 document.addEventListener('click', (e) => {
   const el = e.target.closest && e.target.closest('.plink');
@@ -2523,6 +2556,43 @@ async function ppUpload(file){
     reports.forEach(r => { if(r.prospect_id === PP.id) r.headshot_key = data.key; });
     renderProfile(); renderReports(); toast('Headshot saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+/* ---------------- SCOUT CONTACT REQUESTS ---------------- */
+let SX = null;
+async function renderScoutRequests(){
+  const el = document.getElementById('sxList'); if(!el) return;
+  if(SX === null){ try{ const d = await api('listScoutRequests', {}); SX = d.requests || []; }catch(err){ el.innerHTML = esc(err.message); return; } }
+  if(!SX.length){ el.innerHTML = '<div class="empty"><div class="t">No requests</div><div class="s">Scouts ask from the Connect tab on their dashboard.</div></div>'; return; }
+  el.innerHTML = SX.map(x=>{
+    const col = { pending:'var(--warn)', approved:'var(--good)', connected:'var(--good)', denied:'var(--dim)' }[x.status] || 'var(--dim)';
+    const sc = (SCOUT_ROSTER||[]).find(s=>s.id===x.scout_id);
+    return `<div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${sc&&sc.headshotKey?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(sc.headshotKey)}" alt="">`:initials(x.scout_name||x.scout_id)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(x.scout_name||x.scout_id)} \u2192 ${esc(x.program)}</div>
+          ${x.prospect?`<div class="rc-meta">Re: ${esc(x.prospect)}</div>`:''}
+          <div style="font-size:13px;color:#D6D6D6;margin-top:6px;line-height:1.5;">${esc(x.reason||'')}</div>
+          <span class="pill" style="border-color:${col};color:${col};font-weight:800;margin-top:6px;">${esc(x.status)}</span>
+          ${x.admin_note?`<div class="rc-meta" style="margin-top:4px;">Your note: ${esc(x.admin_note)}</div>`:''}
+        </div>
+        <div class="rc-right"><div class="rc-sub">${fmtDate(x.created_day)}</div></div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="mini-btn go" onclick="setScoutRequest(${x.id},'approved')">Approve</button>
+        <button type="button" class="mini-btn go" onclick="setScoutRequest(${x.id},'connected')">Mark connected</button>
+        <button type="button" class="mini-btn danger" onclick="setScoutRequest(${x.id},'denied')">Deny</button>
+        <button type="button" class="mini-btn" onclick="noteScoutRequest(${x.id})">Note to scout</button>
+      </div></div>`; }).join('');
+}
+async function setScoutRequest(id, status){
+  try{ const d = await api('updateScoutRequest', { id, status }); const i = SX.findIndex(x=>x.id===id); if(i>=0) SX[i] = d.request; renderScoutRequests(); toast('Marked ' + status); }catch(err){ toast(err.message); }
+}
+async function noteScoutRequest(id){
+  const x = SX.find(r=>r.id===id); const note = prompt('Note back to the scout (who to expect, what happens next):', x && x.admin_note || '');
+  if(note===null) return;
+  try{ const d = await api('updateScoutRequest', { id, note }); const i = SX.findIndex(r=>r.id===id); if(i>=0) SX[i] = d.request; renderScoutRequests(); toast('Note saved'); }catch(err){ toast(err.message); }
 }
 
 /* ---------------- INTAKE QUEUE ---------------- */

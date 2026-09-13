@@ -394,6 +394,28 @@
   .wingspan-row input{flex:1; min-width:0; border:1.5px solid var(--line); border-radius:8px; padding:9px 11px;
     background:var(--card-2); color:var(--ink); font-family:'Inter',sans-serif; font-size:14px;}
   .wingspan-row input:focus{outline:none; border-color:var(--red);}
+
+  /* scout identity everywhere */
+  .avatar img, .prof-headshot img{width:100%; height:100%; object-fit:cover; border-radius:inherit; display:block;}
+  .avatar{overflow:hidden;}
+  .prof-headshot{position:relative; cursor:pointer;}
+  .prof-headshot .edit{position:absolute; inset:auto 0 0 0; background:rgba(0,0,0,.72); color:#fff; font-size:9px; letter-spacing:.12em; text-transform:uppercase; text-align:center; padding:5px 0;}
+  /* welcome splash */
+  #ihWelcome{position:fixed; inset:0; z-index:99998; background:#000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px; opacity:1; transition:opacity .55s ease;}
+  #ihWelcome .face{width:112px; height:112px; border-radius:50%; overflow:hidden; border:2px solid #FFF; background:#1A1A1A; display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:40px; color:#888; opacity:0; animation:ihIn .7s ease .1s forwards;}
+  #ihWelcome .face img{width:100%; height:100%; object-fit:cover;}
+  #ihWelcome .hi{font-family:'Anton',sans-serif; font-size:30px; letter-spacing:.01em; opacity:0; animation:ihIn .7s ease .4s forwards;}
+  #ihWelcome .sub{font-size:11px; letter-spacing:.26em; text-transform:uppercase; color:#8A8A8A; opacity:0; animation:ihIn .7s ease .75s forwards;}
+  @keyframes ihIn{to{opacity:1; transform:none;}}
+  /* market + requests */
+  .mk-row{display:grid; grid-template-columns:36px 1fr 60px 80px; gap:10px; align-items:center; padding:10px 0; border-top:1px solid var(--line);}
+  .mk-row img.face{width:36px; height:36px; border-radius:8px; object-fit:cover; background:var(--card-2);}
+  .mk-row .nm{font-weight:700; font-size:14px;}
+  .mk-row .sc{font-family:'Anton',sans-serif; font-size:18px; text-align:right;}
+  .mk-chg{font-size:11px; font-weight:800; text-align:right; padding:3px 6px; border-radius:6px;}
+  .mk-chg.up{color:#35C759; background:rgba(53,199,89,.12);} .mk-chg.down{color:#FF5A5A; background:rgba(255,90,90,.12);} .mk-chg.flat{color:var(--dim); background:var(--card-2);}
+  .req-card{border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--card);}
+  .req-status{font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:800;}
 </style>
 </head>
 <body>
@@ -412,6 +434,12 @@
   </div>
 </div>
 
+<div id="ihWelcome">
+  <img src="inhome-logo.png" alt="InHome" style="width:min(56vw,300px); height:auto; opacity:0; animation:ihIn .7s ease 0s forwards;">
+  <div class="face" id="ihWelcomeFace"></div>
+  <div class="hi" id="ihWelcomeHi"></div>
+  <div class="sub" id="ihWelcomeSub">InHome Scout</div>
+</div>
 <div class="topbar">
   <div class="topbar-row">
     <div class="logo">
@@ -447,6 +475,38 @@
     <button type="button" class="tab-btn" id="tabBtnTargets" onclick="switchTab('targets')">
       Unscouted<span class="cnt" id="tabCntTargets">&mdash;</span>
     </button>
+    <button type="button" class="tab-btn" id="tabBtnMarket" onclick="switchTab('market')">
+      Market<span class="cnt" id="tabCntMarket">&mdash;</span>
+    </button>
+    <button type="button" class="tab-btn" id="tabBtnConnect" onclick="switchTab('connect')">
+      Connect<span class="cnt" id="tabCntConnect">&mdash;</span>
+    </button>
+  </div>
+
+  <div class="tab-pane" id="paneMarket">
+    <div class="panel">
+      <h3 style="margin:0 0 4px;">Production Market</h3>
+      <div class="sub" style="margin-bottom:10px;">What the coaches see. Every tracked player's latest Production Grade, up or down from his last game. Tap a name to file a report on him.</div>
+      <div class="tools"><input type="text" id="mkSearch" placeholder="Search name or school" oninput="renderMarket()"><select id="mkLevel" onchange="renderMarket()"><option value="">JUCO + HS</option><option value="JUCO">JUCO</option><option value="HS">HS</option></select></div>
+      <div id="mkList"></div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="paneConnect">
+    <div class="panel">
+      <h3 style="margin:0 0 4px;">Connect with a Program</h3>
+      <div class="sub" style="margin-bottom:12px;">You are the front line with these schools. If you have a player a program needs to know about, or a relationship you want opened up, ask here. InHome reviews it and makes the introduction; once it is approved you are in the room with someone from that staff.</div>
+      <label class="lbl">Program</label>
+      <input type="text" id="cxSearch" placeholder="Search schools" autocapitalize="off">
+      <select id="cxProgram" size="6" style="width:100%; margin-top:6px; background:var(--card); color:var(--ink); border:1.5px solid var(--line); border-radius:10px; padding:6px;"></select>
+      <label class="lbl" style="margin-top:12px;">Player this is about <span style="color:var(--dim);font-weight:500;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="text" id="cxProspect" placeholder="Name, school">
+      <label class="lbl" style="margin-top:12px;">Why this program, and why now</label>
+      <textarea id="cxReason" placeholder="What you have seen, who you know on that staff, what you would tell them first."></textarea>
+      <button type="button" class="new-report-btn" style="margin-top:12px;" onclick="sendConnect()">Send to InHome for approval</button>
+      <div class="sub" id="cxStatus" style="margin-top:8px;"></div>
+    </div>
+    <div id="cxList"></div>
   </div>
 
   <div class="tab-pane on" id="paneProfile">
@@ -645,6 +705,7 @@
   </div>
 </div>
 
+<script src="programs.js"></script>
 <script>
 /* =====================================================================
    BACKEND CONTRACT (implement these two functions; page runs on demo
@@ -729,18 +790,122 @@ function tryGate(){
     return;
   }
   SCOUT = found;
+  SCOUT_CODE = code;
   localStorage.setItem('inhome_scout_code', code);
   document.getElementById('gateErr').textContent = '';
   document.getElementById('gate').classList.add('hide');
+  welcomeSplash();
   applyScout();
   loadData();
+}
+let SCOUT_CODE = localStorage.getItem('inhome_scout_code') || '';
+/* First thing a scout sees: his own face, his name, the mark. */
+function welcomeSplash(){
+  const el = document.getElementById('ihWelcome'); if(!el) return;
+  let seen = false; try{ seen = sessionStorage.getItem('ih_welcome_' + (SCOUT.id||'')) === '1'; }catch(e){}
+  if(seen) return;
+  const face = document.getElementById('ihWelcomeFace');
+  face.innerHTML = SCOUT.headshotUrl ? `<img src="${SCOUT.headshotUrl}" alt="">` : SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('ihWelcomeHi').textContent = 'Welcome back, ' + SCOUT.name.split(' ')[0] + '.';
+  document.getElementById('ihWelcomeSub').textContent = (SCOUT.role || 'InHome Scout') + (SCOUT.region ? ' \u00b7 ' + SCOUT.region : '');
+  el.style.display = 'flex';
+  const kill = () => { el.style.opacity = '0'; setTimeout(()=>{ el.style.display='none'; el.style.opacity='1'; }, 560); try{ sessionStorage.setItem('ih_welcome_' + (SCOUT.id||''), '1'); }catch(e){} };
+  el.onclick = kill; setTimeout(kill, 2400);
+}
+function scoutFaceHTML(){
+  return SCOUT.headshotUrl ? `<img src="${SCOUT.headshotUrl}" alt="${SCOUT.name}">` : SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 }
 function applyScout(){
   document.getElementById('scoutChip').style.display = 'flex';
   document.getElementById('scoutNm').textContent = SCOUT.name;
   document.getElementById('scoutRl').textContent = SCOUT.role + ' \u00b7 ' + SCOUT.region;
-  document.getElementById('scoutAvatar').textContent = SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('scoutAvatar').innerHTML = scoutFaceHTML();
+  const hs = document.getElementById('profHeadshot');
+  hs.innerHTML = scoutFaceHTML() + '<div class="edit">' + (SCOUT.headshotUrl ? 'Change photo' : 'Add your photo') + '</div><input type="file" id="scoutPhotoFile" accept="image/*" style="display:none" onchange="uploadScoutPhoto(this.files[0])">';
+  hs.onclick = () => document.getElementById('scoutPhotoFile').click();
   loadProfile();
+}
+async function uploadScoutPhoto(file){
+  if(!file) return;
+  const img = await (typeof resizeImage === 'function' ? resizeImage(file, 1000) : null);
+  const b64 = img ? img.base64 : await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]); r.onerror=rej; r.readAsDataURL(file); });
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ kind:'scoutphoto', accessCode: SCOUT_CODE, dataBase64: b64, contentType: img ? img.contentType : (file.type||'image/jpeg') }) });
+    const d = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(d.error || ('HTTP ' + res.status));
+    SCOUT.headshotUrl = d.url + '&v=' + Date.now();
+    applyScout();
+    if(typeof showToast === 'function') showToast('Photo saved');
+  }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+/* ---------------- MARKET (read-only view of what coaches see) ---------------- */
+let MK = null;
+async function renderMarket(){
+  const el = document.getElementById('mkList');
+  if(MK === null){
+    el.innerHTML = '<div class="empty-state">Loading market...</div>';
+    try{ const r = await fetch('/.netlify/functions/list-performances', {cache:'no-store'}); const d = await r.json(); MK = d.players || []; }
+    catch(e){ el.innerHTML = '<div class="empty-state">Could not load the market.</div>'; return; }
+  }
+  const q = (document.getElementById('mkSearch').value||'').toLowerCase(), lv = document.getElementById('mkLevel').value;
+  const rows = MK.map(p=>{
+    const g = (p.entries||[]).filter(e=>e.grade!=null&&e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    const price = g.length ? Number(g[g.length-1].grade) : null, prev = g.length>1 ? Number(g[g.length-2].grade) : null;
+    return Object.assign({}, p, { price, chg: (price!=null&&prev!=null) ? +(price-prev).toFixed(1) : null, games:g.length });
+  }).filter(p=>p.price!=null && (!lv||p.level===lv) && (!q||(p.name||'').toLowerCase().includes(q)||(p.school||'').toLowerCase().includes(q)))
+    .sort((a,b)=>b.price-a.price);
+  document.getElementById('tabCntMarket').textContent = rows.length;
+  if(!rows.length){ el.innerHTML = '<div class="empty-state">No graded games on the market yet.</div>'; return; }
+  el.innerHTML = rows.map(p=>{
+    const dir = p.chg==null?'flat':p.chg>0?'up':p.chg<0?'down':'flat';
+    const link = 'report.html?' + new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:p.position||'' }).toString();
+    return `<div class="mk-row">
+      ${p.headshotUrl ? `<img class="face" src="${p.headshotUrl}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="face" style="width:36px;height:36px;border-radius:8px;background:var(--card-2);display:grid;place-items:center;font-size:11px;color:var(--dim);font-weight:700;">${(p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('')}</div>`}
+      <div><a class="nm" href="${link}" style="color:var(--ink);text-decoration:none;">${p.name}</a><div class="sub" style="margin:0;font-size:11px;">${p.logoUrl?`<img src="${p.logoUrl}" style="width:13px;height:13px;object-fit:contain;vertical-align:-2px;margin-right:3px;" onerror="this.remove()">`:''}${p.position||''} \u00b7 ${p.school||''} \u00b7 ${p.games} game${p.games===1?'':'s'}</div></div>
+      <div class="sc">${p.price.toFixed(1)}</div>
+      <div class="mk-chg ${dir}">${p.chg==null?'1 game':(p.chg>0?'\u25b2 +':p.chg<0?'\u25bc ':'\u00b7 ')+p.chg}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- CONNECT WITH A PROGRAM ---------------- */
+let CX = null;
+function buildProgramList(){
+  const sel = document.getElementById('cxProgram'); if(!sel || typeof PROGRAMS==='undefined') return;
+  const q = (document.getElementById('cxSearch').value||'').toLowerCase();
+  const keep = sel.value;
+  sel.innerHTML = PROGRAMS.filter(p=>!q||p.n.toLowerCase().includes(q)||(p.c||'').toLowerCase().includes(q)).map(p=>`<option value="${p.n.replace(/"/g,'&quot;')}">${p.n} \u00b7 ${p.c||''}</option>`).join('');
+  if(keep) sel.value = keep;
+}
+document.addEventListener('input', (e)=>{ if(e.target && e.target.id==='cxSearch') buildProgramList(); });
+async function loadConnect(){
+  const el = document.getElementById('cxList');
+  try{ const r = await fetch('/.netlify/functions/scout-request?accessCode=' + encodeURIComponent(SCOUT_CODE)); const d = await r.json(); CX = d.requests || []; }
+  catch(e){ CX = []; }
+  document.getElementById('tabCntConnect').textContent = CX.filter(x=>x.status==='approved'||x.status==='connected').length || CX.length || '\u2014';
+  el.innerHTML = CX.length ? '<h3 style="margin:16px 0 8px;">Your requests</h3>' + CX.map(x=>{
+    const col = { pending:'var(--warn)', approved:'#35C759', connected:'#35C759', denied:'var(--dim)' }[x.status] || 'var(--dim)';
+    return `<div class="req-card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;"><b>${x.program}</b><span class="req-status" style="color:${col}">${x.status==='connected'?'Connected':x.status}</span></div>
+      ${x.prospect?`<div class="sub" style="margin:2px 0 0;">Re: ${x.prospect}</div>`:''}
+      <div class="sub" style="margin:6px 0 0;color:#C4C4C4;">${x.reason||''}</div>
+      ${x.admin_note?`<div style="margin-top:8px;padding:8px 10px;border-left:2px solid var(--ink);font-size:13px;">${x.admin_note}</div>`:''}
+      <div class="sub" style="margin:6px 0 0;font-size:11px;">${x.created_day||''}</div></div>`; }).join('') : '';
+}
+async function sendConnect(){
+  const program = document.getElementById('cxProgram').value, reason = document.getElementById('cxReason').value.trim(), prospect = document.getElementById('cxProspect').value.trim();
+  const st = document.getElementById('cxStatus');
+  if(!program){ st.textContent = 'Pick a program.'; return; }
+  if(reason.length < 15){ st.textContent = 'Give a sentence or two on why.'; return; }
+  st.textContent = 'Sending...';
+  try{
+    const r = await fetch('/.netlify/functions/scout-request', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ accessCode: SCOUT_CODE, program, prospect, reason }) });
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Failed');
+    st.textContent = d.duplicate ? 'You already have a pending request with ' + program + '.' : 'Sent. InHome will review it and make the introduction.';
+    document.getElementById('cxReason').value=''; document.getElementById('cxProspect').value='';
+    loadConnect();
+  }catch(err){ st.textContent = err.message; }
 }
 
 /* ---------------- MY PROFILE ---------------- */
@@ -1107,6 +1272,12 @@ function switchTab(tab){
   document.getElementById('paneBoard').classList.toggle('on', tab==='board');
   document.getElementById('paneReports').classList.toggle('on', tab==='reports');
   document.getElementById('paneTargets').classList.toggle('on', tab==='targets');
+  document.getElementById('tabBtnMarket').classList.toggle('on', tab==='market');
+  document.getElementById('tabBtnConnect').classList.toggle('on', tab==='connect');
+  document.getElementById('paneMarket').classList.toggle('on', tab==='market');
+  document.getElementById('paneConnect').classList.toggle('on', tab==='connect');
+  if(tab==='market') renderMarket();
+  if(tab==='connect'){ buildProgramList(); loadConnect(); }
 }
 
 /* ---------------- POSITION CHIPS ---------------- */

@@ -606,6 +606,19 @@ exports.handler = async (event) => {
         return ok({ verifications: v });
       }
 
+      /* ---------------- SCOUT CONTACT REQUESTS (approve before anyone talks to a school) ---------------- */
+      case 'listScoutRequests': {
+        try { return ok({ requests: await sql`SELECT *, to_char(created_at,'YYYY-MM-DD') AS created_day FROM scout_requests ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC LIMIT 300` }); }
+        catch (e) { if (/does not exist/i.test(e.message)) return ok({ requests: [] }); throw e; }
+      }
+      case 'updateScoutRequest': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const status = ['pending', 'approved', 'denied', 'connected'].includes(body.status) ? body.status : null;
+        const rows = await sql`UPDATE scout_requests SET status = COALESCE(${status}, status), admin_note = COALESCE(${body.note !== undefined ? String(body.note).slice(0, 1000) : null}, admin_note), updated_at = now()
+                               WHERE id = ${id} RETURNING *`;
+        return ok({ request: rows[0] || null });
+      }
+
       /* ---------------- MAP ---------------- */
       case 'listMapPins': {
         const { pins } = require('./lib/mappins');
@@ -735,6 +748,10 @@ exports.handler = async (event) => {
         if (!program) return fail(400, 'program required');
         const scoutId = body.scoutId ? String(body.scoutId) : null;
         const note = body.note || (program + ' prospect board');
+        /* optional position filter: ['CB','S'] assigns only those positions */
+        const posList = Array.isArray(body.positions) && body.positions.length ? body.positions.map(x => String(x).toUpperCase()) : null;
+        const POS_EXPAND = { DB: ['DB','CB','S','SS','FS','SAF','NB'], DL: ['DL','DE','DT','NG','NT','EDGE','JACK'], LB: ['LB','ILB','OLB','MLB'], OL: ['OL','OT','OG','C'], RB: ['RB','FB'], WR: ['WR'], TE: ['TE'], QB: ['QB'], K: ['K','P','LS'] };
+        const posSet = posList ? [...new Set(posList.flatMap(x => POS_EXPAND[x] || [x]))] : null;
         const rows = scoutId
           ? await sql`
               INSERT INTO scout_assignments
@@ -743,6 +760,7 @@ exports.handler = async (event) => {
                      'normal', ${note}, 'open', p.id, now()
               FROM program_prospects pp JOIN prospects p ON p.id = pp.prospect_id
               WHERE upper(pp.program_code) = ${program}
+                AND (${posSet}::text[] IS NULL OR upper(COALESCE(p.position,'')) = ANY(${posSet}::text[]))
                 AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = ${scoutId} AND a.prospect_id = p.id)
               RETURNING id`
           : await sql`
@@ -755,9 +773,10 @@ exports.handler = async (event) => {
               CROSS JOIN scouts s
               WHERE upper(pp.program_code) = ${program}
                 AND s.access_code IS NOT NULL
+                AND (${posSet}::text[] IS NULL OR upper(COALESCE(p.position,'')) = ANY(${posSet}::text[]))
                 AND NOT EXISTS (SELECT 1 FROM scout_assignments a WHERE a.scout_id = s.scout_id AND a.prospect_id = p.id)
               RETURNING id`;
-        return ok({ created: rows.length });
+        return ok({ created: rows.length, positions: posSet });
       }
 
       /* Undo assignProgramBoard: removes OPEN assignments for a program's

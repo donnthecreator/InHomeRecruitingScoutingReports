@@ -2134,7 +2134,7 @@ function viewAssessment(id){
     (det.length ? `<div class="rc-meta" style="margin-bottom:6px;">Scored ${a.score_detail.correct} of ${a.score_detail.total}</div>` +
       det.map(d=>`<div class="vrow"><span style="color:${d.correct?'var(--good)':'#FF5A5A'};font-weight:800;">${d.correct?'\u2713':'\u2717'}</span>
         <span style="flex:1;"><b style="font-weight:600;">${esc(d.q)}</b><br>
-        <span class="rc-meta">He said: ${esc((d.options&&d.options[d.given])||d.given||'\u2014')}${d.correct?'':' \u00b7 correct: '+esc((d.options&&d.options[d.answer])||d.answer)}</span></span></div>`).join('') : '') +
+        <span class="rc-meta">${d.dots?'<b>Live read</b> \u00b7 ':d.clip?'<b>Film</b> \u00b7 ':''}He said: ${esc(d.shown||(d.options&&d.options[d.given])||d.given||'\u2014')}${d.correct?'':' \u00b7 correct: '+esc((d.options&&d.options[d.answer])||d.answer)}</span></span></div>`).join('') : '') +
     (written.length ? `<div class="rc-meta" style="margin:10px 0 4px;">Written answers</div>` +
       written.map(([k,v])=>`<div style="padding:8px 0;border-top:1px solid var(--line);"><div class="rc-meta">${esc(k)}</div><div style="font-size:13px;color:#D6D6D6;line-height:1.55;white-space:pre-wrap;">${esc(v)}</div></div>`).join('') : '');
 }

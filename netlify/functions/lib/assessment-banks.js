@@ -202,9 +202,21 @@ function bank(kind, position) {
 }
 function usesClips(kind) { return kind === 'iq' || kind === 'full'; }
 /* Auto-scored questions only: single-select with a defined answer. */
+const { scenariosFor } = require('./dots-scenarios');
 function score(kind, answers, clips, position) {
   let correct = 0, total = 0;
   const detail = [];
+  if (usesClips(kind)) {
+    scenariosFor(groupFor(position)).forEach(sc => {
+      total++;
+      const given = answers['dot_' + sc.id];
+      const ok = sc.mode === 'tap' ? String(given) === String(sc.answer) : String(given) === String(sc.answer);
+      if (ok) correct++;
+      const shown = sc.mode === 'tap' ? (given ? 'tapped ' + given : 'no tap') : ((sc.options || [])[given] || given || '\u2014');
+      detail.push({ id: 'dot_' + sc.id, q: sc.q, given, answer: sc.answer, correct: ok, why: sc.why || null,
+                    options: sc.mode === 'choice' ? sc.options : null, dots: true, shown });
+    });
+  }
   bank(kind, position).forEach(sec => sec.items.forEach(it => {
     if (it.answer === undefined) return;
     total++;
@@ -225,4 +237,4 @@ function score(kind, answers, clips, position) {
   return { correct, total, pct: total ? Math.round((correct / total) * 100) : null, detail };
 }
 
-module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType, usesClips, groupFor };
+module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType, usesClips, groupFor, scenariosFor };

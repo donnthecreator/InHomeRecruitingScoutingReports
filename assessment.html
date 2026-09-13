@@ -50,6 +50,23 @@
   .scale button.on{background:#FFF; border-color:#FFF; color:#000;}
   .scale-ends{display:flex; justify-content:space-between; font-size:11px; color:var(--dim); margin-top:5px;}
 
+  .field{border:1px solid #2A2A2A; border-radius:12px; overflow:hidden; background:#0B1F12; margin-bottom:10px; position:relative;}
+  .field svg{display:block; width:100%; height:auto;}
+  .dot{cursor:pointer;}
+  .dot .ring{fill:#1C1C1C; stroke:#E9E9E9; stroke-width:2.2;}
+  .dot .tri{fill:#1C1C1C; stroke:#E9E9E9; stroke-width:2.2;}
+  .dot:hover .ring, .dot:hover .tri{stroke:#FFF; stroke-width:3;}
+  .dot.picked .ring, .dot.picked .tri{fill:#FFF;}
+  .dot.right .ring, .dot.right .tri{fill:#35C759; stroke:#35C759;}
+  .dot.wrong .ring, .dot.wrong .tri{fill:#FF4D4D; stroke:#FF4D4D;}
+  .dot.reveal .ring, .dot.reveal .tri{stroke:#35C759; stroke-width:3.5; stroke-dasharray:4 3;}
+  .off .ball{fill:#FFF;}
+  .off text{fill:#000; font:700 11px 'Inter',sans-serif; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
+  .verdict{border-radius:10px; padding:11px 13px; font-size:14px; margin-top:8px; display:none;}
+  .verdict.ok{display:block; background:#0E2A19; border:1px solid #1E6B3A; color:#CFF5DB;}
+  .verdict.no{display:block; background:#2A0E0E; border:1px solid #6B1E1E; color:#F5CFCF;}
+  .verdict small{display:block; color:#BDBDBD; margin-top:4px; font-size:12.5px;}
+  .locked .opt, .locked .dot{pointer-events:none;}
   .clip{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:12px; background:var(--card);}
   .clip .vid{position:relative; padding-bottom:56.25%; height:0; background:#000;}
   .clip .vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
@@ -87,6 +104,7 @@ function totalQuestions(){
   let n = 0;
   (DATA.sections||[]).forEach(s => n += s.items.length);
   n += (DATA.clips||[]).length;
+  n += (DATA.dots||[]).length;
   return n;
 }
 function answeredCount(){
@@ -118,6 +136,36 @@ function qHTML(it){
   return `<textarea data-q="${esc(it.id)}" placeholder="Take your time. Specific beats long.">${esc(v||'')}</textarea>`;
 }
 
+/* The whiteboard. Offense labeled, defense unlabeled. Down linemen are
+   triangles (in a stance), everyone else circles. */
+function fieldSVG(sc){
+  const W = 600, H = 340, LOS = 195;
+  let g = '';
+  for(let y = 25; y < H; y += 34) g += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#1E3A28" stroke-width="1"/>`;
+  [200, 400].forEach(x => { for(let y = 20; y < H; y += 17) g += `<line x1="${x-4}" y1="${y}" x2="${x+4}" y2="${y}" stroke="#2A5039" stroke-width="1"/>`; });
+  g += `<line x1="0" y1="${LOS}" x2="${W}" y2="${LOS}" stroke="#F5F5F5" stroke-width="1.5" stroke-dasharray="6 5" opacity=".7"/>`;
+  const picked = ANSWERS['dot_'+sc.id];
+  const defs = (sc.defense||[]).map(d => {
+    const cls = ['dot', (sc.mode==='tap' && String(picked)===d.id) ? 'picked' : ''].filter(Boolean).join(' ');
+    const shape = d.t === 'dl'
+      ? `<polygon class="tri" points="${d.x},${d.y-13} ${d.x+13},${d.y+10} ${d.x-13},${d.y+10}"/>`
+      : `<circle class="ring" cx="${d.x}" cy="${d.y}" r="12"/>`;
+    return `<g class="${cls}" data-def="${d.id}" data-sc="${esc(sc.id)}">${shape}<circle cx="${d.x}" cy="${d.y}" r="20" fill="transparent"/></g>`;
+  }).join('');
+  const offs = (sc.offense||[]).map(o => `<g class="off"><circle class="ball" cx="${o.x}" cy="${o.y}" r="12"/><text x="${o.x}" y="${o.y}">${esc(o.l)}</text></g>`).join('');
+  return `<div class="field"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}${defs}${offs}</svg></div>`;
+}
+function dotVerdict(sc, ok, given){
+  const box = document.getElementById('dv_' + sc.id);
+  const q = document.getElementById('dq_' + sc.id);
+  if(!box) return;
+  box.className = 'verdict ' + (ok ? 'ok' : 'no');
+  box.innerHTML = (ok ? '<b>That\'s it.</b>' : '<b>Not that one.</b>') + (sc.why ? `<small>${esc(sc.why)}</small>` : '');
+  if(q){
+    q.classList.add('locked');
+    if(!ok && sc.mode === 'tap'){ const el = q.querySelector(`[data-def="${sc.answer}"]`); if(el) el.classList.add('reveal'); }
+  }
+}
 function keyHTML(it){
   if(!DATA.preview || !DATA.admin) return '';
   const bits = [];
@@ -144,7 +192,7 @@ function render(){
     <p class="lede">${isIQ
       ? 'Some of this is multiple choice, some of it is film. Watch each clip and tell us what you see. There is no time limit and you can leave and come back.'
       : isFull
-      ? 'Two parts. First we ask about you: how you are wired, how you take coaching, what drives you. Then we test what you see on a football field, including film you will diagnose. No time limit, and you can leave and come back.'
+      ? 'Two parts. First we ask about you: how you are wired, how you take coaching, what drives you. Then the football: written questions, live reads on a whiteboard where you tap the defender, and real film you diagnose. No time limit, and you can leave and come back.'
       : 'These are the questions a college coach would ask you sitting at your kitchen table. Answer them straight. The ones that sound uncomfortable are the ones that help you most.'}</p>
     <p class="fine">${isIQ || isFull
       ? 'On the football questions, answer without looking anything up. A wrong answer you reasoned through is worth more to us than a right one you searched.'
@@ -155,6 +203,19 @@ function render(){
       <div class="sec-count">${sec.items.length} question${sec.items.length===1?'':'s'}</div>
       ${sec.items.map(it => `<div class="q"><div class="q-text">${esc(it.q)}</div>${qHTML(it)}${keyHTML(it)}</div>`).join('')}
     `).join('')}
+
+    ${(DATA.dots||[]).length ? `
+      <div class="sec-title">Live reads</div>
+      <div class="sec-count">${DATA.dots.length} looks &middot; the offense is labeled, the defense is not &middot; you get the answer right away</div>
+      ${DATA.dots.map((sc, n) => `
+        <div class="q" id="dq_${esc(sc.id)}">
+          <div class="q-text">${n+1}. ${esc(sc.q)}</div>
+          ${fieldSVG(sc)}
+          ${sc.mode === 'choice' ? `<div class="opts">${(sc.options||[]).map((o,i)=>`<button type="button" class="opt ${String(ANSWERS['dot_'+sc.id])===String(i)?'on':''}" data-dot="${esc(sc.id)}" data-v="${i}"><i></i><span>${esc(o)}</span></button>`).join('')}</div>`
+                                : `<div class="fine">Tap a defender on the field.</div>`}
+          <div class="verdict" id="dv_${esc(sc.id)}"></div>
+        </div>`).join('')}
+    ` : ''}
 
     ${(DATA.clips||[]).length ? `
       <div class="sec-title">Film</div>
@@ -177,6 +238,25 @@ function render(){
       <button type="button" class="btn" id="submitBtn" onclick="submitAll()">Submit</button>
     </div><div class="status" id="statusLine"></div></div>`;
 
+  document.querySelectorAll('[data-def]').forEach(el => {
+    el.addEventListener('click', () => {
+      const sc = (DATA.dots||[]).find(x => x.id === el.dataset.sc); if(!sc || sc.mode !== 'tap') return;
+      const q = document.getElementById('dq_' + sc.id); if(q && q.classList.contains('locked')) return;
+      setAns('dot_' + sc.id, el.dataset.def);
+      const ok = el.dataset.def === sc.answer;
+      el.classList.add(ok ? 'right' : 'wrong');
+      dotVerdict(sc, ok, el.dataset.def);
+    });
+  });
+  document.querySelectorAll('[data-dot]').forEach(el => {
+    el.addEventListener('click', () => {
+      const sc = (DATA.dots||[]).find(x => x.id === el.dataset.dot); if(!sc) return;
+      const q = document.getElementById('dq_' + sc.id); if(q && q.classList.contains('locked')) return;
+      setAns('dot_' + sc.id, el.dataset.v);
+      el.parentElement.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', b === el));
+      dotVerdict(sc, String(el.dataset.v) === String(sc.answer), el.dataset.v);
+    });
+  });
   document.querySelectorAll('[data-q]').forEach(el => {
     if(el.tagName === 'BUTTON'){
       el.addEventListener('click', () => {

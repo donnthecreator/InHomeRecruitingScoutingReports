@@ -13,7 +13,7 @@
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 const crypto2 = require('crypto');
-const { bank, score, mbtiType, usesClips, groupFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const { bank, score, mbtiType, usesClips, groupFor, scenariosFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
 
 /* Preview reveals the correct answers, so it is admin only. Same token
    check as admin-data.js. Without it a preview still renders, just
@@ -91,6 +91,7 @@ exports.handler = async (event) => {
         athlete: 'Preview', school: 'Nothing here is saved', status: 'open',
         position: pos, positionGroup: groupFor(pos),
         sections: bank(kind, pos).map(sec => ({ section: sec.section, items: sec.items.map(it => admin ? it : (({ answer, why, mb, ...rest }) => rest)(it)) })),
+        dots: usesClips(kind) ? scenariosFor(groupFor(pos)) : [],
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
           options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT,
           answer: admin ? c.answer_index : undefined, why: admin ? c.explanation : undefined })),
@@ -111,6 +112,9 @@ exports.handler = async (event) => {
         kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position,
         status: a.status === 'complete' ? 'complete' : 'open',
         sections: bank(a.kind, a.position),
+        /* dot scenarios carry their answers because the page grades on the spot,
+           whiteboard style; the server re-scores on submit regardless */
+        dots: usesClips(a.kind) ? scenariosFor(groupFor(a.position)) : [],
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
                                  options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT })),
         answers: a.answers || {}

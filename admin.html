@@ -542,12 +542,19 @@
         <select id="asKind"><option value="full">Full assessment (interview + IQ)</option><option value="interview">Interview only</option><option value="iq">Football IQ only</option></select>
         <button type="button" class="btn" onclick="newAssessment()">Create link</button>
       </div>
-      <div class="rc-actions" style="margin-top:8px;">
-        <span class="rc-meta">Preview exactly what the athlete sees:</span>
-        <a class="mini-btn" href="assessment.html?preview=full" target="_blank" rel="noopener">Full</a>
-        <a class="mini-btn" href="assessment.html?preview=interview" target="_blank" rel="noopener">Interview</a>
-        <a class="mini-btn" href="assessment.html?preview=iq" target="_blank" rel="noopener">Football IQ</a>
+      <div class="tools" style="margin-top:8px;">
+        <span class="rc-meta" style="align-self:center;">Preview what the athlete sees, by position:</span>
+        <select id="pvPos">
+          <option value="">Core only (no position)</option>
+          <option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option>
+          <option value="OL">OL</option><option value="DL">DL / EDGE</option><option value="LB">LB</option>
+          <option value="CB">CB</option><option value="S">S</option><option value="K">K / P</option>
+        </select>
+        <button type="button" class="mini-btn" onclick="openPreview('full')">Full</button>
+        <button type="button" class="mini-btn" onclick="openPreview('interview')">Interview</button>
+        <button type="button" class="mini-btn" onclick="openPreview('iq')">Football IQ</button>
       </div>
+      <div class="rc-meta" style="margin-top:6px;">Every prospect answers the same core: personnel, coverage recognition, situational. On top of that he gets his position module, so a corner and a quarterback both have to identify coverage but only the quarterback gets protection and progression questions.</div>
       <div id="asStatus" class="sub" style="margin-top:8px;"></div>
       <div id="asList" style="margin-top:10px;"></div>
     </div>
@@ -2046,6 +2053,10 @@ function renderReports(){
 }
 
 /* ---------------- ASSESSMENTS + FILM CLIPS ---------------- */
+function openPreview(kind){
+  const pos = (document.getElementById('pvPos')||{}).value || '';
+  window.open('assessment.html?preview=' + kind + (pos ? '&position=' + encodeURIComponent(pos) : ''), '_blank', 'noopener');
+}
 let ASSESS = null, CLIPS = null;
 async function newAssessment(kind, prospectId, name, school){
   const k = kind || document.getElementById('asKind').value;

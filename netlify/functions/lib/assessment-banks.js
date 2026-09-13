@@ -193,17 +193,19 @@ function mbtiType(answers) {
 /* 'full' is the one-link version: the interview and the football IQ test
    back to back. Sections keep their own order so a kid warms up on
    himself before he gets to the film. */
-function bank(kind) {
-  if (kind === 'iq') return IQ_WRITTEN;
-  if (kind === 'full') return INTERVIEW.concat(IQ_WRITTEN);
+const { iqSections, groupFor } = require('./iq-positions');
+function bank(kind, position) {
+  const iq = iqSections(position);
+  if (kind === 'iq') return iq;
+  if (kind === 'full') return INTERVIEW.concat(iq);
   return INTERVIEW;
 }
 function usesClips(kind) { return kind === 'iq' || kind === 'full'; }
 /* Auto-scored questions only: single-select with a defined answer. */
-function score(kind, answers, clips) {
+function score(kind, answers, clips, position) {
   let correct = 0, total = 0;
   const detail = [];
-  bank(kind).forEach(sec => sec.items.forEach(it => {
+  bank(kind, position).forEach(sec => sec.items.forEach(it => {
     if (it.answer === undefined) return;
     total++;
     const given = answers[it.id];
@@ -223,4 +225,4 @@ function score(kind, answers, clips) {
   return { correct, total, pct: total ? Math.round((correct / total) * 100) : null, detail };
 }
 
-module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType, usesClips };
+module.exports = { INTERVIEW, IQ_WRITTEN, CLIP_OPTIONS_DEFAULT, bank, score, mbtiType, usesClips, groupFor };

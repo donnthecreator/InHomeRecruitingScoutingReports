@@ -138,7 +138,7 @@ function render(){
       <div class="bar-txt"><span id="barTxt"></span><span id="saveState"></span></div></div>
 
     ${DATA.preview ? `<div style="background:#1A1206;border:1px solid #4A3410;border-radius:10px;padding:12px 14px;margin-top:16px;">
-      <b style="color:#E0A419;">Preview</b> <span class="fine">— ${esc(DATA.kind)} version, ${totalQuestions()} questions. Nothing you type here is saved and no athlete sees this page.${DATA.admin?' Correct answers are shown because you are signed into admin.':' Sign into admin first to see the answer key.'}</span>
+      <b style="color:#E0A419;">Preview</b> <span class="fine">— ${esc(DATA.kind)} version${DATA.positionGroup?', '+esc(DATA.positionGroup)+' module':', core only'}, ${totalQuestions()} questions. Nothing you type here is saved and no athlete sees this page.${DATA.admin?' Correct answers are shown because you are signed into admin.':' Sign into admin first to see the answer key.'}</span>
     </div>` : ''}
     <h1>${isIQ ? 'Football IQ Assessment' : isFull ? 'InHome Athlete Assessment' : 'InHome Athlete Interview'}</h1>
     <p class="lede">${isIQ
@@ -232,7 +232,7 @@ async function submitAll(){
   try{
     let adminTok = null;
     try{ adminTok = sessionStorage.getItem('inhome_admin_token'); }catch(e){}
-    const url = PREVIEW ? '/.netlify/functions/assessment?preview=' + encodeURIComponent(PREVIEW)
+    const url = PREVIEW ? '/.netlify/functions/assessment?preview=' + encodeURIComponent(PREVIEW) + (QS.get('position') ? '&position=' + encodeURIComponent(QS.get('position')) : '')
                         : '/.netlify/functions/assessment?t=' + encodeURIComponent(TOKEN);
     const res = await fetch(url, adminTok ? { headers:{ 'Authorization':'Bearer ' + adminTok } } : undefined);
     const d = await res.json();

@@ -13,7 +13,7 @@
 const crypto = require('crypto');
 const { neon } = require('@neondatabase/serverless');
 const crypto2 = require('crypto');
-const { bank, score, mbtiType, usesClips, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const { bank, score, mbtiType, usesClips, groupFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
 
 /* Preview reveals the correct answers, so it is admin only. Same token
    check as admin-data.js. Without it a preview still renders, just
@@ -84,11 +84,13 @@ exports.handler = async (event) => {
     if (qs.preview) {
       const kind = ['interview', 'iq', 'full'].includes(qs.preview) ? qs.preview : 'full';
       const admin = isAdmin(event);
-      const clips = usesClips(kind) ? await activeClips(null) : [];
+      const pos = qs.position || null;
+      const clips = usesClips(kind) ? await activeClips(groupFor(pos)) : [];
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         preview: true, admin, kind,
-        athlete: 'Preview', school: 'Nothing here is saved', position: null, status: 'open',
-        sections: bank(kind).map(sec => ({ section: sec.section, items: sec.items.map(it => admin ? it : (({ answer, why, mb, ...rest }) => rest)(it)) })),
+        athlete: 'Preview', school: 'Nothing here is saved', status: 'open',
+        position: pos, positionGroup: groupFor(pos),
+        sections: bank(kind, pos).map(sec => ({ section: sec.section, items: sec.items.map(it => admin ? it : (({ answer, why, mb, ...rest }) => rest)(it)) })),
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
           options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT,
           answer: admin ? c.answer_index : undefined, why: admin ? c.explanation : undefined })),
@@ -101,14 +103,14 @@ exports.handler = async (event) => {
     const [a] = await sql`SELECT * FROM assessments WHERE token = ${token}`;
     if (!a) return fail(404, 'This link is not valid');
 
-    const clips = usesClips(a.kind) ? await activeClips(a.position) : [];
+    const clips = usesClips(a.kind) ? await activeClips(groupFor(a.position)) : [];
 
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position,
         status: a.status === 'complete' ? 'complete' : 'open',
-        sections: bank(a.kind),
+        sections: bank(a.kind, a.position),
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
                                  options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT })),
         answers: a.answers || {}
@@ -127,7 +129,7 @@ exports.handler = async (event) => {
       await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'started' WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ saved: true }) };
     }
-    const sc = score(a.kind, clean, clips);
+    const sc = score(a.kind, clean, clips, a.position);
     if (a.kind === 'interview' || a.kind === 'full') sc.mbti = mbtiType(clean);
     await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'complete', completed_at = now(),
               score_pct = ${sc.total ? sc.pct : null}, score_detail = ${JSON.stringify(sc)} WHERE id = ${a.id}`;

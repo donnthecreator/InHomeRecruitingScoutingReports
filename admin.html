@@ -629,9 +629,7 @@
       <h3>Film Clips for the IQ Test</h3>
       <div class="sub">YouTube-hosted clips the athlete watches and diagnoses. Upload the clip to YouTube as <b>unlisted</b>, paste the link here, write the question and the options, and mark the right answer. Cut the clip before the outcome shows. Eight to twelve seconds is the sweet spot.</div>
       <label class="fl" style="margin-top:12px;">Who sees this clip? <span style="color:var(--warn);text-transform:none;letter-spacing:0;">(required)</span></label>
-      <div class="chip-row" id="clGroups">
-        ${['ALL','QB','RB','WR','TE','OL','DL','LB','DB'].map(g=>`<button type="button" class="chip" data-g="${g}" onclick="this.classList.toggle('on'); if('${g}'==='ALL'&&this.classList.contains('on')) document.querySelectorAll('#clGroups .chip:not([data-g=ALL])').forEach(b=>b.classList.remove('on')); else if(this.classList.contains('on')) document.querySelector('#clGroups [data-g=ALL]').classList.remove('on');">${g==='ALL'?'Everyone':g==='DL'?'DL / EDGE':g}</button>`).join('')}
-      </div>
+      <div class="chip-row" id="clGroups"></div>
       <div class="rc-meta" style="margin-top:4px;">A coverage clip usually goes to QB, WR, TE, LB and DB. A protection clip to QB, RB and OL. Pick every group that has to read it.</div>
       <div class="grid2" style="margin-top:10px;">
         <div><label class="fl">YouTube link or video id</label><input type="text" id="clYt" placeholder="https://youtu.be/..."></div>
@@ -1487,6 +1485,16 @@ async function loadProgramBoards(){
   }catch(err){ console.error('loadProgramBoards:', err.message); }
 }
 
+(function buildClipGroupPick(){
+  const el = document.getElementById('clGroups'); if(!el) return;
+  el.innerHTML = ['ALL','QB','RB','WR','TE','OL','DL','LB','DB'].map(g => `<button type="button" class="chip" data-g="${g}">${g==='ALL'?'Everyone':g==='DL'?'DL / EDGE':g}</button>`).join('');
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if(!b) return;
+    b.classList.toggle('on');
+    if(b.dataset.g === 'ALL' && b.classList.contains('on')) el.querySelectorAll('.chip:not([data-g=ALL])').forEach(x => x.classList.remove('on'));
+    else if(b.classList.contains('on')) { const all = el.querySelector('[data-g=ALL]'); if(all) all.classList.remove('on'); }
+  });
+})();
 (function buildBoardPosPick(){
   const el = document.getElementById('boardPosPick'); if(!el) return;
   el.innerHTML = ['QB','RB','WR','TE','OL','DL','LB','DB','K'].map(x => `<button type="button" class="chip" data-bp="${x}" onclick="this.classList.toggle('on')">${x==='DL'?'DL/EDGE':x}</button>`).join('');

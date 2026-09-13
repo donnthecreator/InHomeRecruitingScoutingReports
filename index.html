@@ -830,19 +830,22 @@ const SCOUTS_FALLBACK = {
   "DEMO26":     { id:"demo",      name:"Demo Scout",       role:"Demo / Training",               region:"Test" }
 };
 let SCOUTS = { ...SCOUTS_FALLBACK };
+let SCOUTS_READY = null;
 async function refreshScouts(){
   try{
-    const res = await fetch('/.netlify/functions/list-scouts');
+    const res = await fetch('/.netlify/functions/list-scouts', { cache:'no-store' });
     if(!res.ok) throw new Error('bad response');
     const data = await res.json();
     if(data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length){
       SCOUTS = { ...SCOUTS_FALLBACK, ...data };
+      /* if a scout is already signed in from the fallback, upgrade him to the live record (photos, cover) */
+      if(SCOUT && SCOUT_CODE && SCOUTS[SCOUT_CODE]){ SCOUT = SCOUTS[SCOUT_CODE]; applyScoutIdentity(); }
     }
   }catch(err){
     console.error('list-scouts unreachable, using fallback roster:', err.message);
   }
 }
-refreshScouts();
+SCOUTS_READY = refreshScouts();
 
 let SCOUT = null;
 let SCOUT_CODE = localStorage.getItem('inhome_scout_code') || '';
@@ -855,10 +858,11 @@ let reportPosFilter = 'All';
 let targetPosFilter = 'All';
 
 /* ---------------- GATE ---------------- */
-function tryGate(){
+async function tryGate(){
   const el = document.getElementById('gateCode');
   const code = (el.value || '').trim().toUpperCase();
-  const found = SCOUTS[code];
+  let found = SCOUTS[code];
+  if(found && !('headshotUrl' in found)){ try{ await Promise.race([SCOUTS_READY, new Promise(r=>setTimeout(r, 1500))]); }catch(e){} found = SCOUTS[code] || found; }
   if(!found){
     document.getElementById('gateErr').textContent = 'Code not recognized.';
     el.value = '';
@@ -891,7 +895,8 @@ function welcomeSplash(){
 function scoutFaceHTML(){
   return SCOUT.headshotUrl ? `<img src="${SCOUT.headshotUrl}" alt="${SCOUT.name}">` : SCOUT.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 }
-function applyScout(){
+function applyScout(){ applyScoutIdentity(); loadProfile(); }
+function applyScoutIdentity(){
   document.getElementById('scoutChip').style.display = 'flex';
   document.getElementById('scoutNm').textContent = SCOUT.name;
   document.getElementById('scoutRl').textContent = SCOUT.role + ' \u00b7 ' + SCOUT.region;
@@ -911,7 +916,6 @@ function applyScout(){
       btn.onclick = () => inp.click(); }
     btn.textContent = SCOUT.coverUrl ? 'Change cover photo' : 'Add a cover photo from your playing days';
   }
-  loadProfile();
 }
 async function uploadScoutPhoto(file, kind){
   if(!file) return;
@@ -1124,7 +1128,7 @@ async function loadProfile(){
   document.getElementById('profName').textContent = SCOUT.name;
   document.getElementById('profRole').textContent = SCOUT.role;
   document.getElementById('profRegion').textContent = SCOUT.region;
-  document.getElementById('profHeadshot').textContent = SCOUT.name.split(' ').map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+  /* headshot and cover are painted by applyScoutIdentity; do not reset them here */
   document.getElementById('profPublicLink').href = 'scout.html?id=' + encodeURIComponent(SCOUT.id);
   document.getElementById('profBio').style.display = 'none';
   document.getElementById('profAccoladesWrap').style.display = 'none';
@@ -1226,9 +1230,12 @@ function signOut(){
 document.getElementById('gateCode').addEventListener('keydown', e=>{
   if(e.key === 'Enter'){ e.preventDefault(); tryGate(); }
 });
-(function autoSignIn(){
+(async function autoSignIn(){
   const saved = localStorage.getItem('inhome_scout_code');
-  if(saved && SCOUTS[saved]){
+  if(!saved) return;
+  /* wait for the live roster so the splash has his photos, but never hang */
+  try{ await Promise.race([SCOUTS_READY, new Promise(r=>setTimeout(r, 2500))]); }catch(e){}
+  if(SCOUTS[saved]){
     SCOUT = SCOUTS[saved];
     SCOUT_CODE = saved;
     document.getElementById('gate').classList.add('hide');

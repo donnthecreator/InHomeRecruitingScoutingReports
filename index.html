@@ -1712,38 +1712,6 @@ function renderReports(){
 }
 
 /* ---------------- RENDER: UNSCOUTED TARGETS ---------------- */
-function renderTargets(){
-  const q = (document.getElementById('targetSearch').value||'').trim().toLowerCase();
-  let list = targets.filter(t=>{
-    if(targetPosFilter !== 'All' && t.position !== targetPosFilter) return false;
-    if(!q) return true;
-    return (t.name||'').toLowerCase().includes(q) || (t.school||'').toLowerCase().includes(q);
-  });
-  list = list.slice().sort((a,b)=>{
-    if(a.priority==='high' && b.priority!=='high') return -1;
-    if(b.priority==='high' && a.priority!=='high') return 1;
-    return (a.name||'').localeCompare(b.name||'');
-  });
-
-  const el = document.getElementById('targetsList');
-  if(!list.length){
-    el.innerHTML = `<div class="empty-state"><div class="ic">\u2705</div><div class="t">All caught up</div>
-      <div class="s">No unscouted players assigned to you right now.</div></div>`;
-    return;
-  }
-
-  el.innerHTML = (usingDemoTargets ? `<div class="demo-banner">Showing sample data — list-targets endpoint not reachable yet. Wire it up to see your real target list.</div>` : '')
-    + list.map(t => `
-    <div class="p-card" style="cursor:default;">
-      <div class="p-avatar">${initials(t.name)}</div>
-      <div class="p-mid">
-        <div class="p-name">${t.name||'Unnamed'}</div>
-        <div class="p-meta">${t.positionLabel||t.position||''} \u00b7 ${t.school||'—'} \u00b7 Class of ${t.classYear||'—'}</div>
-        ${t.priority==='high' ? '<span class="p-priority high">High Priority</span>' : ''}
-      </div>
-      <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>
-    </div>`).join('');
-}
 
 function scoutLink(t){
   const params = new URLSearchParams();
@@ -2225,50 +2193,6 @@ function commitTagHTML(t){
   return `<div class="commit-tag ${status}">${logo}${label}${school ? ' to ' + school : ''}</div>`;
 }
 
-function renderTargets(){
-  const q = (document.getElementById('targetSearch').value || '').trim().toLowerCase();
-  let list = targets.filter(t => {
-    if(targetPosFilter !== 'All' && t.position !== targetPosFilter) return false;
-    if(!q) return true;
-    return (t.name || '').toLowerCase().includes(q) || (t.school || '').toLowerCase().includes(q);
-  });
-  list = list.slice().sort((a,b) => {
-    if(a.priority === 'high' && b.priority !== 'high') return -1;
-    if(b.priority === 'high' && a.priority !== 'high') return 1;
-    return (a.name || '').localeCompare(b.name || '');
-  });
-
-  const el = document.getElementById('targetsList');
-  if(!list.length){
-    el.innerHTML = `<div class="empty-state"><div class="ic">\u2705</div><div class="t">All caught up</div>
-      <div class="s">No unscouted players assigned to you right now.</div></div>`;
-    return;
-  }
-
-  el.innerHTML = (usingDemoTargets ? `<div class="demo-banner">Showing sample data — list-targets endpoint not reachable yet. Wire it up to see your real target list.</div>` : '')
-    + list.map((t, i) => {
-      const offers = Number(t.offerCount ?? t.offer_count ?? 0);
-      return `
-    <div class="p-card" style="cursor:default;">
-      <div class="p-avatar">${initials(t.name)}</div>
-      <div class="p-mid">
-        <div class="p-name">${t.name || 'Unnamed'}</div>
-        <div class="p-meta">${t.positionLabel || t.position || ''} \u00b7 ${t.school || '—'} \u00b7 Class of ${t.classYear || '—'}</div>
-        ${t.priority === 'high' ? '<span class="p-priority high">High Priority</span>' : ''}
-        ${commitTagHTML(t)}
-        ${offers ? `<div class="offer-count">${offers} offer${offers === 1 ? '' : 's'} logged</div>` : ''}
-      </div>
-      <div class="t-actions">
-        <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>
-        <button type="button" class="edit-btn" onclick="openEditSheetByIndex(${i})">Edit</button>
-      </div>
-    </div>`;
-    }).join('');
-
-  /* Index into the rendered list so the object identity is preserved and
-     edits write back to the same target the card came from. */
-  window.__renderedTargets = list;
-}
 function openEditSheetByIndex(i){
   const t = (window.__renderedTargets || [])[i];
   if(t) openEditSheet(t);
@@ -2460,11 +2384,12 @@ function renderTargets(){
         ? `<img src="${frameUrl(hk)}" alt="" onerror="this.style.display='none'; this.parentElement.textContent='${initials(t.name)}';">`
         : initials(t.name)}</div>
       <div class="p-mid">
-        <div class="p-name">${t.name || 'Unnamed'}</div>
+        <div class="p-name"><span class="plink" data-pid="${t.prospect_id||t.prospectId||''}" data-pname="${esc(t.name||'')}" data-pschool="${esc(t.school||'')}">${t.name || 'Unnamed'}</span></div>
         <div class="p-meta">${t.positionLabel || t.position || ''} \u00b7 ${t.school || '—'} \u00b7 Class of ${t.classYear || '—'}${t.wingspan ? ' \u00b7 ' + t.wingspan + ' span' : ''}</div>
         ${t.priority === 'high' ? '<span class="p-priority high">High Priority</span>' : ''}
         ${commitTagHTML(t)}
         ${offers ? `<div class="offer-count">${offers} offer${offers === 1 ? '' : 's'} logged</div>` : ''}
+        ${railHTML(t.name)}
       </div>
       <div class="t-actions">
         <a class="p-scout-btn" href="${scoutLink(t)}">Scout</a>

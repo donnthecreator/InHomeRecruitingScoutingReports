@@ -424,6 +424,67 @@
   .mk-chg.up{color:#35C759; background:rgba(53,199,89,.12);} .mk-chg.down{color:#FF5A5A; background:rgba(255,90,90,.12);} .mk-chg.flat{color:var(--dim); background:var(--card-2);}
   .req-card{border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--card);}
   .req-status{font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:800;}
+
+  /* ---------- JUCO TRACKER (same market the coaches and admin see) ---------- */
+  .xg-index{display:grid; grid-template-columns:1fr 1.4fr; gap:20px; align-items:center;
+      background:#0F1116; border:1px solid #212430; border-radius:13px; padding:18px 20px; margin-bottom:14px;}
+  .xg-idx-name{font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:#7A8094; margin-bottom:7px;}
+  .xg-idx-val{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:36px; font-weight:600; line-height:1; color:#EDEFF4;}
+  .xg-idx-chg{display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; font-weight:600;}
+  .xg-idx-pill{padding:3px 9px; border-radius:5px; font-size:12px; font-weight:700; font-family:ui-monospace,monospace;}
+  .xg-idx-sub{font-size:10.5px; color:#7A8094; margin-top:9px;}
+  .xg-idx-chart{height:100px;}
+  @media(max-width:720px){ .xg-index{grid-template-columns:1fr;} .xg-idx-chart{height:80px;} }
+  .xg-movers{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;}
+  @media(max-width:720px){ .xg-movers{grid-template-columns:1fr;} }
+  .xg-mv{background:#0F1116; border:1px solid #212430; border-radius:13px; padding:14px 16px;}
+  .xg-mv h4{margin:0 0 3px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#7A8094;}
+  .xg-mv .why{font-size:10.5px; color:#5F6472; margin-bottom:10px;}
+  .xg-mv-row{display:grid; grid-template-columns:18px 1fr auto auto; gap:9px; align-items:center;
+      padding:7px 0; border-top:1px solid #1B1E27;}
+  .xg-mv-rank{font-family:ui-monospace,monospace; font-size:11px; color:#5F6472;}
+  .xg-mv-name{min-width:0;}
+  .xg-mv-name b{display:block; font-size:12.5px; font-weight:700; color:#EDEFF4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .xg-mv-name span{font-size:10.5px; color:#7A8094;}
+  .xg-mv-price{font-family:ui-monospace,monospace; font-size:13px; color:#EDEFF4;}
+  .xg-table{background:#0F1116; border:1px solid #212430; border-radius:13px; overflow:hidden;}
+  .xg-head{display:grid; grid-template-columns:1fr 44px 56px 104px 92px; gap:6px;
+      padding:8px 12px; background:#14161C; border-bottom:1px solid #212430;}
+  .xg-head span{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#7A8094; font-weight:600;}
+  .xg-row{display:grid; grid-template-columns:1fr 44px 56px 104px 92px; gap:6px; align-items:center;
+      padding:8px 12px; border-bottom:1px solid #212430; position:relative; cursor:pointer;}
+  .xg-row:hover{background:#12141A;}
+  .xg-row::before{content:''; position:absolute; left:0; top:0; bottom:0; width:2.5px;}
+  .xg-row.up::before{background:#00C87A;} .xg-row.down::before{background:#FF4D4D;} .xg-row.flat::before{background:#4B5063;}
+  .xg-sym{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .xg-sym b{font-weight:700; font-size:12.5px; font-family:ui-monospace,monospace; color:#EDEFF4;}
+  .xg-sym span{font-size:11px; color:#7A8094; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .xg-pos{font-size:11px; color:#7A8094; font-family:ui-monospace,monospace;}
+  .xg-price{font-size:14px; font-weight:600; font-family:ui-monospace,monospace; color:#EDEFF4;}
+  .xg-pct{display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700;
+      padding:3px 6px; border-radius:5px; font-family:ui-monospace,monospace; white-space:nowrap;}
+  .xg-pct.up{color:#00C87A; background:rgba(0,200,122,.12);}
+  .xg-pct.down{color:#FF4D4D; background:rgba(255,77,77,.12);}
+  .xg-pct.flat{color:#7A8094; background:rgba(122,128,148,.12);}
+  .xg-detail{background:#0B0C10; border-bottom:1px solid #212430; padding:12px 14px;}
+  .xg-detail .lg{display:flex; gap:10px; padding:6px 0; border-top:1px solid #1B1E27; font-size:12px;}
+  .xg-detail .lg:first-child{border-top:0;}
+  .xgt-strip{background:#000; border:1px solid #212430; border-radius:12px; padding:11px 0; margin-bottom:14px; overflow:hidden; position:relative;}
+  .xgt-strip::before,.xgt-strip::after{content:''; position:absolute; top:0; bottom:0; width:44px; z-index:2; pointer-events:none;}
+  .xgt-strip::before{left:0; background:linear-gradient(90deg,#000,transparent);}
+  .xgt-strip::after{right:0; background:linear-gradient(270deg,#000,transparent);}
+  .xgt-track{display:flex; gap:28px; white-space:nowrap; width:max-content; animation:xgtScroll 85s linear infinite;}
+  .xgt-strip:hover .xgt-track{animation-play-state:paused;}
+  @keyframes xgtScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  .xgt-item{display:inline-flex; align-items:baseline; gap:7px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; color:#EDEFF4; background:none; border:0; padding:0; margin:0; cursor:pointer;}
+  .xgt-item:hover{opacity:.72;}
+  .xgt-item b{font-weight:700; letter-spacing:.02em;}
+  .xgt-chg{font-weight:600;} .xgt-chg.up{color:#00C87A;} .xgt-chg.down{color:#FF4D4D;} .xgt-chg.flat{color:#7A8094;}
+  @media (prefers-reduced-motion:reduce){ .xgt-track{animation:none;} }
+  .mk-face{width:32px; height:32px; border-radius:8px; object-fit:cover; background:#1B1E27; border:1px solid #212430; flex:0 0 auto;}
+  .mk-logo{width:16px; height:16px; object-fit:contain; vertical-align:-3px; margin-right:4px;}
+  .xg-filters{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
+  .xg-sel{background:#14161C; color:#EDEFF4; border:1px solid #212430; border-radius:8px; padding:7px 9px; font-size:12px; font-family:inherit;}
 </style>
 </head>
 <body>
@@ -484,7 +545,7 @@
       Unscouted<span class="cnt" id="tabCntTargets">&mdash;</span>
     </button>
     <button type="button" class="tab-btn" id="tabBtnMarket" onclick="switchTab('market')">
-      Market<span class="cnt" id="tabCntMarket">&mdash;</span>
+      JUCO Tracker<span class="cnt" id="tabCntMarket">&mdash;</span>
     </button>
     <button type="button" class="tab-btn" id="tabBtnConnect" onclick="switchTab('connect')">
       Connect<span class="cnt" id="tabCntConnect">&mdash;</span>
@@ -493,9 +554,16 @@
 
   <div class="tab-pane" id="paneMarket">
     <div class="panel">
-      <h3 style="margin:0 0 4px;">Production Market</h3>
-      <div class="sub" style="margin-bottom:10px;">What the coaches see. Every tracked player's latest Production Grade, up or down from his last game. Tap a name to file a report on him.</div>
-      <div class="tools"><input type="text" id="mkSearch" placeholder="Search name or school" oninput="renderMarket()"><select id="mkLevel" onchange="renderMarket()"><option value="">JUCO + HS</option><option value="JUCO">JUCO</option><option value="HS">HS</option></select></div>
+      <h3 style="margin:0 0 4px;">JUCO Tracker</h3>
+      <div class="sub" style="margin-bottom:10px;">The same board the college staffs are looking at, live. Every tracked player's Production Grade, his move since last game, top risers and fallers. Tap a name to file a report on him.</div>
+      <div id="mkTicker"></div>
+      <div class="xg-filters">
+        <input type="text" id="mkSearch" class="xg-sel" placeholder="Search name or school" oninput="renderMarket()" style="flex:1;min-width:150px;">
+        <select id="mkLevel" class="xg-sel" onchange="renderMarket()"><option value="">JUCO + HS + transfer</option><option value="JUCO">JUCO only</option><option value="HS">High school only</option></select>
+        <select id="mkPos" class="xg-sel" onchange="renderMarket()"><option value="">All positions</option></select>
+        <select id="mkSort" class="xg-sel" onchange="renderMarket()"><option value="price">Highest grade</option><option value="up">Biggest riser</option><option value="down">Biggest faller</option><option value="games">Most games</option></select>
+      </div>
+      <div id="mkStats" class="sub" style="margin-bottom:8px;"></div>
       <div id="mkList"></div>
     </div>
   </div>
@@ -861,34 +929,155 @@ async function uploadScoutPhoto(file, kind){
   }catch(err){ alert('Photo upload failed: ' + err.message); }
 }
 
-/* ---------------- MARKET (read-only view of what coaches see) ---------------- */
+/* ---------------- JUCO TRACKER: identical to the coach portal and admin market ---------------- */
+function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function mkDate(d){ const m = String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/); const x = m ? new Date(+m[1],+m[2]-1,+m[3]) : new Date(d); return isNaN(x) ? String(d||'') : x.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function renderTicker(items){
+  const host = document.getElementById('mkTicker'); if(!host) return;
+  if(!items.length){ host.innerHTML = ''; return; }
+  const one = items.map(it => { const dir = it.chg>0?'up':it.chg<0?'down':'flat'; return `<button type="button" class="xgt-item" onclick="document.querySelector('[data-mk]') && document.getElementById('mkSearch') && (document.getElementById('mkSearch').value='${esc(it.name).replace(/'/g,'')}', renderMarket())"><b>${esc(it.sym)}</b><span style="color:#7A8094;font-size:9px;">${esc(it.position||'')}</span>${it.price.toFixed(1)}<span class="xgt-chg ${dir}">${it.chg>0?'\u25b2':it.chg<0?'\u25bc':'\u00b7'} ${it.chg>0?'+':''}${it.chg}</span></button>`; }).join('');
+  host.innerHTML = `<div class="xgt-strip"><div class="xgt-track">${one}${one}</div></div>`;
+}
 let MK = null;
-async function renderMarket(){
-  const el = document.getElementById('mkList');
-  if(MK === null){
-    el.innerHTML = '<div class="empty-state">Loading market...</div>';
-    try{ const r = await fetch('/.netlify/functions/list-performances', {cache:'no-store'}); const d = await r.json(); MK = d.players || []; }
-    catch(e){ el.innerHTML = '<div class="empty-state">Could not load the market.</div>'; return; }
-  }
-  const q = (document.getElementById('mkSearch').value||'').toLowerCase(), lv = document.getElementById('mkLevel').value;
-  const rows = MK.map(p=>{
-    const g = (p.entries||[]).filter(e=>e.grade!=null&&e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-    const price = g.length ? Number(g[g.length-1].grade) : null, prev = g.length>1 ? Number(g[g.length-2].grade) : null;
-    return Object.assign({}, p, { price, chg: (price!=null&&prev!=null) ? +(price-prev).toFixed(1) : null, games:g.length });
-  }).filter(p=>p.price!=null && (!lv||p.level===lv) && (!q||(p.name||'').toLowerCase().includes(q)||(p.school||'').toLowerCase().includes(q)))
-    .sort((a,b)=>b.price-a.price);
-  document.getElementById('tabCntMarket').textContent = rows.length;
-  if(!rows.length){ el.innerHTML = '<div class="empty-state">No graded games on the market yet.</div>'; return; }
-  el.innerHTML = rows.map(p=>{
-    const dir = p.chg==null?'flat':p.chg>0?'up':p.chg<0?'down':'flat';
-    const link = 'report.html?' + new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:p.position||'' }).toString();
-    return `<div class="mk-row">
-      ${p.headshotUrl ? `<img class="face" src="${p.headshotUrl}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="face" style="width:36px;height:36px;border-radius:8px;background:var(--card-2);display:grid;place-items:center;font-size:11px;color:var(--dim);font-weight:700;">${(p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('')}</div>`}
-      <div><a class="nm" href="${link}" style="color:var(--ink);text-decoration:none;">${p.name}</a><div class="sub" style="margin:0;font-size:11px;">${p.logoUrl?`<img src="${p.logoUrl}" style="width:13px;height:13px;object-fit:contain;vertical-align:-2px;margin-right:3px;" onerror="this.remove()">`:''}${p.position||''} \u00b7 ${p.school||''} \u00b7 ${p.games} game${p.games===1?'':'s'}</div></div>
-      <div class="sc">${p.price.toFixed(1)}</div>
-      <div class="mk-chg ${dir}">${p.chg==null?'1 game':(p.chg>0?'\u25b2 +':p.chg<0?'\u25bc ':'\u00b7 ')+p.chg}</div>
+let MK_EXCLUDED = [];
+/* Sparkline / area chart. Same visual language as the coach portal:
+   green when the last game was up, red when it was down. */
+function marketSpark(vals, w, h, area){
+  if(!vals || vals.length < 2)
+    return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><line x1="4" y1="${h/2}" x2="${w-4}" y2="${h/2}" stroke="#2A2E3A" stroke-width="2" stroke-dasharray="2 4"/></svg>`;
+  const min = Math.min(...vals), max = Math.max(...vals), span = (max-min)||1, pad = 4, step = (w-pad*2)/(vals.length-1);
+  const pts = vals.map((v,i)=>[pad+i*step, pad+(1-(v-min)/span)*(h-pad*2)]);
+  const col = vals[vals.length-1] > vals[vals.length-2] ? '#00C87A' : vals[vals.length-1] < vals[vals.length-2] ? '#FF4D4D' : '#7A8094';
+  const line = pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const fill = area ? `<polygon points="${pad},${h-pad} ${line} ${w-pad},${h-pad}" fill="${col}" opacity=".10"/>` : '';
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${fill}<polyline fill="none" stroke="${col}" stroke-width="2" points="${line}"/></svg>`;
+}
+
+/* Top risers and fallers, straight from the change between a player's
+   last two graded games. Nothing estimated: one game means not eligible. */
+function marketMovers(list){
+  const moved = list.filter(p=>p.chg!=null && p.chg!==0);
+  const risers = moved.filter(p=>p.chg>0).sort((a,b)=>b.chg-a.chg).slice(0,5);
+  const fallers = moved.filter(p=>p.chg<0).sort((a,b)=>a.chg-b.chg).slice(0,5);
+  const col = (title, why, rows, cls) => `
+    <div class="xg-mv">
+      <h4>${title}</h4>
+      <div class="why">${why}</div>
+      ${rows.length ? rows.map((p,i)=>`
+        <div class="xg-mv-row">
+          <span class="xg-mv-rank">${i+1}</span>
+          <span class="xg-mv-name" style="display:flex;align-items:center;gap:8px;">${p.headshotUrl ? `<img class="mk-face" style="width:26px;height:26px;" src="${esc(p.headshotUrl)}" alt="" onerror="this.style.visibility='hidden'">` : ''}<span style="min-width:0;"><b>${esc(p.name)}</b><span>${esc(p.position||'')} \u00b7 ${esc(p.school||'')}</span></span></span>
+          <span class="xg-mv-price">${p.price.toFixed(1)}</span>
+          <span class="xg-pct ${cls}">${p.chg>0?'\u25b2':'\u25bc'} ${p.chg>0?'+':''}${p.chg}</span>
+        </div>`).join('') : '<div class="why">Nobody has two graded games yet.</div>'}
     </div>`;
-  }).join('');
+  return `<div class="xg-movers">
+    ${col('Top risers', 'Biggest jump from his previous game', risers, 'up')}
+    ${col('Top fallers', 'Biggest drop from his previous game', fallers, 'down')}
+  </div>`;
+}
+
+/* Index over time: average grade across every tracked player, per date. */
+function marketIndexSeries(list){
+  const byDate = {};
+  list.forEach(p => p.graded.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(Number(e.grade)); }));
+  const dates = Object.keys(byDate).sort();
+  const vals = dates.map(d => +(byDate[d].reduce((a,b)=>a+b,0)/byDate[d].length).toFixed(1));
+  let chgHTML = '<span class="xg-idx-pill" style="color:#7A8094;background:rgba(122,128,148,.14)">Moves after the 2nd slate</span>';
+  if(vals.length > 1){
+    const c = +(vals[vals.length-1] - vals[vals.length-2]).toFixed(1);
+    const cls = c > 0 ? 'up' : c < 0 ? 'down' : 'flat';
+    chgHTML = `<span class="xg-pct ${cls}">${c>0?'\u25b2':c<0?'\u25bc':'\u00b7'} ${c>0?'+':''}${c}</span><span style="color:#7A8094;font-size:11px;">vs the previous slate</span>`;
+  }
+  return { vals, chgHTML };
+}
+
+function marketRowHTML(p, i){
+  const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'') + p.chg + (p.pct!=null ? ` (${p.pct>0?'+':''}${p.pct}%)` : '');
+  const arrow = p.dir==='up' ? '\u25b2' : p.dir==='down' ? '\u25bc' : '\u00b7';
+  const log = p.graded.slice().reverse().map(e=>`<div class="lg"><span style="min-width:58px;color:#7A8094">${mkDate(e.date)}</span><span style="min-width:38px;font-family:ui-monospace,monospace;color:#EDEFF4">${Number(e.grade).toFixed(1)}</span><span style="flex:1;color:#9AA0AA">${esc(e.statLine||'')}${e.link?` <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:#7A8094">source</a>`:''}</span></div>`).join('');
+  return `<div class="xg-row ${p.dir}" data-mk="${i}">
+      <div class="xg-sym" style="flex-direction:row;align-items:center;gap:9px;">
+        ${p.headshotUrl ? `<img class="mk-face" src="${esc(p.headshotUrl)}" alt="" onerror="this.style.visibility='hidden'">` : `<div class="mk-face" style="display:grid;place-items:center;font-size:10px;color:#7A8094;font-weight:700;">${(p.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('')}</div>`}
+        <div style="display:flex;flex-direction:column;gap:2px;min-width:0;"><b>${esc(p.sym)}</b><span>${p.logoUrl?`<img class="mk-logo" src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}${esc(p.name)} \u00b7 ${esc(p.school||'')}</span></div>
+      </div>
+      <div class="xg-pos">${esc(p.position||'')}</div>
+      <div class="xg-price">${p.price.toFixed(1)}</div>
+      <div><span class="xg-pct ${p.dir}">${arrow} ${chgTxt}</span></div>
+      <div>${marketSpark(p.vals, 92, 26)}</div>
+    </div>
+    <div class="xg-detail" id="mkd-${i}" style="display:none;">
+      ${log}
+      <div style="margin-top:10px;">
+        <a class="new-report-btn" style="display:inline-block;width:auto;padding:9px 14px;font-size:12px;" href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:p.position||'' }).toString()}">File a report on ${esc(p.name.split(' ')[0])}</a>
+      </div>
+    </div>`;
+}
+
+async function renderMarket(){
+  const el = document.getElementById('mkList'), st = document.getElementById('mkStats');
+  if(MK === null){
+    el.innerHTML = '<div class="empty"><div class="t">Loading market...</div></div>';
+    try{
+      const res = await fetch('/.netlify/functions/list-performances', { cache:'no-store' });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      MK = (data.players||[]).map(p=>{
+        const graded = (p.entries||[]).filter(e=>e.grade!=null && e.date).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+        const vals = graded.map(e=>+Number(e.grade).toFixed(1));
+        const price = vals.length ? vals[vals.length-1] : null;
+        const prev = vals.length > 1 ? vals[vals.length-2] : null;
+        const chg = (price!=null && prev!=null) ? +(price-prev).toFixed(1) : null;
+        const pct = (chg!=null && prev) ? +((chg/prev)*100).toFixed(1) : null;
+        const initials = String(p.name||'').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,3);
+        const tail = String(p.name||'').replace(/[^A-Za-z]/g,'').slice(-2).toUpperCase();
+        return Object.assign({}, p, { graded, vals, price, prev, chg, pct, sym: initials + tail,
+                 games:(p.entries||[]).length,
+                 dir: chg==null ? 'flat' : chg>0 ? 'up' : chg<0 ? 'down' : 'flat' });
+      }).filter(p=>p.price!=null);
+      const posSel = document.getElementById('mkPos');
+      if(posSel.options.length <= 1) [...new Set(MK.map(p=>p.position).filter(Boolean))].sort().forEach(x=>{ const o=document.createElement('option'); o.value=x; o.textContent=x; posSel.appendChild(o); });
+      document.getElementById('tabCntMarket').textContent = MK.length;
+    }catch(err){ el.innerHTML = `<div class="empty"><div class="t">Could not load</div><div class="s">${esc(err.message)}</div></div>`; return; }
+  }
+  const q = (document.getElementById('mkSearch').value||'').trim().toLowerCase();
+  const lvl = document.getElementById('mkLevel').value, pos = document.getElementById('mkPos').value, sort = document.getElementById('mkSort').value;
+  let list = MK.filter(p => (!lvl || p.level===lvl) && (!pos || p.position===pos) && (!q || (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)));
+  const sorters = {
+    price:(a,b)=>b.price-a.price,
+    up:(a,b)=>(b.chg==null?-999:b.chg)-(a.chg==null?-999:a.chg),
+    down:(a,b)=>(a.chg==null?999:a.chg)-(b.chg==null?999:b.chg),
+    games:(a,b)=>b.games-a.games,
+    name:(a,b)=>a.name.localeCompare(b.name)
+  };
+  list.sort(sorters[sort] || sorters.price);
+
+  const up = list.filter(p=>p.chg>0).length, down = list.filter(p=>p.chg<0).length, one = list.filter(p=>p.chg==null).length;
+  const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length) : null;
+  st.textContent = `${list.length} tracked \u00b7 ${up} rising \u00b7 ${down} falling \u00b7 ${one} with one game`;
+  renderTicker(MK.filter(p=>p.chg!=null));
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No graded games yet</div><div class="s">Log a performance with a grade and he shows up here.</div></div>'; return; }
+
+  const idxSeries = marketIndexSeries(list);
+  el.innerHTML =
+    `<div class="xg-index">
+      <div>
+        <div class="xg-idx-name">InHome Production Index</div>
+        <div class="xg-idx-val">${idx!=null ? idx.toFixed(1) : '\u2014'}</div>
+        <div class="xg-idx-chg">${idxSeries.chgHTML}</div>
+        <div class="xg-idx-sub">Average of the latest Production Grade across ${list.length} tracked player${list.length===1?'':'s'}.</div>
+      </div>
+      <div class="xg-idx-chart">${marketSpark(idxSeries.vals, 380, 100, true)}</div>
+    </div>
+    ${marketMovers(list)}
+    <div class="xg-table">
+      <div class="xg-head"><span>Prospect</span><span>Pos</span><span>Grade</span><span>Change</span><span>Trend</span></div>
+      ${list.map((p,i)=>marketRowHTML(p,i)).join('')}
+    </div>`;
+  el.querySelectorAll('[data-mk]').forEach(r => r.addEventListener('click', () => {
+    const d = document.getElementById('mkd-' + r.dataset.mk);
+    if(d) d.style.display = d.style.display === 'none' ? '' : 'none';
+  }));
 }
 
 /* ---------------- CONNECT WITH A PROGRAM ---------------- */

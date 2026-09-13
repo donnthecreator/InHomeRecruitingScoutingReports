@@ -677,7 +677,7 @@
       <div class="tools" style="margin-top:12px;">
         <select id="boardProgram" onchange="switchBoard(this.value)"><option value="__samford">Samford WR board (static)</option></select>
         <select id="boardAssignScout"><option value="">Choose a scout...</option><option value="__all">Every scout (all of them)</option></select>
-        <span id="boardPosPick" class="chip-row" style="display:none; gap:4px;">${['QB','RB','WR','TE','OL','DL','LB','DB','K'].map(x=>`<button type="button" class="chip" data-bp="${x}" onclick="this.classList.toggle('on')">${x}</button>`).join('')}</span>
+        <span id="boardPosPick" class="chip-row" style="display:none; gap:4px;"></span>
         <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign to scout</button>
         <button type="button" class="mini-btn danger" id="boardUnassignAll" onclick="unassignWholeBoard()" style="display:none;">Remove board from scout lists</button>
       </div>
@@ -1487,6 +1487,10 @@ async function loadProgramBoards(){
   }catch(err){ console.error('loadProgramBoards:', err.message); }
 }
 
+(function buildBoardPosPick(){
+  const el = document.getElementById('boardPosPick'); if(!el) return;
+  el.innerHTML = ['QB','RB','WR','TE','OL','DL','LB','DB','K'].map(x => `<button type="button" class="chip" data-bp="${x}" onclick="this.classList.toggle('on')">${x==='DL'?'DL/EDGE':x}</button>`).join('');
+})();
 async function switchBoard(code){
   boardPosFilter = 'All'; boardStatusFilter = 'All';
   const sel = document.getElementById('boardState'); if(sel) sel.innerHTML = '';

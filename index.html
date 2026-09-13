@@ -1359,72 +1359,85 @@ async function loadData(){
 ------------------------------------------------ */
 let boardPos = null;
 let boardClass = null;
+let BOARDS = {};          // server copy: "POS|CLASS" -> entries[]
+let BOARDS_LOADED = false;
+const bKey = (pos, cls) => pos + '|' + cls;
+const nkey2 = (n) => String(n||'').toLowerCase().replace(/[^a-z]/g,'');
+function prospectKey(r){ return nkey2(r.prospect || r.name) + '|' + nkey2(r.school); }
 
-function prospectKey(r){
-  return (r.prospect||'').trim().toLowerCase() + '|' + (r.position||'');
-}
-function boardStorageKey(pos, cls){
-  return 'inhome_board_' + SCOUT.id + '_' + pos + '_' + cls;
-}
-function boardReportsFor(pos, cls){
-  /* latest report per prospect at this position + class, model order = score desc */
-  const byKey = {};
-  reports.filter(r => r.position === pos && (r.classYear||'—') === cls).forEach(r => {
-    const k = prospectKey(r);
-    const prev = byKey[k];
-    if(!prev || new Date(r.dateEvaluated||r.createdAt||0) > new Date(prev.dateEvaluated||prev.createdAt||0)) byKey[k] = r;
+/* Every player who belongs on this position/class board: latest report
+   per prospect (scouted), open assignments (unscouted), and anyone he
+   added by hand. The scouts' collective grade rides along when it exists. */
+function boardPoolFor(pos, cls){
+  const pool = {};
+  reports.filter(r => r.position === pos && (r.classYear||'\u2014') === cls).forEach(r => {
+    const k = prospectKey(r); const prev = pool[k];
+    if(!prev || !prev.report || new Date(r.dateEvaluated||r.createdAt||0) > new Date(prev.report.dateEvaluated||prev.report.createdAt||0)){
+      const avg = r.consensus && r.consensus.avgScore != null ? r.consensus.avgScore : (r.inhomeScore != null ? Number(r.inhomeScore) : null);
+      pool[k] = { key:k, name:r.prospect, school:r.school, prospectId:r.prospectId||null, score:avg, scouts:(r.consensus&&r.consensus.count)||1, report:r, status:'scouted' };
+    }
   });
-  return Object.values(byKey).sort((a,b)=>(Number(b.inhomeScore)||0)-(Number(a.inhomeScore)||0));
-}
-function loadBoardOrder(pos, cls){
-  try{
-    const raw = localStorage.getItem(boardStorageKey(pos, cls));
-    return raw ? JSON.parse(raw) : null;
-  }catch(e){ return null; }
-}
-function saveBoardOrder(pos, cls, order){
-  try{ localStorage.setItem(boardStorageKey(pos, cls), JSON.stringify(order)); }catch(e){}
-  try{
-    fetch('/.netlify/functions/save-board', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ scoutId: SCOUT.id, position: pos, classYear: cls, order: order })
-    }).catch(()=>{});
-  }catch(e){}
+  targets.filter(t => (t.position === pos) && ((t.classYear||t.class_year||'\u2014') === cls)).forEach(t => {
+    const k = prospectKey(t); if(pool[k]) return;
+    pool[k] = { key:k, name:t.name, school:t.school, prospectId:t.prospect_id||t.prospectId||null, score:null, scouts:0, status:'assigned', target:t };
+  });
+  (BOARDS[bKey(pos,cls)]||[]).forEach(e => {
+    if(pool[e.key] || e.hidden) return;
+    pool[e.key] = { key:e.key, name:e.name, school:e.school, prospectId:e.prospectId||null, score:null, scouts:0, status:'added' };
+  });
+  return pool;
 }
 function orderedBoard(pos, cls){
-  const pool = boardReportsFor(pos, cls);
-  const saved = loadBoardOrder(pos, cls);
-  if(!saved) return pool;
-  const byKey = {};
-  pool.forEach(r => byKey[prospectKey(r)] = r);
+  const pool = boardPoolFor(pos, cls);
+  const saved = BOARDS[bKey(pos,cls)] || [];
+  const hidden = new Set(saved.filter(e=>e.hidden).map(e=>e.key));
   const ranked = [];
-  saved.forEach(k => { if(byKey[k]){ ranked.push(byKey[k]); delete byKey[k]; } });
-  Object.values(byKey).forEach(r => { r._isNew = true; ranked.push(r); });
+  saved.forEach(e => { if(pool[e.key] && !e.hidden){ ranked.push(pool[e.key]); delete pool[e.key]; } });
+  /* newcomers go on the bottom, best grade first */
+  Object.values(pool).filter(x => !hidden.has(x.key)).sort((a,b)=>(b.score||0)-(a.score||0)).forEach(x => { x._isNew = saved.length > 0; ranked.push(x); });
   return ranked;
 }
-function initBoard(){
-  const positions = [...new Set(reports.map(r=>r.position).filter(Boolean))];
+function persistBoard(pos, cls, list, extraHidden){
+  const hiddenPrev = (BOARDS[bKey(pos,cls)]||[]).filter(e=>e.hidden);
+  const entries = list.map(x => ({ key:x.key, name:x.name, school:x.school||null, prospectId:x.prospectId||null }))
+    .concat(hiddenPrev.filter(h => !list.some(x=>x.key===h.key)))
+    .concat(extraHidden||[]);
+  BOARDS[bKey(pos,cls)] = entries;
+  fetch('/.netlify/functions/scout-board', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ accessCode: SCOUT_CODE, action:'save', position: pos, classYear: cls, entries }) })
+    .then(r => { if(!r.ok) throw new Error('save failed'); }).catch(()=>{ if(typeof showToast==='function') showToast('Board did not save. Check your signal.'); });
+}
+async function loadBoards(){
+  try{
+    const r = await fetch('/.netlify/functions/scout-board?accessCode=' + encodeURIComponent(SCOUT_CODE), { cache:'no-store' });
+    const d = await r.json(); BOARDS = {};
+    (d.boards||[]).forEach(b => { BOARDS[bKey(b.position, b.classYear)] = b.entries || []; });
+  }catch(e){ BOARDS = {}; }
+  BOARDS_LOADED = true;
+}
+function boardPositions(){
+  return [...new Set([...reports.map(r=>r.position), ...targets.map(t=>t.position), ...Object.keys(BOARDS).map(k=>k.split('|')[0])].filter(Boolean))];
+}
+function boardClasses(pos){
+  return [...new Set([...reports.filter(r=>r.position===pos).map(r=>r.classYear||'\u2014'), ...targets.filter(t=>t.position===pos).map(t=>t.classYear||t.class_year||'\u2014'), ...Object.keys(BOARDS).filter(k=>k.startsWith(pos+'|')).map(k=>k.split('|')[1])].filter(Boolean))].sort();
+}
+async function initBoard(){
+  if(!BOARDS_LOADED) await loadBoards();
+  const positions = boardPositions();
   document.getElementById('tabCntBoard').textContent = positions.length ? positions.length + ' pos' : '\u2014';
   if(!positions.length){ boardPos = null; boardClass = null; renderBoard(); return; }
   if(!boardPos || !positions.includes(boardPos)) boardPos = positions[0];
-  const classes = [...new Set(reports.filter(r=>r.position===boardPos).map(r=>r.classYear||'—'))].sort();
+  const classes = boardClasses(boardPos);
   if(!boardClass || !classes.includes(boardClass)) boardClass = classes[0];
   renderBoard();
 }
-function setBoardPos(p){
-  boardPos = p;
-  const classes = [...new Set(reports.filter(r=>r.position===p).map(r=>r.classYear||'—'))].sort();
-  boardClass = classes[0];
-  renderBoard();
-}
+function setBoardPos(p){ boardPos = p; boardClass = boardClasses(p)[0]; renderBoard(); }
 function setBoardClass(c){ boardClass = c; renderBoard(); }
 
 function renderBoard(){
-  const positions = [...new Set(reports.map(r=>r.position).filter(Boolean))];
+  const positions = boardPositions();
   document.getElementById('boardPosChips').innerHTML = positions.map(p =>
     `<button type="button" class="chip ${p===boardPos?'on':''}" onclick="setBoardPos('${p}')">${p}</button>`).join('');
-
   const el = document.getElementById('boardList');
   if(!boardPos){
     document.getElementById('depthBannerPos').textContent = '\u2014';
@@ -1432,68 +1445,92 @@ function renderBoard(){
     document.getElementById('depthBannerCount').textContent = '\u2014';
     document.getElementById('boardClassTabs').innerHTML = '';
     el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F3C8}</div><div class="t">No board yet</div>
-      <div class="s">File reports and your evaluated players rank themselves here by InHome Score. This becomes your national board for the position.</div></div>`;
+      <div class="s">Players you scout, players assigned to you, and players you add by hand all land here for you to rank.</div></div>` + addPlayerHTML();
     return;
   }
-
-  const classes = [...new Set(reports.filter(r=>r.position===boardPos).map(r=>r.classYear||'—'))].sort();
+  const classes = boardClasses(boardPos);
   document.getElementById('boardClassTabs').innerHTML = classes.map(c => {
-    const cnt = boardReportsFor(boardPos, c).length;
+    const cnt = orderedBoard(boardPos, c).length;
     return `<button type="button" class="class-tab ${c===boardClass?'on':''}" onclick="setBoardClass('${c}')">Class of ${c}<span class="n">${cnt} ranked</span></button>`;
   }).join('');
-
   const list = orderedBoard(boardPos, boardClass);
   document.getElementById('depthBannerPos').textContent = boardPos;
-  document.getElementById('depthBannerSub').textContent = SCOUT.name.split(' ')[0] + "'s Big Board \u00b7 " + (boardPos||'') + " \u00b7 Class of " + boardClass;
+  document.getElementById('depthBannerSub').textContent = SCOUT.name.split(' ')[0] + "'s Big Board \u00b7 " + boardPos + " \u00b7 Class of " + boardClass;
   document.getElementById('depthBannerCount').textContent = list.length;
-
-  if(!list.length){
-    el.innerHTML = `<div class="empty-state"><div class="ic">\u{1F3C8}</div><div class="t">Nothing ranked here</div>
-      <div class="s">No ${boardPos} reports filed for Class of ${boardClass} yet.</div></div>`;
-    return;
-  }
-
-  const modelRank = {};
-  boardReportsFor(boardPos, boardClass).forEach((r,i)=> modelRank[prospectKey(r)] = i+1);
-
-  const tierLabel = i => i===0 ? 'Starter' : (i===1 ? '2nd String' : (i===2 ? '3rd String' : ''));
-
-  el.innerHTML = list.map((r,i)=>{
-    const mr = modelRank[prospectKey(r)];
-    const diff = mr - (i+1);
-    let delta = '';
-    if(diff > 0) delta = `<div class="board-delta up">\u25B2 ${diff} vs model</div>`;
-    else if(diff < 0) delta = `<div class="board-delta down">\u25BC ${Math.abs(diff)} vs model</div>`;
-    const tl = tierLabel(i);
+  el.innerHTML = list.map((x,i)=>{
+    const tl = i===0 ? 'No. 1' : '';
+    const link = 'report.html?' + new URLSearchParams({ prospect:x.name||'', school:x.school||'', class:(boardClass==='\u2014'?'':boardClass), position:boardPos }).toString();
+    const status = x.status==='scouted'
+      ? `<span style="color:#35C759;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;">Scouted${x.scouts>1?' \u00b7 '+x.scouts+' scouts':''}</span>`
+      : `<a href="${link}" style="color:var(--red);font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;">${x.status==='assigned'?'Assigned \u00b7 scout him':'Unscouted \u00b7 scout him'}</a>`;
     return `
     <div class="depth-slot ${i===0?'starter':''}">
       <div class="depth-tier-line"></div>
       <div class="depth-badge">${i+1}</div>
       <div class="depth-mid">
         ${tl ? `<div class="depth-tier-label">${tl}</div>` : ''}
-        <div class="depth-name">${r.prospect||'Unnamed'}${r._isNew ? ' <span style="color:var(--red);font-family:Inter,sans-serif;font-size:9px;font-weight:800;vertical-align:3px;">NEW</span>' : ''}</div>
-        <div class="depth-meta">${r.school||'—'}</div>
-        ${delta}
+        <div class="depth-name">${esc(x.name||'Unnamed')}${x._isNew ? ' <span style="color:var(--red);font-family:Inter,sans-serif;font-size:9px;font-weight:800;vertical-align:3px;">NEW</span>' : ''}</div>
+        <div class="depth-meta">${esc(x.school||'\u2014')}</div>
+        <div style="margin-top:3px;">${status}</div>
       </div>
-      <div class="board-score">${r.inhomeScore ?? '—'}<span class="l">InHome</span></div>
+      <div class="board-score">${x.score!=null ? Number(x.score).toFixed(1) : '\u2014'}<span class="l">${x.scouts>1?'Avg':'InHome'}</span></div>
       <div class="board-moves">
         <button type="button" class="board-move" onclick="moveBoard(${i},-1)" ${i===0?'disabled':''}>\u25B2</button>
         <button type="button" class="board-move" onclick="moveBoard(${i},1)" ${i===list.length-1?'disabled':''}>\u25BC</button>
+        <button type="button" class="board-move" onclick="dropBoard(${i})" title="Remove from my board">\u2715</button>
       </div>
     </div>`;
-  }).join('') + (list.length > 1 ? `<button type="button" class="board-reset" onclick="resetBoard()">Reset to model order</button>` : '');
+  }).join('') + addPlayerHTML() + (list.length > 1 ? `<button type="button" class="board-reset" onclick="resetBoard()">Reset to grade order</button>` : '');
+}
+function addPlayerHTML(){
+  return `<div style="margin-top:14px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--card);">
+    <div class="sub" style="margin:0 0 8px;">Add a player to this board, scouted or not</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <input type="text" id="bbName" placeholder="Player name" style="flex:2; min-width:140px;">
+      <input type="text" id="bbSchool" placeholder="School" style="flex:2; min-width:120px;">
+      <button type="button" class="new-report-btn" style="flex:1; min-width:100px; margin:0; padding:11px; font-size:12px;" onclick="addToBoard()">Add</button>
+    </div>
+  </div>`;
+}
+async function addToBoard(){
+  const name = (document.getElementById('bbName').value||'').trim(), school = (document.getElementById('bbSchool').value||'').trim();
+  if(name.length < 3){ if(typeof showToast==='function') showToast('Enter the player\'s name'); return; }
+  if(!boardPos){ if(typeof showToast==='function') showToast('Pick a position first by filing a report or getting an assignment'); return; }
+  try{
+    const r = await fetch('/.netlify/functions/scout-board', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accessCode: SCOUT_CODE, action:'addPlayer', name, school, position: boardPos, classYear: boardClass }) });
+    const d = await r.json(); if(!r.ok) throw new Error(d.error||'Could not add');
+    const list = orderedBoard(boardPos, boardClass);
+    const k = nkey2(name) + '|' + nkey2(school);
+    if(!list.some(x=>x.key===k)) list.push({ key:k, name, school, prospectId:d.prospect.id, score:null, scouts:0, status:'added' });
+    list.forEach(x=>delete x._isNew);
+    persistBoard(boardPos, boardClass, list);
+    renderBoard();
+    if(typeof showToast==='function') showToast(name + ' added to your board');
+  }catch(err){ if(typeof showToast==='function') showToast(err.message); }
 }
 function moveBoard(i, dir){
   const list = orderedBoard(boardPos, boardClass);
   const j = i + dir;
   if(j < 0 || j >= list.length) return;
   [list[i], list[j]] = [list[j], list[i]];
-  list.forEach(r => delete r._isNew);
-  saveBoardOrder(boardPos, boardClass, list.map(prospectKey));
+  list.forEach(x => delete x._isNew);
+  persistBoard(boardPos, boardClass, list);
+  renderBoard();
+}
+function dropBoard(i){
+  const list = orderedBoard(boardPos, boardClass);
+  const x = list[i]; if(!x) return;
+  if(!confirm('Take ' + x.name + ' off your board? His report and assignment stay; he just leaves your ranking.')) return;
+  list.splice(i, 1);
+  persistBoard(boardPos, boardClass, list, [{ key:x.key, name:x.name, school:x.school||null, prospectId:x.prospectId||null, hidden:true }]);
   renderBoard();
 }
 function resetBoard(){
-  try{ localStorage.removeItem(boardStorageKey(boardPos, boardClass)); }catch(e){}
+  if(!confirm('Reset this board to grade order? Your manual ranking for ' + boardPos + ' Class of ' + boardClass + ' will be cleared.')) return;
+  delete BOARDS[bKey(boardPos, boardClass)];
+  fetch('/.netlify/functions/scout-board', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ accessCode: SCOUT_CODE, action:'save', position: boardPos, classYear: boardClass, entries: [] }) }).catch(()=>{});
   renderBoard();
 }
 
@@ -1575,6 +1612,7 @@ async function renderScoutMap(){
   });
   if(bounds.length) _scoutLeaflet.fitBounds(bounds, { padding:[40,40], maxZoom:9 });
 }
+
 
 /* ---------------- POSITION CHIPS ---------------- */
 function buildPosChips(){

@@ -1479,7 +1479,8 @@ async function loadProgramBoards(){
     sel.innerHTML = '<option value="__samford">Samford WR board (static)</option>' +
       (data.boards||[]).map(b => `<option value="${esc(b.program_code)}">${esc(b.program_code)} board \u00b7 ${b.scouted}/${b.prospects} scouted</option>`).join('');
     const ss = document.getElementById('boardAssignScout');
-    if(ss.options.length <= 1) (SCOUT_ROSTER||[]).filter(sc=>sc.active!==false).forEach(sc => { const o=document.createElement('option'); o.value=sc.id; o.textContent=sc.name; ss.appendChild(o); });
+    [...ss.options].filter(o => o.value && o.value !== '__all').forEach(o => o.remove());
+    (SCOUT_ROSTER||[]).filter(sc=>sc.active!==false).forEach(sc => { const o=document.createElement('option'); o.value=sc.id; o.textContent=sc.name + (sc.id ? ' (' + sc.id + ')' : ''); ss.appendChild(o); });
     /* Default to the most recent program board if one exists. */
     if(keep && keep !== '__samford' && [...sel.options].some(o=>o.value===keep)) sel.value = keep;
     else if(data.boards && data.boards.length){ sel.value = data.boards[0].program_code; switchBoard(sel.value); }

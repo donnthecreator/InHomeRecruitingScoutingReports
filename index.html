@@ -770,6 +770,7 @@ async function refreshScouts(){
 refreshScouts();
 
 let SCOUT = null;
+let SCOUT_CODE = localStorage.getItem('inhome_scout_code') || '';
 let reports = [];
 let targets = [];
 let usingDemoReports = false;
@@ -798,7 +799,6 @@ function tryGate(){
   applyScout();
   loadData();
 }
-let SCOUT_CODE = localStorage.getItem('inhome_scout_code') || '';
 /* First thing a scout sees: his own face, his name, the mark. */
 function welcomeSplash(){
   const el = document.getElementById('ihWelcome'); if(!el) return;
@@ -1020,7 +1020,9 @@ document.getElementById('gateCode').addEventListener('keydown', e=>{
   const saved = localStorage.getItem('inhome_scout_code');
   if(saved && SCOUTS[saved]){
     SCOUT = SCOUTS[saved];
+    SCOUT_CODE = saved;
     document.getElementById('gate').classList.add('hide');
+    welcomeSplash();
     applyScout();
     loadData();
   }

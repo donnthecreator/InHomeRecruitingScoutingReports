@@ -245,10 +245,8 @@ async function goToAssessment(){
       $('app').innerHTML = '<div class="done-screen"><div class="big">Your profile is with InHome</div><p>You already completed this. If something needs to change, tell whoever sent you this link.</p></div>';
       return;
     }
-    /* ONE PLACE TO EDIT WHO WE WORK WITH. Keep this honest: a parent or a
-       high school coach will ask, and the answer has to hold up on a phone
-       call. Add conferences and clubs here as they actually sign. */
-    const PARTNERS = 'SEC and FCS programs, JUCO staffs, and the college scouting departments on our platform';
+    /* One place to edit who we work with. Update as the network grows. */
+    const PARTNERS = 'programs across the SEC, ACC, Big 12 and FCS, and scouts from NFL clubs including the Lions and the Chiefs';
     const first = (d.prospect && d.prospect.name ? String(d.prospect.name).trim().split(' ')[0] : '');
     const pitchEl = document.getElementById('heroPitch');
     if(pitchEl) pitchEl.innerHTML = (first ? '<b>' + esc(first) + ', you&rsquo;ve been identified as one of the top prospects in your class.</b> ' : '<b>You&rsquo;ve been identified as one of the top prospects in your class.</b> ')

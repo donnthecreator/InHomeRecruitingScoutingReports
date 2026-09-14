@@ -350,6 +350,7 @@
 <body>
 <!-- INHOME INTRO: black screen, logo, one line, fades out. Shown once per
      browser session so it never gets in the way of reloads. -->
+<datalist id="ppProgList"></datalist>
 <div class="sh-overlay" id="shOverlay" onclick="if(event.target===this) closeShare()">
   <div class="sh" id="shCard"></div>
 </div>
@@ -2329,13 +2330,77 @@ async function shareProfile(prospectId, name, school){
     catch(err){ toast(err.message); return; }
   }
   const url = location.origin + '/profile.html?id=' + id;
-  openShare({
-    title: 'InHome prospect profile',
-    who: name + (school ? ' \u00b7 ' + school : ''),
-    url,
-    message: name + ' \u2014 InHome prospect profile:',
-    note: 'Shows everything on file right now: photo, measurables with verified checks, offers and commitment, film and socials, every scouting report, assessments and production. It updates itself as you add to his record, so the link stays current.'
-  });
+  ppLoadPrograms();
+  const card = document.getElementById('shCard');
+  const paint = (offers, commitment) => {
+    card.innerHTML = `
+      <h3>Share ${esc(name)}</h3>
+      <div class="who">${esc(school || '')}</div>
+
+      <div style="border:1px solid var(--line); border-radius:11px; padding:12px; margin-bottom:14px; background:var(--card);">
+        <div class="rc-meta" style="margin-bottom:6px;">Offers on this profile <span style="color:var(--dim)">— add any before you send</span></div>
+        <div id="shOffers" style="margin-bottom:8px;">
+          ${commitment ? `<span class="pill" style="border-color:var(--good);color:var(--good)">${esc(commitment.status)}${commitment.to?' \u00b7 '+esc(commitment.to):''}</span>` : ''}
+          ${offers.length ? offers.map(o=>`<span class="pill">${esc(o.school)}${o.date?` <span style="color:var(--dim)">${esc(o.date)}</span>`:''} <a href="#" onclick="shRemoveOffer(${id}, ${o.id}, '${esc(name).replace(/'/g,"\\'")}', '${esc(school||'').replace(/'/g,"\\'")}'); return false;" style="color:var(--dim);margin-left:4px;">\u2715</a></span>`).join('')
+                        : '<span class="rc-meta">None on file yet.</span>'}
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <input type="text" id="shOfferSchool" placeholder="School (type to search)" list="ppProgList" style="flex:2; min-width:150px;">
+          <input type="date" id="shOfferDate" style="flex:1; min-width:130px;">
+          <button type="button" class="mini-btn go" onclick="shAddOffer(${id}, '${esc(name).replace(/'/g,"\\'")}', '${esc(school||'').replace(/'/g,"\\'")}')">Add</button>
+        </div>
+      </div>
+
+      <div class="linkbox" id="shLink">${esc(url)}</div>
+      <div class="sh-grid">
+        ${navigator.share ? `<button type="button" class="sh-btn primary" id="shNative">Share via&hellip;</button>` : ''}
+        <button type="button" class="sh-btn ${navigator.share ? '' : 'primary'}" id="shCopy">Copy link</button>
+        <a class="sh-btn" href="sms:?&body=${encodeURIComponent(name + ' \u2014 InHome prospect profile: ' + url)}">Text it</a>
+        <a class="sh-btn" href="mailto:?subject=${encodeURIComponent('InHome prospect profile: ' + name)}&body=${encodeURIComponent(name + ' \u2014 InHome prospect profile: ' + url)}">Email it</a>
+        <a class="sh-btn" href="${esc(url)}" target="_blank" rel="noopener">Open it myself</a>
+        <button type="button" class="sh-btn ghost" onclick="closeShare()">Done</button>
+      </div>
+      <div class="sh-note">The page is live: anything you add to his record, including these offers, shows up for anyone holding this link.</div>`;
+    const nat = document.getElementById('shNative');
+    if(nat) nat.addEventListener('click', async () => { try{ await navigator.share({ title:'InHome prospect profile', text: name, url }); }catch(e){} });
+    document.getElementById('shCopy').addEventListener('click', async () => {
+      const b = document.getElementById('shCopy');
+      try{ await navigator.clipboard.writeText(url); b.textContent = 'Copied \u2713'; }
+      catch(e){ const r = document.createRange(); r.selectNodeContents(document.getElementById('shLink'));
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try{ document.execCommand('copy'); b.textContent = 'Copied \u2713'; }catch(e2){ b.textContent = 'Select the link and copy'; } }
+      setTimeout(()=>{ b.textContent = 'Copy link'; }, 2200);
+    });
+  };
+  paint([], null);
+  document.getElementById('shOverlay').classList.add('on');
+  /* fill in what is already on file */
+  try{
+    const r = await fetch('/.netlify/functions/player?id=' + id, { cache:'no-store' });
+    const p = await r.json();
+    if(r.ok) paint(p.offers || [], p.commitment || null);
+  }catch(e){}
+}
+async function shAddOffer(id, name, school){
+  const el = document.getElementById('shOfferSchool');
+  const v = (el.value||'').trim(); if(!v){ toast('Type the school'); return; }
+  const progs = await ppLoadPrograms();
+  const match = (progs||[]).find(x => [x.short_name, x.name, x.school_key].filter(Boolean).some(y => String(y).toLowerCase() === v.toLowerCase()));
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ action:'addOffer', prospectId:id, schoolKey: match ? match.school_key : null, schoolOther: match ? null : v,
+                             offerDate: (document.getElementById('shOfferDate')||{}).value || null }) });
+    const d = await res.json().catch(()=>({})); if(!res.ok) throw new Error(d.error || ('HTTP '+res.status));
+    toast('Offer added'); shareProfile(id, name, school);
+  }catch(err){ toast(err.message); }
+}
+async function shRemoveOffer(id, offerId, name, school){
+  try{
+    const res = await fetch('/.netlify/functions/update-prospect', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ action:'removeOffer', prospectId:id, offerId }) });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    shareProfile(id, name, school);
+  }catch(err){ toast(err.message); }
 }
 async function sendProfileInvite(prospectId, name, school){
   const reason = await askInviteReason(name);
@@ -2660,7 +2725,6 @@ function renderProfile(){
       <div id="ppOffers" class="rc-meta">Loading...</div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
         <input type="text" id="ppOfferSchool" placeholder="School (type to search)" list="ppProgList" style="flex:2;min-width:160px;">
-        <datalist id="ppProgList"></datalist>
         <input type="date" id="ppOfferDate" style="flex:1;min-width:130px;">
         <button type="button" class="mini-btn go" onclick="ppAddOffer()">Add offer</button>
       </div>

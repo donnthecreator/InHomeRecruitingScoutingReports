@@ -251,10 +251,10 @@ async function goToAssessment(){
     const pitchEl = document.getElementById('heroPitch');
     if(pitchEl) pitchEl.innerHTML = (first ? '<b>' + esc(first) + ', you&rsquo;ve been identified as one of the top prospects in your class.</b> ' : '<b>You&rsquo;ve been identified as one of the top prospects in your class.</b> ')
       + 'InHome builds the scouting reports that ' + PARTNERS + ' use to decide who they recruit. This is your file. '
-      + 'The same file follows you: when you become draft eligible, this is what goes to NFL scouts.';
+      + 'The same file follows you: when you become draft eligible, this is what goes to NFL clubs.';
     const WHY = {
       board:  'A college staff put your name on a recruiting board and asked InHome for the rest of your file. This is that file.',
-      request: 'A college or NFL evaluator requested more information on you before deciding whether to add you to their board. This is what they asked for.',
+      request: 'A college program or an NFL club requested more information on you before deciding whether to add you to their board. This is what they asked for.',
       film:   'An InHome evaluator watched your film and pulled your name out. That is the only reason you are seeing this link.'
     };
     const whyEl = document.getElementById('heroWhy');

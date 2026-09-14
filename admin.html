@@ -886,7 +886,27 @@ async function tryGate(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ code })
     });
-    const data = await res.json();
+    /* A missing function returns Netlify's 404 HTML page, which explodes
+       on .json(). Say which it is instead of silently going to demo. */
+    if(res.status === 404){
+      document.getElementById('gateErr').innerHTML =
+        'verify-admin is not deployed (404). The site is serving static files without functions.<br>' +
+        'Fix: in Netlify, redeploy this site from GitHub (Deploys \u2192 Trigger deploy \u2192 Clear cache and deploy site). A drag-and-drop deploy does not build functions.';
+      btn.disabled = false; btn.textContent = 'Enter';
+      return;
+    }
+    let data;
+    try{ data = await res.json(); }
+    catch(e){
+      document.getElementById('gateErr').textContent = 'Auth returned a non-JSON response (HTTP ' + res.status + '). Check the function log in Netlify.';
+      btn.disabled = false; btn.textContent = 'Enter';
+      return;
+    }
+    if(!res.ok){
+      document.getElementById('gateErr').textContent = (data.error || 'Auth failed') + ' (HTTP ' + res.status + ')';
+      btn.disabled = false; btn.textContent = 'Enter';
+      return;
+    }
     if(res.ok && data.token){
       TOKEN = data.token;
       sessionStorage.setItem('inhome_admin_token', TOKEN);
@@ -899,8 +919,8 @@ async function tryGate(){
       el.value = ''; el.focus();
     }
   }catch(err){
-    /* function not deployed yet: fall back to demo so the page is usable */
-    document.getElementById('gateErr').textContent = 'Auth function unreachable. Opening in demo mode.';
+    /* genuinely offline or blocked: fall back to demo so the page is usable */
+    document.getElementById('gateErr').textContent = 'Could not reach the server (' + err.message + '). Opening in demo mode \u2014 nothing you do here will save.';
     demoMode = true;
     setTimeout(()=>{
       document.getElementById('gate').classList.add('hide');

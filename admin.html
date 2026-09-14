@@ -1871,7 +1871,7 @@ function pinPopHTML(p){
       ${esc(p.level||'HS')}${p.boards?' &middot; '+esc(p.boards):''}${p.score!=null?' &middot; Score '+p.score.toFixed(1):''}<br>
       <span style="color:#888">${p.exact ? 'Exact location' : 'Placed at the school'}</span></div>
     <div style="margin:8px 0 6px;">${links}</div>
-    ${p.id ? `<a href="#" onclick="openProfile(${p.id}); return false;" style="font-size:12px;font-weight:700;color:#111;margin-right:10px;">Profile</a>` : ''}
+    <a href="#" class="plink" data-pid="${p.id||''}" data-pname="${esc(p.name||'')}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.classYear||'')}" data-plevel="${esc(p.level||'HS')}" style="font-size:12px;font-weight:700;color:#111;margin-right:10px;">${p.id ? 'Open profile' : 'Create profile'}</a>
     <a href="report.html?${new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:(p.position && POS_MAP[p.position]) || p.position || '' }).toString()}" target="_blank" rel="noopener" style="font-size:12px;font-weight:700;color:#FF0000;">Scout this player</a>
   </div>`;
 }

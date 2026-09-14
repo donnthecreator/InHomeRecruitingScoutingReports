@@ -1642,7 +1642,9 @@ async function renderScoutMap(){
     const scouted = (p.id && scoutedIds.has(String(p.id))) || scoutedNames.has(nk(p.name));
     const m = L.circleMarker([lat,lng], { radius: scouted?8:7, color:'#000', weight:1, fillColor: scouted?'#35C759':'#FF0000', fillOpacity: p.exact?0.95:0.55 }).addTo(_scoutLeaflet);
     const link = 'report.html?' + new URLSearchParams({ prospect:p.name||'', school:p.school||'', class:p.classYear||'', position:p.position||'' }).toString();
-    m.bindPopup(`<div style="font-family:sans-serif;min-width:170px"><b style="font-size:14px">${esc(p.name)}</b><br><span style="font-size:12px;color:#555">${esc(p.position||'')} \u00b7 ${esc(p.school||'')}${p.classYear?' \u00b7 '+esc(p.classYear):''}</span><br><span style="font-size:11px;color:#888">${scouted ? 'Report filed'+(p.score!=null?' \u00b7 '+p.score.toFixed(1):'') : 'On your list'}${p.exact?'':' \u00b7 placed at the school'}</span><br><a href="${link}" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#FF0000">${scouted?'File a follow-up':'Scout him'}</a></div>`, { maxWidth:220 });
+    m.bindPopup(`<div style="font-family:sans-serif;min-width:180px"><b style="font-size:14px">${esc(p.name)}</b><br><span style="font-size:12px;color:#555">${esc(p.position||'')} \u00b7 ${esc(p.school||'')}${p.classYear?' \u00b7 '+esc(p.classYear):''}</span><br><span style="font-size:11px;color:#888">${scouted ? 'Report filed'+(p.score!=null?' \u00b7 '+p.score.toFixed(1):'') : 'On your list'}${p.exact?'':' \u00b7 placed at the school'}</span><br>
+      <a href="#" class="plink" data-pid="${p.id||''}" data-pname="${esc(p.name||'')}" data-pschool="${esc(p.school||'')}" style="display:inline-block;margin-top:6px;margin-right:10px;font-size:12px;font-weight:700;color:#111">Open profile</a>
+      <a href="${link}" style="display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:#FF0000">${scouted?'File a follow-up':'Scout him'}</a></div>`, { maxWidth:240 });
     bounds.push([lat,lng]);
   });
   if(bounds.length) _scoutLeaflet.fitBounds(bounds, { padding:[40,40], maxZoom:9 });

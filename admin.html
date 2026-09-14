@@ -1053,9 +1053,11 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['players','Prospects'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
-    document.getElementById('tb'+cap).classList.toggle('on', k===t);
-    document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
+  /* element ids are fixed; the visible label can change without touching this */
+  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+    const tb = document.getElementById('tb'+cap), pane = document.getElementById('pane'+cap);
+    if(tb) tb.classList.toggle('on', k===t);
+    if(pane) pane.classList.toggle('on', k===t);
   });
   if(t==='players') renderPlayers();
   if(t==='intake'){ renderIntake(); renderScoutRequests(); }
@@ -1909,6 +1911,21 @@ function buildMapFilters(){
   const positions = [...new Set(pins.map(p=>p.position).filter(Boolean))].sort();
   posSel.innerHTML = '<option value="All">All positions</option>' + positions.map(x=>`<option value="${x}">${x}</option>`).join('');
   if(keepP && [...posSel.options].some(o=>o.value===keepP)) posSel.value = keepP;
+}
+
+function initMap(){
+  if(window.gmap) return;
+  window.gmap = L.map('gmap-canvas', { preferCanvas:true }).setView([32.8, -88.0], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:'abcd', maxZoom:19 }).addTo(window.gmap);
+  buildMapFilters();
+  drawMap();
+}
+function loadMapsScript(){
+  if(window.L){ initMap(); return; }
+  const css = document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+  const js = document.createElement('script'); js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; js.onload = initMap;
+  js.onerror = ()=>{ setMapStatus('Map library could not load. Check your connection.'); };
+  document.head.appendChild(js);
 }
 
 /* ---- boot ---- */

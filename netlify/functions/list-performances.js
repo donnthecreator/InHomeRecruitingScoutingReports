@@ -21,6 +21,12 @@ function siteBase(event){
   return `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
 }
 const nameKey = (s) => String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+/* Levels the Production Market understands. HS is the default; anything
+   else is more specific and wins when rows disagree. FBS/FCS/D2 are
+   enrolled college players: production tracking only, never on a
+   program's prospect board. */
+const LEVELS = new Set(['HS', 'JUCO', 'D2', 'FCS', 'FBS']);
+const COLLEGE_LEVELS = new Set(['D2', 'FCS', 'FBS']);
 /* "No. 13 Itawamba CC", "Itawamba Community College", "ITAWAMBA CC" are one school. */
 const schoolKey = (s) => String(s || '').toLowerCase()
   .replace(/^no\.?\s*\d+\s*/, '')
@@ -33,6 +39,10 @@ exports.handler = async (event) => {
     const base = siteBase(event || {});
     /* Column may not exist yet on a fresh table; harmless if it does. */
     try { await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`; } catch (e) {}
+    /* portal_status: '' / 'watch' / 'declared'. Only a player who has
+       actually declared unlocks his report for college programs. Column
+       added on first use so no manual migration is needed. */
+    try { await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS portal_status TEXT`; } catch (e) {}
     const logos = await logoMap(sql, base);
     /* headshots live on the prospect record; match by name + school */
     const heads = {};
@@ -43,7 +53,7 @@ exports.handler = async (event) => {
 
     const rows = await sql`
       SELECT id, name, level, position, class_year, school, stat_line, source_link,
-             to_char(performance_date, 'YYYY-MM-DD') AS performance_date, grade,
+             to_char(performance_date, 'YYYY-MM-DD') AS performance_date, grade, portal_status,
              to_char(created_at, 'YYYY-MM-DD') AS created_day, created_at
       FROM player_performances
       ORDER BY name, COALESCE(performance_date, created_at::date), created_at`;
@@ -62,6 +72,7 @@ exports.handler = async (event) => {
           position: r.position || null,
           classYear: r.class_year || null,
           school: r.school || null,
+          portalStatus: null,
           entries: []
         });
       }
@@ -69,7 +80,9 @@ exports.handler = async (event) => {
       /* Later rows can fill in blanks from earlier ones. */
       if (!p.position && r.position) p.position = r.position;
       if (!p.classYear && r.class_year) p.classYear = r.class_year;
-      if (r.level === 'JUCO') p.level = 'JUCO';
+      if (r.level && LEVELS.has(r.level) && r.level !== 'HS') p.level = r.level;
+      /* Rows are date-ordered, so the most recent declaration wins. */
+      if (r.portal_status) p.portalStatus = r.portal_status;
       if (r.school && String(r.school).length > String(p.school || '').length) p.school = r.school;
       if (p.entries.some(e => e.date === r.performance_date && (e.statLine || '') === (r.stat_line || ''))) continue;
       p.entries.push({
@@ -84,6 +97,8 @@ exports.handler = async (event) => {
     const players = [...byPlayer.values()].map(p => {
       const h = heads[p.nameKey + '|' + schoolKey(p.school)];
       return Object.assign(p, {
+        isCollege: COLLEGE_LEVELS.has(p.level),
+        portalDeclared: p.portalStatus === 'declared',
         prospectId: h ? h.id : null,
         headshotUrl: h ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(h.key)}` : null,
         logoUrl: logos[schoolKey(p.school)] || null

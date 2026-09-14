@@ -267,6 +267,11 @@ exports.handler = async (event) => {
       case 'createPerformance': {
         const { name, level, position, class_year, school, stat_line, source_link, performance_date } = body;
         if (!name) return fail(400, 'name required');
+        /* portal_status only means anything for enrolled college players.
+           'watch' = our production-based prediction, nothing more.
+           'declared' = he has entered the portal, which is a matter of
+           public record and is what unlocks his report for programs. */
+        const portalStatus = ['watch', 'declared'].includes(String(body.portal_status || '')) ? body.portal_status : null;
         /* grade: 0-100 week grade that moves the Production Market. Column
            is added on first use so no manual migration is needed. */
         let grade = null;
@@ -276,6 +281,7 @@ exports.handler = async (event) => {
           grade = g;
         }
         await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS grade NUMERIC`;
+        await sql`ALTER TABLE player_performances ADD COLUMN IF NOT EXISTS portal_status TEXT`;
         /* Same player, same date, same stat line = the same game. A double
            tap on "Log selected" must not create a second row. */
         const nk = String(name).toLowerCase().replace(/[^a-z]/g, '');
@@ -289,10 +295,10 @@ exports.handler = async (event) => {
         if (dup) return ok({ performance: { ...dup, performance_date: dup.performance_date_str }, duplicate: true });
         const rows = await sql`
           INSERT INTO player_performances
-            (name, level, position, class_year, school, stat_line, source_link, performance_date, grade)
+            (name, level, position, class_year, school, stat_line, source_link, performance_date, grade, portal_status)
           VALUES
             (${name}, ${level || 'HS'}, ${position || null}, ${class_year || null}, ${school || null},
-             ${stat_line || null}, ${source_link || null}, ${performance_date || null}, ${grade})
+             ${stat_line || null}, ${source_link || null}, ${performance_date || null}, ${grade}, ${portalStatus})
           RETURNING *, to_char(performance_date, 'YYYY-MM-DD') AS performance_date_str`;
         return ok({ performance: { ...rows[0], performance_date: rows[0].performance_date_str } });
       }

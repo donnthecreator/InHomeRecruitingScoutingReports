@@ -445,7 +445,7 @@
       <div class="sub">Every player in the system, one list. Scouted, on a program board, in the performance log, or submitted through the public page. Tap a name anywhere in admin to open his profile.</div>
       <div class="tools" style="margin-top:12px;">
         <input type="text" id="plSearch" placeholder="Search name, school, state, board code" oninput="renderPlayers(true)">
-        <select id="plLevel" onchange="renderPlayers(true)"><option value="">All levels</option><option value="HS">HS</option><option value="JUCO">JUCO</option><option value="College">College</option></select>
+        <select id="plLevel" onchange="renderPlayers(true)"><option value="">All levels</option><option value="HS">HS</option><option value="JUCO">JUCO</option><option value="FBS">FBS</option><option value="FCS">FCS</option><option value="D2">D2</option><option value="College">College (legacy)</option></select>
         <select id="plPos" onchange="renderPlayers(true)"><option value="">All positions</option></select>
         <select id="plHas" onchange="renderPlayers(true)">
           <option value="">Any status</option><option value="report">Has a report</option><option value="noreport">No report yet</option>
@@ -547,10 +547,10 @@
 
     <div class="panel">
       <h3>Log a Performance</h3>
-      <div class="sub">JUCO stat lines and standout high school games. Paste the link so the numbers stay verifiable.</div>
+      <div class="sub">JUCO stat lines, standout high school games, and enrolled college production. Paste the link so the numbers stay verifiable.</div>
       <div class="grid2">
         <div><label class="fl">Player Name</label><input type="text" id="pName" placeholder="First Last"></div>
-        <div><label class="fl">Level</label><select id="pLevel"><option value="JUCO">JUCO</option><option value="HS">High School</option></select></div>
+        <div><label class="fl">Level</label><select id="pLevel" onchange="syncPortalRow()"><option value="JUCO">JUCO</option><option value="HS">High School</option><option value="FBS">FBS</option><option value="FCS">FCS</option><option value="D2">D2</option></select></div>
       </div>
       <div class="grid3">
         <div><label class="fl">Position</label><select id="pPos" onchange="renderStatBoxes()"></select></div>
@@ -561,6 +561,17 @@
       <input type="number" id="pGrade" min="0" max="100" step="0.1" placeholder="e.g. 78.5 \u00b7 leave blank if you only want the stat line logged">
       <label class="fl">School</label>
       <input type="text" id="pSchool" placeholder="School name">
+      <div id="portalRow" style="display:none; margin-top:10px; border:1px solid var(--line); border-radius:9px; padding:11px 13px;">
+        <label class="fl">Portal status</label>
+        <select id="pPortal">
+          <option value="">Enrolled &middot; production tracking only</option>
+          <option value="watch">Production watch &middot; our inference from his numbers</option>
+          <option value="declared">Entered the transfer portal &middot; public record</option>
+        </select>
+        <div style="font-size:11px; color:var(--dim); line-height:1.5; margin-top:7px;">
+          Programs only ever see production for enrolled players. A report stays admin and NFL only until he is marked as having entered the portal. Base a watch flag on production, snap counts and level of competition, never on anything a trainer or the athlete told you.
+        </div>
+      </div>
       <label class="fl">Stat Line</label>
       <div id="statBoxes" style="margin:6px 0 10px;"></div>
       <label class="fl">Stat line <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(written for you from the boxes; edit if you want)</span></label>
@@ -3646,7 +3657,9 @@ async function createPerformance(){
     stat_line:  document.getElementById('pStat').value.trim(),
     source_link:document.getElementById('pLink').value.trim(),
     performance_date: document.getElementById('pDate').value,
-    grade: document.getElementById('pGrade').value.trim()
+    grade: document.getElementById('pGrade').value.trim(),
+    portal_status: COLLEGE_LEVELS.includes(document.getElementById('pLevel').value)
+      ? document.getElementById('pPortal').value : ''
   };
   try{
     if(demoMode){
@@ -3683,11 +3696,22 @@ function assignFromPerf(id){
 
 
 function renderPerfChips(){
-  const opts = ['All','JUCO','HS'];
+  const opts = ['All','HS','JUCO','FBS','FCS','D2'];
   document.getElementById('perfLevelChips').innerHTML = opts.map(k=>
     `<button type="button" class="chip ${k===perfLevelFilter?'on':''}" onclick="setPerfLevel('${k}')">${k==='HS'?'High School':k}</button>`).join('');
 }
 function setPerfLevel(l){ perfLevelFilter = l; renderPerfChips(); renderPerf(); }
+
+/* Enrolled college players. They are tracked for production only and are
+   never added to a program's prospect board. */
+const COLLEGE_LEVELS = ['FBS','FCS','D2'];
+function syncPortalRow(){
+  const row = document.getElementById('portalRow');
+  if(!row) return;
+  const isCollege = COLLEGE_LEVELS.includes(document.getElementById('pLevel').value);
+  row.style.display = isCollege ? '' : 'none';
+  if(!isCollege) document.getElementById('pPortal').value = '';
+}
 
 function schoolKey(s){
   return String(s||'').toLowerCase().replace(/^no\.?\s*\d+\s*/,'')

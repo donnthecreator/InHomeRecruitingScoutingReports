@@ -31,13 +31,18 @@ async function pins(sql, base) {
            (SELECT string_agg(DISTINCT upper(pp.program_code), ', ') FROM program_prospects pp WHERE pp.prospect_id = p.id) AS boards
     FROM prospects p`;
 
+  /* Enrolled college players (FBS/FCS/D2) are production-tracking only and
+     are deliberately kept off the recruiting map. The map is a prospect
+     tool; putting enrolled student-athletes on it with a profile link is
+     the kind of thing that reads as a transfer board. */
   let perf = [];
   try {
     perf = await sql`
       SELECT DISTINCT ON (lower(regexp_replace(name, '[^A-Za-z]', '', 'g')), COALESCE(school,''))
              name, school, position, class_year, level
       FROM player_performances pp
-      WHERE NOT EXISTS (SELECT 1 FROM prospects p WHERE p.name_key = lower(regexp_replace(pp.name, '[^A-Za-z]', '', 'g')) AND COALESCE(p.school,'') = COALESCE(pp.school,''))
+      WHERE COALESCE(level,'HS') NOT IN ('FBS','FCS','D2')
+        AND NOT EXISTS (SELECT 1 FROM prospects p WHERE p.name_key = lower(regexp_replace(pp.name, '[^A-Za-z]', '', 'g')) AND COALESCE(p.school,'') = COALESCE(pp.school,''))
       ORDER BY lower(regexp_replace(name, '[^A-Za-z]', '', 'g')), COALESCE(school,''), created_at DESC`;
   } catch (e) { perf = []; }
 

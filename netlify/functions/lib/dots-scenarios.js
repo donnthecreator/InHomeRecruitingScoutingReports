@@ -122,6 +122,20 @@ const MOTION = [
     why: 'The left guard pulled across the formation. The puller is the play. Fit off him.' }
 ];
 
+/* One corner rolls with Z so leverage reads stay honest across splits. */
+function splitDef(cx){
+  return [
+    { id: 'WE', t: 'dl', x: 190, y: 170 }, { id: 'NT', t: 'dl', x: 278, y: 170 }, { id: 'DT3', t: 'dl', x: 362, y: 170 }, { id: 'SE', t: 'dl', x: 455, y: 170 },
+    { id: 'W', t: 'lb', x: 235, y: 128 }, { id: 'M', t: 'lb', x: 305, y: 128 }, { id: 'S', t: 'lb', x: 405, y: 128 },
+    { id: 'LC', t: 'db', x: 62, y: 165 }, { id: 'RC', t: 'db', x: cx, y: 150 },
+    { id: 'FS', t: 'db', x: 300, y: 48 }, { id: 'SS', t: 'db', x: 470, y: 95 }
+  ];
+}
+DEF.splitNasty = splitDef(433);
+DEF.splitHashPlus = splitDef(478);
+DEF.splitNumbers = splitDef(528);
+DEF.splitWide = splitDef(584);
+
 const SCENARIOS = [
   /* ---------- everyone: fronts and shells ---------- */
   { id: 'd_front_over', groups: ['QB', 'RB', 'OL', 'DL', 'LB'], off: 'gun11', def: 'over43', mode: 'choice',
@@ -213,6 +227,19 @@ OFF.empty = [
   { id: 'QB', x: 300, y: 262, l: 'Q' },
   { id: 'X', x: 55, y: 222, l: 'X' }, { id: 'A', x: 130, y: 232, l: 'A' }, { id: 'RB', x: 470, y: 232, l: 'R' }, { id: 'H', x: 505, y: 222, l: 'H' }, { id: 'Z', x: 560, y: 232, l: 'Z' }
 ];
+/* Split presets. Hash marks render at x=200 and x=400; the numbers sit
+   around x=500; sideline is x=600. Z is moved to the named split and
+   everything else holds, so the only variable is where he lines up. */
+function splitOff(zx){
+  /* 10 personnel so Z is unmistakably the split being asked about: no
+     tight end next to him to confuse the picture. */
+  const base = OFF.gun11.filter(o => !['Z', 'H', 'TE'].includes(o.id));
+  return base.concat([{ id: 'Z', x: zx, y: 222, l: 'Z' }]);
+}
+OFF.splitNasty   = splitOff(425);   // tucked in tight to the formation
+OFF.splitHashPlus= splitOff(470);   // a couple outside the hash
+OFF.splitNumbers = splitOff(520);   // numbers locked
+OFF.splitWide    = splitOff(578);   // wide, on top of the sideline
 DEF.pressOff = [ /* press on the left corner, off on the right, two high */
   { id: 'WE', t: 'dl', x: 190, y: 170 }, { id: 'NT', t: 'dl', x: 278, y: 170 }, { id: 'DT3', t: 'dl', x: 362, y: 170 }, { id: 'SE', t: 'dl', x: 410, y: 170 },
   { id: 'W', t: 'lb', x: 245, y: 128 }, { id: 'M', t: 'lb', x: 335, y: 128 }, { id: 'NB', t: 'db', x: 455, y: 150 },
@@ -277,6 +304,33 @@ const POS_STATIC = [
   { id: 'r_pro_bear', groups: ['RB', 'OL'], off: 'gun11', def: 'bear', mode: 'choice',
     q: 'Bear front, five down and two backers. In six-man protection, who is the problem?', options: ['If both backers come, you can only block one of them', 'The nose', 'The corners', 'Nobody, it is five on five'], answer: 0,
     why: 'Five down takes your five linemen. Two backers is seven. Six blockers means one gets home if both come, which is why the quarterback needs a hot answer.' },
+
+  /* ---------------- SPLITS (receivers, tight ends, and the DBs across from them) ---------------- */
+  { id: 'sp_name_nasty', groups: ['WR', 'TE', 'DB'], off: 'splitNasty', def: 'splitNasty', mode: 'choice',
+    q: 'Look at Z. What split is this?',
+    options: ['Nasty split', 'Hash plus two', 'Numbers locked', 'Wide, on the sideline'], answer: 0,
+    why: 'Tucked inside the hash, just outside the tight end. A nasty split shortens everything: crack angles, rub routes, and inside breaking concepts.' },
+  { id: 'sp_name_numbers', groups: ['WR', 'TE', 'DB'], off: 'splitNumbers', def: 'splitNumbers', mode: 'choice',
+    q: 'Look at Z. What split is this?',
+    options: ['Numbers locked', 'Nasty split', 'Hash minus two', 'Stacked on the tight end'], answer: 0,
+    why: 'Aligned on the numbers. This is the standard split that keeps every route in the concept available.' },
+  { id: 'sp_why_nasty', groups: ['WR', 'TE'], off: 'splitNasty', def: 'splitNasty', mode: 'choice',
+    q: 'You are told to take a nasty split. What does it buy you?',
+    options: ['Room to the outside and a better crack angle inside',
+              'A shorter route to the sideline', 'Nothing, it is cosmetic', 'More space to release inside'], answer: 0,
+    why: 'Reducing the split opens the entire field outside you and puts you in position to crack a linebacker or safety. What it costs is inside release room.' },
+  { id: 'sp_why_wide', groups: ['WR', 'TE', 'DB'], off: 'splitWide', def: 'splitWide', mode: 'choice',
+    q: 'Z takes a wide split near the sideline. What does that do to the corner?',
+    options: ['It isolates him with no inside help nearby', 'It gives him more help',
+              'Nothing changes for him', 'It forces him into press'], answer: 0,
+    why: 'The wider you go the further you pull the corner from his help. That is why the wide split is the one-on-one call.' },
+  { id: 'sp_hash_tap', groups: ['WR', 'TE', 'DB'], off: 'splitHashPlus', def: 'splitHashPlus', mode: 'tap',
+    q: 'Z is at hash plus two. Tap the defender who has to travel the farthest to get over the top of him.', answer: 'FS',
+    why: 'The post safety. The tighter the split, the longer his run to the sideline and the more the outside is exposed behind him.' },
+  { id: 'sp_leverage', groups: ['WR', 'DB'], off: 'splitNumbers', def: 'splitNumbers', mode: 'choice',
+    q: 'Numbers locked, corner outside leverage, safety in the middle. Which route is the defense giving you?',
+    options: ['The inside breaking route', 'The fade', 'The out', 'Nothing'], answer: 0,
+    why: 'Outside leverage with a single-high safety means the inside is the soft side. You throw and run away from leverage.' },
 
   /* ---------------- WR ---------------- */
   { id: 'w_press_which', groups: ['WR', 'TE'], off: 'gun10', def: 'pressOff', mode: 'tap',

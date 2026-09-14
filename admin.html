@@ -86,7 +86,7 @@
     color:var(--dim); margin-top:2px; letter-spacing:0;}
   .tab-btn.on{border-color:var(--red); background:var(--red-deep); color:var(--ink);}
   .tab-btn.on .cnt{color:var(--red);}
-  .pane{display:none;} .pane.on{display:block;}
+  .pane{display:none; scroll-margin-top:74px;} .pane.on{display:block;}
 
   /* ---------- PANELS ---------- */
   .panel{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-top:14px;}
@@ -1075,13 +1075,40 @@ function renderStats(){
 }
 
 /* ---------------- TABS ---------------- */
+/* Switching tabs hides one pane and shows another, but the page stays
+   scrolled where it was. Land deep inside a long Prospects list, click
+   Reports, and you are dropped into the middle or the bottom of Reports
+   instead of the top of it. Put the new pane's top under the sticky
+   topbar. Measured in a double rAF because hiding a tall pane changes the
+   page height, and a scroll issued before that settles gets clamped. */
+function focusPane(t){
+  var cap = { players:'Players', assign:'Assign', roster:'Roster', scouts:'Scouts',
+              reports:'Reports', perf:'Perf', intake:'Intake', assess:'Assess',
+              market:'Market', board:'Board', map:'Map' }[t];
+  var pane = cap && document.getElementById('pane'+cap);
+  if(!pane || !pane.getBoundingClientRect) return;
+  var go = function(){
+    var top = pane.getBoundingClientRect().top;
+    if(top >= 60 && top <= 140) return;   // already sitting under the topbar
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try{ pane.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block:'start' }); }
+    catch(err){ pane.scrollIntoView(true); }
+  };
+  if(window.requestAnimationFrame) requestAnimationFrame(function(){ requestAnimationFrame(go); });
+  else setTimeout(go, 30);
+}
+
 function switchTab(t){
-  /* element ids are fixed; the visible label can change without touching this */
-  [['players','Prospects'],['assign','Assignments'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  /* Second value is the element-id suffix, NOT the visible label. Using the
+     label here meant it looked for paneProspects and paneAssignments, which
+     do not exist, so those two panes never had .on removed: Prospects stayed
+     rendered above whatever tab you opened. */
+  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     const tb = document.getElementById('tb'+cap), pane = document.getElementById('pane'+cap);
     if(tb) tb.classList.toggle('on', k===t);
     if(pane) pane.classList.toggle('on', k===t);
   });
+  focusPane(t);
   if(t==='players') renderPlayers();
   if(t==='intake'){ renderIntake(); renderScoutRequests(); }
   if(t==='assess'){ renderAssessments(); renderClips(); }

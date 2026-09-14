@@ -28,24 +28,29 @@
     letter-spacing:.1em; margin:12px 0 6px;}
 
   /* ---------- GATE ---------- */
-  #gate{position:fixed; inset:0; background:#000; z-index:300; display:flex; align-items:center;
-    justify-content:center; padding:24px;}
+  #gate{position:fixed; inset:0; background:#0A0A0A; z-index:300; display:flex; align-items:center;
+    justify-content:center; padding:24px; border-top:4px solid #F5F5F5;}
   #gate.hide{display:none;}
-  .gate-box{width:100%; max-width:420px; text-align:center;}
-  .gate-mark{margin:0 auto 18px; height:52px; width:auto; display:block;}
-  .gate-title{font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.02em; color:#fff;
-    text-transform:uppercase;}
-  .gate-s{font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--red);
-    font-weight:700; margin-top:9px;}
-  .gate-box input{margin-top:24px; text-align:center; font-family:'Anton',sans-serif; font-size:22px;
-    letter-spacing:.16em; text-transform:uppercase; padding:14px;}
-  .gate-btn{width:100%; margin-top:10px; background:var(--red); color:#fff; border:none; border-radius:10px;
-    padding:14px; font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.06em;
-    text-transform:uppercase; cursor:pointer;}
-  .gate-btn:disabled{opacity:.5; cursor:default;}
-  .gate-err{color:var(--bad); font-size:12.5px; font-weight:600; margin-top:12px; min-height:17px;}
-  .gate-by{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim);
-    font-weight:700; margin-top:22px; padding-top:16px; border-top:1px solid #1A1A1A;}
+  .gate-box{width:100%; max-width:420px; text-align:center; color:#F5F5F5;}
+  .gate-logo{display:flex; justify-content:center; margin-bottom:30px; color:#F5F5F5;}
+  .gate-mark{height:104px; width:auto; display:block;}
+  @media(max-width:420px){ .gate-mark{height:84px;} }
+  .gate-h{font-family:'Inter',sans-serif; font-weight:500; font-size:30px; line-height:1.15; letter-spacing:.01em; color:#FFFFFF; margin:0;}
+  .gate-tagline{font-family:'Inter',sans-serif; font-weight:400; font-size:15px; color:#888888; margin-top:14px; letter-spacing:.08em; text-transform:uppercase; line-height:1.1;}
+  .gate-sub{color:#888888; font-size:14px; margin-top:10px; letter-spacing:.01em;}
+  .gate-form{margin-top:26px; display:flex; flex-direction:column; gap:10px;}
+  .gate-form input{width:100%; padding:15px 16px; border-radius:12px; border:1.5px solid #2A2A2A; background:#141414;
+    color:#F5F5F5; font-size:16px; text-align:center; letter-spacing:.18em; text-transform:uppercase; font-family:'Inter',sans-serif;}
+  .gate-form input::placeholder{color:#3A3A3A;}
+  .gate-form input:focus{outline:none; border-color:#F5F5F5; box-shadow:0 0 0 3px rgba(245,245,245,.12);}
+  .gate-btn{width:100%; padding:15px; border-radius:12px; border:none; background:#F5F5F5; color:#000;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:15px; letter-spacing:.09em; text-transform:uppercase; cursor:pointer;}
+  .gate-btn:disabled{opacity:.5;}
+  .gate-err{color:#BDBDBD; font-size:12.5px; font-weight:500; margin-top:6px; min-height:17px; line-height:1.5;}
+  .gate-line{margin-top:30px; font-family:'Inter',sans-serif; font-weight:500; font-size:15px; letter-spacing:.02em; color:#B4B4B4; line-height:2.1;}
+  .inline-i{height:2.05em; width:auto; display:inline-block; vertical-align:baseline; color:#FFFFFF; transform-origin:50% 100%; animation:i-hop 3s ease-in-out 1.1s 1 both;}
+  @keyframes i-hop{ 0%,55%{transform:translateY(0) scaleY(1);} 62%{transform:translateY(0) scaleY(.90);} 70%{transform:translateY(-14px) scaleY(1.06);} 80%{transform:translateY(0) scaleY(.96);} 88%,100%{transform:translateY(0) scaleY(1);} }
+  .gate-build{margin-top:10px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#3A3A3A;}
 
   /* ---------- TOPBAR ---------- */
   .topbar{background:#000; border-bottom:1px solid var(--line); padding:15px 18px; position:sticky; top:0; z-index:60;}
@@ -379,13 +384,18 @@
 
 <div id="gate">
   <div class="gate-box">
-    <img class="gate-mark" src="data:image/png;base64,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" alt="">
-    <div class="gate-title">InHome Admin</div>
-    <div class="gate-s">Restricted</div>
-    <input type="password" id="gateCode" placeholder="ADMIN CODE" autocomplete="off">
-    <button type="button" class="gate-btn" id="gateBtn" onclick="tryGate()">Enter</button>
-    <div class="gate-err" id="gateErr"></div>
-    <div class="gate-by">Powered by Athlete&rsquo;s Inc+</div>
+    <div class="gate-logo"><svg viewBox="0 0 22 73" role="img" aria-label="InHome" class="gate-mark"><path fill-rule="evenodd" fill="currentColor" d="M11 1.2 C11.5 1.2 12 1.4 12.4 1.8 L20.8 9.4 C21.6 10.1 21.7 11.3 21 12.1 C20.3 12.9 19.1 13 18.3 12.3 L11 5.7 L3.7 12.3 C2.9 13 1.7 12.9 1 12.1 C0.3 11.3 0.4 10.1 1.2 9.4 L9.6 1.8 C10 1.4 10.5 1.2 11 1.2 Z M4.2 22.5 C4.2 21.1 5.3 20 6.7 20 H15.3 C16.7 20 17.8 21.1 17.8 22.5 V70.5 C17.8 71.9 16.7 73 15.3 73 H6.7 C5.3 73 4.2 71.9 4.2 70.5 Z M5.2 44 C6.9 40.8 15.1 40.8 16.8 44 C15.1 47.2 6.9 47.2 5.2 44 Z"/></svg></div>
+    <h1 class="gate-h">Admin Portal</h1>
+    <div class="gate-tagline">InHome Recruiting Intelligence</div>
+    <div class="gate-sub">Presented by Athlete&rsquo;s Inc+</div>
+    <div class="gate-sub" style="margin-top:14px;">Enter your admin code.</div>
+    <div class="gate-form">
+      <input type="password" id="gateCode" placeholder="ADMIN CODE" autocomplete="off">
+      <button type="button" class="gate-btn" id="gateBtn" onclick="tryGate()">Enter</button>
+      <div class="gate-err" id="gateErr"></div>
+      <div class="gate-line">The&nbsp;<svg class="inline-i" viewBox="0 0 22 73" role="img" aria-label="I"><path fill-rule="evenodd" fill="currentColor" d="M11 1.2 C11.5 1.2 12 1.4 12.4 1.8 L20.8 9.4 C21.6 10.1 21.7 11.3 21 12.1 C20.3 12.9 19.1 13 18.3 12.3 L11 5.7 L3.7 12.3 C2.9 13 1.7 12.9 1 12.1 C0.3 11.3 0.4 10.1 1.2 9.4 L9.6 1.8 C10 1.4 10.5 1.2 11 1.2 Z M4.2 22.5 C4.2 21.1 5.3 20 6.7 20 H15.3 C16.7 20 17.8 21.1 17.8 22.5 V70.5 C17.8 71.9 16.7 73 15.3 73 H6.7 C5.3 73 4.2 71.9 4.2 70.5 Z M5.2 44 C6.9 40.8 15.1 40.8 16.8 44 C15.1 47.2 6.9 47.2 5.2 44 Z"/></svg>&nbsp;in the sky doesn&rsquo;t lie.</div>
+      <div class="gate-build" id="buildStamp">Build 2026.09.14-C</div>
+    </div>
   </div>
 </div>
 

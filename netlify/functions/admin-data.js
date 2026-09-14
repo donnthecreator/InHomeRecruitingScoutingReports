@@ -513,7 +513,7 @@ exports.handler = async (event) => {
         const [open] = await sql`SELECT token FROM profile_invites WHERE status <> 'completed' AND (prospect_id = ${prospectId} OR (prospect_id IS NULL AND lower(athlete_name) = ${String(name||'').toLowerCase()})) LIMIT 1`;
         const token = open ? open.token : crypto2.randomBytes(16).toString('base64url');
         if (!open) await sql`INSERT INTO profile_invites (token, prospect_id, athlete_name, school, sent_to, sent_by) VALUES (${token}, ${prospectId}, ${name}, ${school}, ${body.sentTo || null}, 'admin')`;
-        return ok({ token, url: `${siteBase(event)}/invite.html?t=${token}`, reused: !!open });
+        return ok({ token, url: `${siteBase(event)}/prospect-invite.html?t=${token}`, reused: !!open });
       }
       case 'listProfileInvites': {
         try { return ok({ invites: await sql`SELECT *, to_char(created_at,'YYYY-MM-DD') AS created_day FROM profile_invites ORDER BY created_at DESC LIMIT 200` }); }

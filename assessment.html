@@ -7,6 +7,10 @@
 <title>InHome Assessment</title>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  .consent-row{display:flex; gap:11px; align-items:flex-start; background:#141414; border:1px solid #2A2A2A;
+      border-radius:10px; padding:13px 14px; margin-top:10px; cursor:pointer; font-size:14px; line-height:1.45; color:#DADADA;}
+  .consent-row input{width:19px; height:19px; margin:1px 0 0; flex:0 0 auto; accent-color:#CC0000;}
+  .consent-row a{color:#fff;}
   :root{ --red:#FF0000; --paper:#000; --card:#111; --card-2:#171717; --line:#2A2A2A; --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A; --good:#35C759; }
   *{box-sizing:border-box;}
   body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.5; -webkit-font-smoothing:antialiased;}
@@ -105,6 +109,14 @@ const QS = new URLSearchParams(location.search);
 const TOKEN = QS.get('t') || '';
 const PREVIEW = QS.get('preview') || '';
 let DATA = null, ANSWERS = {}, DIRTY = false;
+/* Consent gate. The assessment collects the most personal information we
+   hold on an athlete: written answers about family and background, a
+   personality profile, and questions about money. None of it is collected
+   until the athlete, or a parent where the athlete is under 18, has agreed
+   to it being taken and shared with programs. Stored per token so a
+   returning athlete is not asked twice. */
+let CONSENTED = false;
+const consentKey = () => 'ih_consent_' + (new URLSearchParams(location.search).get('t') || 'preview');
 
 function totalQuestions(){
   let n = 0;
@@ -215,6 +227,61 @@ function keyHTML(it){
   return bits.length ? `<div class="fine" style="margin-top:8px;color:#E0A419;">${esc(bits.join(' \u2014 '))}</div>` : '';
 }
 const POS_LIST = [['QB','Quarterback'],['RB','Running back'],['WR','Wide receiver'],['TE','Tight end'],['OL','Offensive line'],['DL','Defensive line / edge'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety'],['K','Kicker / punter']];
+function renderConsent(){
+  const name = esc(DATA.athlete || 'this athlete');
+  $('who').innerHTML = `<b>${name}</b>${esc(DATA.school||'')}`;
+  $('app').innerHTML = `
+    <div class="card" style="line-height:1.6">
+      <h2 style="margin-top:0">Before you start</h2>
+      <p style="color:#C4C4C4">This assessment asks about your background, how you learn, what motivates you, and how you read film. It also includes a short personality section and questions about NIL and money. Your answers are attached to your InHome scouting profile.</p>
+      <p style="color:#C4C4C4"><b style="color:#fff">Who sees it:</b> InHome scouts and staff, and the college or professional programs we send your evaluation to. That is the point of the service. It is not published anywhere public.</p>
+      <p style="color:#C4C4C4"><b style="color:#fff">It is optional.</b> You can be evaluated on film without doing this. You can also ask us to delete your answers at any time by emailing drlee@inhomerecruiting.com, and it will not affect your grade.</p>
+
+      <label class="consent-row"><input type="checkbox" id="cAge">
+        <span>I am 18 or older, <b>OR</b> a parent or legal guardian has read this and consents on my behalf.</span></label>
+
+      <label class="consent-row"><input type="checkbox" id="cShare">
+        <span>I agree that InHome may share my answers, personality profile and scouting evaluation with college and professional football programs.</span></label>
+
+      <label class="consent-row"><input type="checkbox" id="cTerms">
+        <span>I have read the <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
+
+      <div id="cGuardWrap" style="display:none; margin-top:12px;">
+        <label class="fl" style="display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A8A; font-weight:700; margin-bottom:5px;">Parent or guardian email <span style="text-transform:none; letter-spacing:0; color:#666">(required if under 18)</span></label>
+        <input type="email" id="cGuardEmail" inputmode="email" autocapitalize="off" placeholder="parent@email.com"
+          style="width:100%; padding:12px 13px; border-radius:9px; border:1px solid #2A2A2A; background:#141414; color:#F5F5F5; font-size:15px;">
+      </div>
+
+      <div id="cErr" style="color:#FF7D7D; font-size:13px; min-height:18px; margin-top:10px;"></div>
+      <button type="button" class="btn" id="cGo" style="width:100%; margin-top:4px;">Start the assessment</button>
+      <div style="font-size:11.5px; color:#6A6A6A; margin-top:11px; text-align:center;">Under 13? Do not complete this. Have a parent email us instead.</div>
+    </div>`;
+
+  const under18 = () => !$('cAge').checked;
+  $('cAge').addEventListener('change', () => {
+    $('cGuardWrap').style.display = under18() ? '' : 'none';
+  });
+  $('cGuardWrap').style.display = '';
+
+  $('cGo').addEventListener('click', () => {
+    const err = $('cErr');
+    if(!$('cAge').checked || !$('cShare').checked || !$('cTerms').checked){
+      err.textContent = 'Please check all three boxes to continue.'; return;
+    }
+    const ge = ($('cGuardEmail').value || '').trim();
+    if(ge && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ge)){
+      err.textContent = 'That email does not look right.'; return;
+    }
+    err.textContent = '';
+    ANSWERS._consent = { agreedAt: new Date().toISOString(), guardianEmail: ge || null,
+                         sharingWithPrograms: true, policy: 'privacy.html 2026-09-14' };
+    DIRTY = true;
+    CONSENTED = true;
+    try{ localStorage.setItem(consentKey(), '1'); }catch(e){}
+    render(); window.scrollTo({top:0});
+  });
+}
+
 function renderPositionPick(){
   $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
   $('app').innerHTML = `
@@ -237,6 +304,7 @@ function renderPositionPick(){
   }));
 }
 function render(){
+  if(!CONSENTED && !DATA.preview){ renderConsent(); return; }
   if(DATA.needsPosition){ renderPositionPick(); return; }
   const isIQ = DATA.kind === 'iq';
   const isFull = DATA.kind === 'full';
@@ -389,6 +457,7 @@ async function submitAll(){
       $('app').innerHTML = '<div class="done"><div class="big">Already submitted</div><p>This one is in. If you need to change something, tell whoever sent you the link.</p></div>';
       return;
     }
+    try{ if(localStorage.getItem(consentKey()) === '1') CONSENTED = true; }catch(e){}
     render();
   }catch(err){
     $('app').innerHTML = `<div class="done"><div class="big">Link not valid</div><p>${esc(err.message)}</p></div>`;

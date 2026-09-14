@@ -223,7 +223,12 @@
 
     <div class="consent">
       <input type="checkbox" id="consent">
-      <label for="consent">I'm allowed to share this player's information and film with InHome for evaluation. If the player is under 18, a parent, guardian, or school coach knows this is being sent.</label>
+      <label for="consent">I am 18 or older, <b>or</b> a parent or legal guardian consents to this submission on the athlete's behalf.</label>
+    </div>
+
+    <div class="consent">
+      <input type="checkbox" id="consentShare">
+      <label for="consentShare">I agree that InHome may evaluate this athlete and share the film, measurables and resulting scouting report with college and professional football programs. I have read the <a href="/privacy.html" target="_blank" rel="noopener" style="color:#fff">Privacy Policy</a>.</label>
     </div>
 
     <div class="err" id="err"></div>
@@ -292,7 +297,8 @@ $('intakeForm').addEventListener('submit', async (e) => {
   const btn = $('submitBtn');
 
   if(!WHO){ err.textContent = 'Tell us who is sending this.'; return; }
-  if(!$('consent').checked){ err.textContent = 'Please check the box confirming you can share this film.'; return; }
+  if(!$('consent').checked){ err.textContent = 'Please confirm you are 18 or that a parent or guardian consents.'; return; }
+  if(!$('consentShare').checked){ err.textContent = 'Please agree to the evaluation and sharing terms to continue.'; return; }
 
   const payload = {
     website: $('website').value,

@@ -823,8 +823,8 @@ const RECRUIT_SITES = [
   { id:'247',       name:'247Sports', domain:'247sports.com', url:n => profileSearch('247sports.com/player/', n) },
   { id:'on3',       name:'On3',       domain:'on3.com',       url:n => profileSearch('on3.com/db/', n) },
   { id:'rivals',    name:'Rivals',    domain:'rivals.com',    url:n => profileSearch('on3.com/rivals/', n) },
-  { id:'maxpreps',  name:'MaxPreps',  domain:'maxpreps.com',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') },
-  { id:'milesplit', name:'MileSplit', domain:'milesplit.com', url:n => 'https://www.milesplit.com/search?q=' + encodeURIComponent(n) },
+  { id:'maxpreps',  name:'MaxPreps',  domain:'maxpreps.com',  url:n => profileSearch('maxpreps.com/athlete/', n) },
+  { id:'milesplit', name:'MileSplit', domain:'milesplit.com', url:n => profileSearch('milesplit.com/athletes/', n) },
   { id:'hudl',      name:'Hudl',      domain:'hudl.com',      url:n => profileSearch('hudl.com/profile/', n) },
   { id:'x',         name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];

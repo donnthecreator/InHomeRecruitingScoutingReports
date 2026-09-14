@@ -2314,7 +2314,10 @@ async function renderPlayers(skipFetch){
         ${p.boards?`<span class="pill">${esc(p.boards)}</span>`:''}${p.reports?`<span class="pill" style="border-color:var(--good);color:var(--good)">${p.reports} report${p.reports===1?'':'s'}</span>`:''}${assessed.has(String(p.id))?'<span class="pill" style="border-color:var(--ink);color:var(--ink)">assessed</span>':''}${p.pending?'<span class="pill" style="color:var(--warn);border-color:var(--warn)">performance log only</span>':''}
         ${railHTML(p.name)}
       </div>
-      <div class="rc-right"><button type="button" class="mini-btn plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">Open</button></div>
+      <div class="rc-right" style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+        <button type="button" class="mini-btn plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">Open</button>
+        <button type="button" class="mini-btn go" onclick="shareProfile(${p.id||'null'}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Share profile</button>
+      </div>
     </div>
   </div>`).join('') + (list.length>400?`<div class="rc-meta" style="padding:10px;">Showing 400 of ${list.length}. Narrow the search.</div>`:'');
 }
@@ -2395,6 +2398,22 @@ function askInviteReason(name){
       if(!r){ closeShare(); resolve(null); return; }
       resolve(r);
     }));
+  });
+}
+/* Public, read-only profile page: everything on file to date. */
+async function shareProfile(prospectId, name, school){
+  let id = prospectId;
+  if(!id){
+    try{ const d = await api('createProspectFromPerformance', { name, school }); id = d.prospectId; PLAYERS = null; }
+    catch(err){ toast(err.message); return; }
+  }
+  const url = location.origin + '/profile.html?id=' + id;
+  openShare({
+    title: 'InHome prospect profile',
+    who: name + (school ? ' \u00b7 ' + school : ''),
+    url,
+    message: name + ' \u2014 InHome prospect profile:',
+    note: 'Shows everything on file right now: photo, measurables with verified checks, offers and commitment, film and socials, every scouting report, assessments and production. It updates itself as you add to his record, so the link stays current.'
   });
 }
 async function sendProfileInvite(prospectId, name, school){
@@ -2697,6 +2716,10 @@ function renderProfile(){
       ${f('weight','Weight',p.weight,'190')}
       ${f('wingspan','Wingspan',p.wingspan,'')}
       ${f('film_link','Film link',p.film_link,'https://',{full:true})}
+      ${f('hudl_link','Hudl link',p.hudl_link,'https://www.hudl.com/profile/...',{full:true})}
+      ${f('milesplit_link','MileSplit link',p.milesplit_link,'https://www.milesplit.com/athletes/...',{full:true})}
+      ${f('x_link','X (Twitter)',p.x_link,'https://x.com/handle')}
+      ${f('ig_link','Instagram',p.ig_link,'https://instagram.com/handle')}
     </div>
     <div style="margin-top:14px;">
       <div class="rc-meta" style="margin-bottom:4px;">Verified measurables <span style="color:var(--dim)">— a blue check tells a coach we confirmed it at the source</span></div>
@@ -2733,6 +2756,7 @@ function renderProfile(){
       <button type="button" class="mini-btn go" style="margin-top:6px;" onclick="ppAddNote()">Save note</button>
     </div>
     <div class="rc-actions" style="margin-top:14px;">
+      <button type="button" class="mini-btn go" onclick="shareProfile(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Share profile</button>
       <button type="button" class="mini-btn go" onclick="sendProfileInvite(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Send profile invite</button>
       <button type="button" class="mini-btn go" onclick="newAssessment('full', ${p.id})">Send full assessment</button>
       <button type="button" class="mini-btn" onclick="newAssessment('interview', ${p.id})">Interview only</button>
@@ -2749,7 +2773,8 @@ async function saveProfile(){
   if(!PP) return;
   const g = (id) => { const el = document.getElementById('pp_'+id); return el ? el.value : undefined; };
   const fields = { name:g('name'), school:g('school'), position:(g('position')||'').toUpperCase(), class_year:g('class_year'), level:g('level'),
-                   home_city:g('home_city'), home_state:(g('home_state')||'').toUpperCase(), height:g('height'), weight:g('weight'), wingspan:g('wingspan'), film_link:g('film_link') };
+                   home_city:g('home_city'), home_state:(g('home_state')||'').toUpperCase(), height:g('height'), weight:g('weight'), wingspan:g('wingspan'),
+                   film_link:g('film_link'), hudl_link:g('hudl_link'), milesplit_link:g('milesplit_link'), x_link:g('x_link'), ig_link:g('ig_link') };
   try{
     const d = await api('updateProspect', { id: PP.id, fields, prev: { name: PP.name, school: PP.school || '' } });
     const oldName = PP.name, oldSchool = PP.school || '';

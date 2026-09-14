@@ -16,7 +16,13 @@ const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Orig
 exports.handler = async (event) => {
   try {
     /* columns added by later features; harmless if they already exist */
-    try { await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS verifications JSONB NOT NULL DEFAULT '{}'::jsonb`; } catch (e) {}
+    try {
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS verifications JSONB NOT NULL DEFAULT '{}'::jsonb`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hudl_link TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS milesplit_link TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS x_link TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS ig_link TEXT`;
+    } catch (e) {}
 
     const h = event.headers || {};
     const base = `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
@@ -61,6 +67,7 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
       id: p.id, name: p.name, school: p.school, position: p.position, positionLabel: p.position_label, classYear: p.class_year, level: p.level,
       homeCity: p.home_city, homeState: p.home_state, height: p.height, weight: p.weight, wingspan: p.wingspan, filmLink: p.film_link,
+      hudlLink: p.hudl_link || null, milesplitLink: p.milesplit_link || null, xLink: p.x_link || null, igLink: p.ig_link || null,
       verifications: p.verifications || {},
       headshotUrl: p.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}` : null,
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,

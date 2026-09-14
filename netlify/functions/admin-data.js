@@ -469,7 +469,12 @@ exports.handler = async (event) => {
         const val = (k, max) => { const v = f[k]; return (v === undefined || v === null || String(v).trim() === '') ? null : String(v).trim().slice(0, max); };
         const name = val('name', 120), school = val('school', 160), position = val('position', 20), position_label = val('position_label', 60),
               class_year = val('class_year', 12), level = val('level', 12), home_city = val('home_city', 80), home_state = val('home_state', 4),
-              height = val('height', 12), weight = val('weight', 12), film_link = val('film_link', 500), wingspan = val('wingspan', 20);
+              height = val('height', 12), weight = val('weight', 12), film_link = val('film_link', 500), wingspan = val('wingspan', 20),
+              hudl_link = val('hudl_link', 400), milesplit_link = val('milesplit_link', 400), x_link = val('x_link', 200), ig_link = val('ig_link', 200);
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hudl_link TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS milesplit_link TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS x_link TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS ig_link TEXT`;
         const nameKey = name ? name.toLowerCase().replace(/[^a-z]/g, '') : null;
         const rows = await sql`
           UPDATE prospects SET
@@ -478,7 +483,9 @@ exports.handler = async (event) => {
             position_label = COALESCE(${position_label}, position_label), class_year = COALESCE(${class_year}, class_year),
             level = COALESCE(${level}, level), home_city = COALESCE(${home_city}, home_city), home_state = COALESCE(${home_state}, home_state),
             height = COALESCE(${height}, height), weight = COALESCE(${weight}, weight), film_link = COALESCE(${film_link}, film_link),
-            wingspan = COALESCE(${wingspan}, wingspan), updated_at = now()
+            wingspan = COALESCE(${wingspan}, wingspan),
+            hudl_link = COALESCE(${hudl_link}, hudl_link), milesplit_link = COALESCE(${milesplit_link}, milesplit_link),
+            x_link = COALESCE(${x_link}, x_link), ig_link = COALESCE(${ig_link}, ig_link), updated_at = now()
           WHERE id = ${id} RETURNING *`;
         if (!rows.length) return fail(404, 'Prospect not found');
         /* keep the performance log in step when the name or school changed */
@@ -722,7 +729,7 @@ exports.handler = async (event) => {
       case 'listProspects': {
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
-                 p.home_city, p.height, p.weight, p.wingspan, p.film_link,
+                 p.home_city, p.height, p.weight, p.wingspan, p.film_link, p.hudl_link, p.milesplit_link, p.x_link, p.ig_link,
                  p.headshot_key, p.wingspan_key,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
                  (SELECT r.inhome_score FROM reports r WHERE r.prospect_id = p.id ORDER BY r.created_at DESC LIMIT 1) AS latest_score,

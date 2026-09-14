@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome Prospect Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#FF0000; --paper:#000; --card:#141414; --card2:#1C1C1C; --line:#2E2E2E; --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A; --good:#35C759; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:680px; margin:0 auto; padding:0 18px 70px;}
+  .top{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line);}
+  .top img{height:32px; width:auto;}
+  .top .tag{font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); font-weight:800;}
+
+  .hero{display:flex; gap:16px; align-items:center; padding:22px 0 14px;}
+  .face{width:104px; height:104px; border-radius:16px; background:var(--card2); border:1px solid var(--line); overflow:hidden;
+        display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:34px; color:var(--dim); flex:0 0 auto;}
+  .face img{width:100%; height:100%; object-fit:cover;}
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:32px; line-height:1.05; margin:0 0 5px;}
+  .sub{color:var(--mute); font-size:13px;}
+  .sub img{width:15px; height:15px; object-fit:contain; vertical-align:-3px; margin-right:4px;}
+  .score{display:flex; gap:10px; align-items:baseline; margin-top:8px;}
+  .score .n{font-family:'Anton',sans-serif; font-size:30px; color:var(--red); line-height:1;}
+  .score .l{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--mute); font-weight:700;}
+
+  .kv{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:8px; margin:14px 0 4px;}
+  .kv div{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:9px 11px;}
+  .kv .k{font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .kv .v{font-size:14.5px; font-weight:700; margin-top:2px;}
+  .vchk{display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border-radius:50%;
+        background:#1D9BF0; color:#fff; font-size:8px; font-weight:900; margin-left:4px; vertical-align:1px;}
+
+  h2{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); font-weight:800; margin:26px 0 8px;}
+  .row{display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line); font-size:13.5px;}
+  .row:first-of-type{border-top:none;}
+  .pill{display:inline-block; font-size:11px; font-weight:700; border:1px solid var(--line); border-radius:999px; padding:4px 10px; margin:0 6px 6px 0; color:var(--ink);}
+  .pill.commit{border-color:var(--good); color:var(--good);}
+  .narr{background:var(--card); border-left:2px solid var(--red); border-radius:0 10px 10px 0; padding:11px 13px; font-size:13.5px; color:#D6D6D6; white-space:pre-wrap;}
+
+  .rail{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+  .rlink{display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 11px; border:1px solid var(--line);
+         border-radius:9px; background:var(--card); text-decoration:none;}
+  .rlink:hover{border-color:var(--ink); background:var(--card2);}
+  .rlink img{height:15px; width:auto; max-width:60px; object-fit:contain;}
+  .rlink span{font-size:11px; font-weight:700; color:var(--mute);}
+  .btn{display:block; text-align:center; background:var(--red); color:#fff; text-decoration:none; border-radius:11px;
+       padding:14px; font-family:'Anton',sans-serif; font-size:16px; letter-spacing:.05em; text-transform:uppercase; margin-top:10px;}
+  .btn.ghost{background:transparent; color:var(--ink); border:1.5px solid var(--line); font-family:'Inter',sans-serif;
+             font-size:13px; font-weight:700; letter-spacing:0; text-transform:none;}
+  footer{border-top:1px solid var(--line); margin-top:32px; padding:18px 0 40px; font-size:11.5px; color:var(--dim); line-height:1.7;}
+  .empty{text-align:center; padding:70px 0;}
+  .empty .big{font-family:'Anton',sans-serif; font-size:30px; margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="inhome-logo.png" alt="InHome Recruiting Intelligence">
+    <span class="tag">Prospect Profile</span>
+  </div>
+  <div id="app"><div class="empty"><div class="big">Loading&hellip;</div></div></div>
+</div>
+
+<script>
+const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const QS = new URLSearchParams(location.search);
+
+const profileSearch = (path, n) => 'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
+const SITES = [
+  { name:'247Sports', domain:'247sports.com', url:n => profileSearch('247sports.com/player/', n) },
+  { name:'On3',       domain:'on3.com',       url:n => profileSearch('on3.com/db/', n) },
+  { name:'Rivals',    domain:'rivals.com',    url:n => profileSearch('on3.com/rivals/', n) },
+  { name:'MaxPreps',  domain:'maxpreps.com',  url:n => profileSearch('maxpreps.com/athlete/', n) },
+  { name:'MileSplit', domain:'milesplit.com', url:n => profileSearch('milesplit.com/athletes/', n) },
+  { name:'Hudl',      domain:'hudl.com',      url:n => profileSearch('hudl.com/profile/', n) },
+  { name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
+];
+const icon = d => 'https://www.google.com/s2/favicons?sz=64&domain=' + d;
+function railHTML(name){
+  if(!name) return '';
+  return '<div class="rail">' + SITES.map(s =>
+    `<a class="rlink" href="${s.url(name)}" target="_blank" rel="noopener" title="${s.name}">
+       <img src="${icon(s.domain)}" alt="" onerror="this.remove()"><span>${s.name}</span></a>`).join('') + '</div>';
+}
+
+function render(p){
+  const v = p.verifications || {};
+  const chk = f => v[f] ? `<span class="vchk" title="Verified by InHome${v[f].source?' \u00b7 '+esc(v[f].source):''}">&#10003;</span>` : '';
+  const kv = [
+    ['Position', p.positionLabel || p.position],
+    ['Class', p.classYear ? 'Class of ' + p.classYear : null],
+    ['Level', p.level],
+    ['Height', p.height ? esc(p.height) + chk('height') : null],
+    ['Weight', p.weight ? esc(p.weight) + chk('weight') : null],
+    ['Wingspan', p.wingspan ? esc(p.wingspan) + chk('wingspan') : null],
+    ['Track', v.track ? esc(v.track.value || 'verified') + chk('track') : null],
+    ['40', v.forty ? esc(v.forty.value || 'verified') + chk('forty') : null],
+    ['GPA', v.gpa ? esc(v.gpa.value || 'verified') + chk('gpa') : null],
+    ['Hometown', [p.homeCity, p.homeState].filter(Boolean).join(', ') || null]
+  ].filter(x => x[1]);
+
+  const best = (p.reports||[]).length ? p.reports.reduce((a,b)=>((b.score||0)>(a.score||0)?b:a)) : null;
+  const graded = (p.games||[]).filter(g => g.grade != null);
+
+  /* film + socials the athlete or our staff actually supplied */
+  const links = [
+    ['Hudl', p.hudlLink, 'hudl.com'],
+    ['MileSplit', p.milesplitLink, 'milesplit.com'],
+    ['Film', p.filmLink, 'youtube.com'],
+    ['X', p.xLink, 'x.com'],
+    ['Instagram', p.igLink, 'instagram.com']
+  ].filter(x => x[1]);
+
+  let h = `
+    <div class="hero">
+      <div class="face">${p.headshotUrl ? `<img src="${esc(p.headshotUrl)}" alt="">` : esc((p.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2))}</div>
+      <div style="flex:1;min-width:0;">
+        <h1>${esc(p.name)}</h1>
+        <div class="sub">${p.logoUrl?`<img src="${esc(p.logoUrl)}" alt="" onerror="this.remove()">`:''}${esc(p.school||'')}</div>
+        ${best ? `<div class="score"><span class="n">${best.score!=null?best.score.toFixed(1):'\u2014'}</span><span class="l">InHome Score${best.tier?' \u00b7 '+esc(best.tier):''}</span></div>`
+               : `<div class="sub" style="margin-top:8px;color:var(--dim)">Evaluation in progress</div>`}
+      </div>
+    </div>
+    <div class="kv">${kv.map(x=>`<div><div class="k">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('')}</div>`;
+
+  if(p.commitment || (p.offers||[]).length){
+    h += `<h2>Recruitment</h2>`;
+    if(p.commitment) h += `<span class="pill commit">${esc(p.commitment.status)}${p.commitment.to?' \u00b7 '+esc(p.commitment.to):''}</span><br>`;
+    if((p.offers||[]).length) h += `<div style="margin-top:4px;">${p.offers.map(o=>`<span class="pill">${esc(o.school)}${o.date?' <span style="color:var(--dim)">'+esc(o.date)+'</span>':''}</span>`).join('')}</div>`;
+    else h += `<div class="sub">No offers logged yet.</div>`;
+  }
+
+  if(links.length){
+    h += `<h2>Film and socials</h2><div class="rail">` + links.map(l =>
+      `<a class="rlink" href="${esc(l[1])}" target="_blank" rel="noopener"><img src="${icon(l[2])}" alt="" onerror="this.remove()"><span>${l[0]}</span></a>`).join('') + `</div>`;
+  }
+
+  if((p.reports||[]).length){
+    h += `<h2>Scouting reports (${p.reports.length})</h2>` + p.reports.map(r => `
+      <div class="row"><div style="flex:1;"><b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` <span class="sub">\u00b7 ${esc(r.scoutRole)}</span>`:''}
+        <div class="sub">${esc(r.date||'')}${r.archetype?' \u00b7 '+esc(r.archetype):''}</div></div>
+        <div style="text-align:right;"><div style="font-family:'Anton',sans-serif;font-size:19px;">${r.score!=null?r.score.toFixed(1):'\u2014'}</div>
+        <div class="sub" style="font-size:10.5px;">${esc(r.tier||'')}</div></div></div>`).join('');
+    const withNarr = p.reports.find(r => r.narrative);
+    if(withNarr) h += `<div class="narr" style="margin-top:10px;">${esc(withNarr.narrative)}</div>`;
+  }
+
+  if((p.assessments||[]).length){
+    h += `<h2>Assessments</h2>` + p.assessments.map(a => `
+      <div class="row"><div style="flex:1;"><b>${a.kind==='iq'?'Football IQ':a.kind==='full'?'Athlete Assessment':'Athlete Interview'}</b>
+        <div class="sub">${esc(a.completed||'')}${a.mbti?' \u00b7 '+esc(a.mbti):''}</div>
+        ${a.diagnosis?`<div class="sub" style="color:#C4C4C4;margin-top:4px;">${esc(a.diagnosis.summary)}</div>`:''}</div>
+        ${a.pct!=null?`<div style="font-family:'Anton',sans-serif;font-size:19px;">${a.pct}%</div>`:''}</div>`).join('');
+  }
+
+  if((p.notes||[]).length){
+    h += `<h2>InHome notes</h2>` + p.notes.map(n => `
+      <div style="padding:9px 0;border-top:1px solid var(--line);">
+        <div class="sub" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;">${esc(n.kind)}${n.date?' \u00b7 '+esc(n.date):''}</div>
+        <div style="font-size:13.5px;color:#D6D6D6;white-space:pre-wrap;margin-top:3px;">${esc(n.body)}</div></div>`).join('');
+  }
+
+  if(graded.length){
+    h += `<h2>Production (${graded.length} graded game${graded.length===1?'':'s'})</h2>` + graded.slice(0,10).map(g => `
+      <div class="row"><span style="min-width:58px;color:var(--dim)">${esc(g.date||'')}</span>
+      <span style="min-width:40px;font-family:'Anton',sans-serif;font-size:16px;">${g.grade.toFixed(1)}</span>
+      <span style="flex:1;color:#C4C4C4;">${esc(g.statLine||'')}</span></div>`).join('');
+  }
+
+  h += `<h2>Look him up</h2>${railHTML(p.name)}`;
+  h += `<footer>Built by InHome Recruiting Intelligence. Grades come from evaluators watching film, not from a paid ranking.
+        A blue check means InHome confirmed that measurable at the source. This page is private and was shared with you directly.</footer>`;
+
+  document.getElementById('app').innerHTML = h;
+  document.title = p.name + ' | InHome Prospect Profile';
+}
+
+(async function(){
+  const id = QS.get('id'), name = QS.get('name');
+  if(!id && !name){ document.getElementById('app').innerHTML = '<div class="empty"><div class="big">No player specified</div></div>'; return; }
+  try{
+    const q = id ? 'id=' + encodeURIComponent(id) : 'name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(QS.get('school')||'');
+    const res = await fetch('/.netlify/functions/player?' + q, { cache:'no-store' });
+    const p = await res.json();
+    if(!res.ok) throw new Error(p.error || 'Not found');
+    render(p);
+  }catch(err){
+    document.getElementById('app').innerHTML = `<div class="empty"><div class="big">Profile not available</div><div class="sub">${esc(err.message)}</div></div>`;
+  }
+})();
+</script>
+</body>
+</html>

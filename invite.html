@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome Network Invite</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#FF0000; --paper:#000; --card:#1C1C1C; --line:#3A3A3A; --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A; --good:#35C759; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:600px; margin:0 auto; padding:0 18px 100px;}
+  .top{display:flex; justify-content:center; padding:22px 0 6px;}
+  .top img{height:38px; width:auto;}
+
+  .hero{padding:20px 0 8px; text-align:center;}
+  .badge{display:inline-flex; align-items:center; gap:6px; background:rgba(255,0,0,.12); border:1px solid rgba(255,0,0,.35); color:#FF6B6B;
+         font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; padding:6px 14px; border-radius:999px; margin-bottom:16px;}
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:clamp(28px,7vw,38px); line-height:1.08; margin:0 0 14px;}
+  h1 em{font-style:normal; color:var(--red);}
+  .lede{color:#D6D6D6; font-size:15px; max-width:32em; margin:0 auto 8px;}
+  .fine{color:var(--dim); font-size:12.5px; max-width:32em; margin:0 auto;}
+
+  .steps{display:flex; justify-content:center; gap:22px; margin:24px 0 4px; flex-wrap:wrap;}
+  .steps div{text-align:center; font-size:11px; color:var(--dim); font-weight:700; letter-spacing:.06em; text-transform:uppercase; max-width:90px;}
+  .steps .n{width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line); display:grid; place-items:center; margin:0 auto 6px; font-family:'Anton',sans-serif; font-size:13px; color:var(--ink);}
+  .steps .on .n{border-color:var(--red); color:var(--red);}
+  .steps .done .n{background:var(--good); border-color:var(--good); color:#000;}
+
+  .panel{margin-top:26px;}
+  fieldset{border:none; border-top:1px solid var(--line); padding:20px 0 4px; margin:0;}
+  legend{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); font-weight:700; padding:0 10px 0 0;}
+  label.fl{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--mute); font-weight:700; margin:16px 0 6px;}
+  label.fl span{text-transform:none; letter-spacing:0; color:var(--dim); font-weight:500;}
+  input[type=text], input[type=url], select{width:100%; padding:13px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--card); color:var(--ink); font-size:16px; font-family:inherit;}
+  input::placeholder{color:#6E6E6E;}
+  input:focus, select:focus{outline:none; border-color:#FFF;}
+  .g2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .g3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:520px){ .g3{grid-template-columns:1fr 1fr;} }
+
+  .photo-row{display:flex; align-items:center; gap:16px; margin-top:16px;}
+  .photo-circle{width:84px; height:84px; border-radius:50%; background:var(--card); border:2px solid var(--line); overflow:hidden; display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:26px; color:var(--dim); flex:0 0 auto;}
+  .photo-circle img{width:100%; height:100%; object-fit:cover;}
+  .photo-btn{background:var(--ink); color:#000; border:none; border-radius:10px; padding:11px 16px; font-weight:800; font-size:13px; cursor:pointer;}
+
+  .submit{width:100%; margin-top:26px; background:var(--red); color:#fff; border:none; border-radius:12px; padding:17px;
+          font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.05em; text-transform:uppercase; cursor:pointer;}
+  .submit:disabled{opacity:.45;}
+  .err{color:#FF7A7A; font-size:13.5px; margin-top:12px; min-height:1em; text-align:center;}
+
+  .done-screen{text-align:center; padding:50px 0;}
+  .done-screen .big{font-family:'Anton',sans-serif; font-size:32px; margin-bottom:12px;}
+  .done-screen p{color:#D6D6D6; max-width:30em; margin:0 auto 14px;}
+
+  .faq{margin-top:34px;}
+  .faq details{border-top:1px solid var(--line); padding:14px 0;}
+  .faq summary{cursor:pointer; font-weight:600; font-size:14.5px; list-style:none;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:'+'; float:right; color:var(--dim);}
+  .faq details[open] summary::after{content:'\u2013';}
+  .faq p{color:#C4C4C4; font-size:13.5px; margin:10px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><img src="inhome-logo.png" alt="InHome Recruiting Intelligence"></div>
+
+  <div class="hero">
+    <div class="badge">Invite Only &middot; InHome Network</div>
+    <h1 id="heroTitle">Your file starts here.</h1>
+    <p class="lede" id="heroLede">This is going in front of college programs. InHome scouts real players and puts verified profiles like this one in the hands of Directors of Player Personnel — this is one of the earliest steps toward an offer.</p>
+    <p class="fine">Not everyone gets this link. Take five minutes and do it right.</p>
+  </div>
+
+  <div class="steps">
+    <div class="s1"><div class="n">1</div>Your Info</div>
+    <div class="s2"><div class="n">2</div>Your Film</div>
+    <div class="s3"><div class="n">3</div>Assessment</div>
+  </div>
+
+  <div id="app"><div class="fine" style="text-align:center;padding:50px 0;">Loading your invite...</div></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+let PROSPECT = null;
+
+function setStep(n){
+  ['s1','s2','s3'].forEach((c,i)=>{ const el = document.querySelector('.'+c); if(!el) return;
+    el.classList.remove('on','done'); if(i+1 < n) el.classList.add('done'); else if(i+1===n) el.classList.add('on'); });
+}
+
+function stepOne(){
+  setStep(1);
+  $('app').innerHTML = `
+    <div class="panel">
+      <fieldset style="border-top:none; padding-top:0;">
+        <legend>The basics</legend>
+        <label class="fl">Full name</label>
+        <input type="text" id="fName" value="${esc((PROSPECT&&PROSPECT.name)||'')}">
+        <div class="g2">
+          <div><label class="fl">School</label><input type="text" id="fSchool" value="${esc((PROSPECT&&PROSPECT.school)||'')}"></div>
+          <div><label class="fl">Graduation year</label><input type="text" id="fClass" inputmode="numeric" placeholder="2027" value="${esc((PROSPECT&&PROSPECT.classYear)||'')}"></div>
+        </div>
+        <div class="g2">
+          <div><label class="fl">Position</label>
+            <select id="fPos">
+              <option value="">Select</option>
+              ${['QB','RB','WR','TE','OL','DL','EDGE','LB','CB','S','ATH','K/P'].map(p=>`<option ${((PROSPECT&&PROSPECT.position)||'')===p?'selected':''}>${p}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="fl">Level</label>
+            <select id="fLevel">
+              <option value="HS" ${((PROSPECT&&PROSPECT.level)||'HS')==='HS'?'selected':''}>High School</option>
+              <option value="JUCO" ${(PROSPECT&&PROSPECT.level)==='JUCO'?'selected':''}>JUCO</option>
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div><label class="fl">City</label><input type="text" id="fCity" value="${esc((PROSPECT&&PROSPECT.homeCity)||'')}"></div>
+          <div><label class="fl">State</label><input type="text" id="fState" maxlength="2" autocapitalize="characters" value="${esc((PROSPECT&&PROSPECT.homeState)||'')}"></div>
+        </div>
+        <div class="g2">
+          <div><label class="fl">Height <span>(e.g. 6'1)</span></label><input type="text" id="fHeight" value="${esc((PROSPECT&&PROSPECT.height)||'')}"></div>
+          <div><label class="fl">Weight <span>(lbs)</span></label><input type="text" id="fWeight" value="${esc((PROSPECT&&PROSPECT.weight)||'')}"></div>
+        </div>
+      </fieldset>
+
+      <div class="photo-row">
+        <div class="photo-circle" id="photoCircle">${(PROSPECT&&PROSPECT.headshotUrl) ? '<img src="'+esc(PROSPECT.headshotUrl)+'">' : 'Photo'}</div>
+        <div>
+          <button type="button" class="photo-btn" onclick="document.getElementById('photoFile').click()">Upload your photo</button>
+          <input type="file" id="photoFile" accept="image/*" style="display:none" onchange="pickPhoto(this.files[0])">
+          <div class="fine" style="margin-top:6px;">A clear face shot. Coaches see this first.</div>
+        </div>
+      </div>
+
+      <div class="err" id="err1"></div>
+      <button type="button" class="submit" id="btn1" onclick="saveStepOne()">Continue</button>
+    </div>`;
+}
+
+let PHOTO_B64 = null, PHOTO_CT = null;
+async function pickPhoto(file){
+  if(!file) return;
+  const dataUrl = await new Promise((res,rej)=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+  document.getElementById('photoCircle').innerHTML = '<img src="'+dataUrl+'">';
+  PHOTO_B64 = String(dataUrl).split(',')[1];
+  PHOTO_CT = file.type && /^image\/(jpeg|png|webp)$/.test(file.type) ? file.type : 'image/jpeg';
+}
+
+async function saveStepOne(){
+  const name = $('fName').value.trim();
+  const err = $('err1'); err.textContent = '';
+  if(name.length < 3){ err.textContent = 'Enter your full name.'; return; }
+  const btn = $('btn1'); btn.disabled = true; btn.textContent = 'Saving...';
+  const fields = {
+    name, school: $('fSchool').value.trim(), position: $('fPos').value, classYear: $('fClass').value.trim(),
+    level: $('fLevel').value, homeCity: $('fCity').value.trim(), homeState: $('fState').value.trim().toUpperCase(),
+    height: $('fHeight').value.trim(), weight: $('fWeight').value.trim()
+  };
+  try{
+    const res = await fetch('/.netlify/functions/profile-invite', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, fields }) });
+    const d = await res.json(); if(!res.ok) throw new Error(d.error || 'Could not save');
+    PROSPECT = Object.assign(PROSPECT || {}, fields, { id: d.prospectId });
+    if(PHOTO_B64){
+      try{
+        const pr = await fetch('/.netlify/functions/profile-invite', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, photo: { dataBase64: PHOTO_B64, contentType: PHOTO_CT } }) });
+        const pd = await pr.json(); if(pr.ok) PROSPECT.headshotUrl = pd.headshotUrl;
+      }catch(e){}
+    }
+    stepTwo();
+  }catch(err2){ err.textContent = err2.message; btn.disabled = false; btn.textContent = 'Continue'; }
+}
+
+function stepTwo(){
+  setStep(2);
+  $('app').innerHTML = `
+    <div class="panel">
+      <fieldset style="border-top:none; padding-top:0;">
+        <legend>Your film</legend>
+        <p class="fine" style="text-align:left;margin-bottom:14px;">This is what a Director of Player Personnel opens first. Paste real links, not just a search result.</p>
+        <label class="fl">Hudl profile link</label>
+        <input type="url" id="fHudl" placeholder="https://www.hudl.com/profile/..." value="${esc((PROSPECT&&PROSPECT.hudlLink)||'')}" autocapitalize="off">
+        <label class="fl">MileSplit or track/testing profile <span>(if you have verified times)</span></label>
+        <input type="url" id="fMS" placeholder="https://www.milesplit.com/athletes/..." value="${esc((PROSPECT&&PROSPECT.milesplitLink)||'')}" autocapitalize="off">
+        <label class="fl">Any other film <span>(YouTube, Drive, MaxPreps)</span></label>
+        <input type="url" id="fFilm" placeholder="https://..." value="${esc((PROSPECT&&PROSPECT.filmLink)||'')}" autocapitalize="off">
+      </fieldset>
+      <div class="err" id="err2"></div>
+      <button type="button" class="submit" id="btn2" onclick="saveStepTwo()">Continue to your assessment</button>
+    </div>`;
+}
+async function saveStepTwo(){
+  const err = $('err2'); err.textContent = '';
+  const btn = $('btn2'); btn.disabled = true; btn.textContent = 'Saving...';
+  const fields = { name: PROSPECT.name, hudlLink: $('fHudl').value.trim(), milesplitLink: $('fMS').value.trim(), filmLink: $('fFilm').value.trim() };
+  try{
+    const res = await fetch('/.netlify/functions/profile-invite', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, fields }) });
+    if(!res.ok){ const d = await res.json().catch(()=>({})); throw new Error(d.error || 'Could not save'); }
+    stepThree();
+  }catch(err2){ err.textContent = err2.message; btn.disabled = false; btn.textContent = 'Continue to your assessment'; }
+}
+
+function stepThree(){
+  setStep(3);
+  $('app').innerHTML = `
+    <div class="panel" style="text-align:center;">
+      <div style="font-family:'Anton',sans-serif;font-size:24px;margin-bottom:10px;">Last step.</div>
+      <p class="lede">A short interview and a football IQ test college coaches actually asked us to include. Answer honestly, in your own words. It takes most guys under thirty minutes, and you can leave and come back.</p>
+      <button type="button" class="submit" onclick="goToAssessment()">Start my assessment</button>
+      <div class="err" id="err3"></div>
+    </div>`;
+}
+async function goToAssessment(){
+  try{
+    const res = await fetch('/.netlify/functions/profile-invite', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, startAssessment: true }) });
+    const d = await res.json(); if(!res.ok) throw new Error(d.error || 'Could not start');
+    location.href = 'assessment.html?t=' + d.assessmentToken;
+  }catch(err){ $('err3').textContent = err.message; }
+}
+
+(async function(){
+  if(!TOKEN){ $('app').innerHTML = '<div class="done-screen"><div class="big">Missing invite link</div><p>Ask InHome for a fresh one.</p></div>'; return; }
+  try{
+    const res = await fetch('/.netlify/functions/profile-invite?t=' + encodeURIComponent(TOKEN));
+    const d = await res.json(); if(!res.ok) throw new Error(d.error || 'This link is not valid');
+    if(d.status === 'completed'){
+      $('heroTitle').textContent = 'Already in.';
+      $('app').innerHTML = '<div class="done-screen"><div class="big">Your profile is with InHome</div><p>You already completed this. If something needs to change, tell whoever sent you this link.</p></div>';
+      return;
+    }
+    PROSPECT = d.prospect || null;
+    stepOne();
+  }catch(err){
+    $('app').innerHTML = `<div class="done-screen"><div class="big">Link not valid</div><p>${esc(err.message)}</p></div>`;
+  }
+})();
+</script>
+
+<div class="wrap">
+  <div class="faq">
+    <details><summary>Is this really going to college coaches?</summary><p>Yes. InHome puts evaluated profiles in front of Directors of Player Personnel at college programs. Filling this out is the profile a coach opens.</p></details>
+    <details><summary>Do I need a Hudl account?</summary><p>Yes, or another way to show real film. Coaches need to see you play, not just read your numbers.</p></details>
+    <details><summary>What if I don't have verified track times?</summary><p>Skip that field. Only include a link if it's real and verifiable.</p></details>
+    <details><summary>Does this cost anything?</summary><p>No. Nothing about this is paid.</p></details>
+  </div>
+</div>
+</body>
+</html>

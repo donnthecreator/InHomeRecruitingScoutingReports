@@ -604,7 +604,9 @@
         <input type="text" id="asSchool" placeholder="School">
         <select id="asKind"><option value="full">Full assessment (interview + IQ)</option><option value="interview">Interview only</option><option value="iq">Football IQ only</option></select>
         <button type="button" class="btn" onclick="newAssessment()">Create link</button>
+        <button type="button" class="mini-btn go" onclick="sendProfileInviteQuick()">Send profile invite instead</button>
       </div>
+      <div class="rc-meta" style="margin-top:6px;">Profile invite is the full onboarding: he fills his own bio, uploads his photo, adds his Hudl/MileSplit links, then flows into this same assessment. Use it when he has not been scouted yet. If he already has a profile, use Create link above.</div>
       <div class="tools" style="margin-top:8px;">
         <span class="rc-meta" style="align-self:center;">Preview what the athlete sees, by position:</span>
         <select id="pvPos">
@@ -2218,6 +2220,14 @@ function openPreview(kind){
   window.open('assessment.html?preview=' + kind + (pos ? '&position=' + encodeURIComponent(pos) : ''), '_blank', 'noopener');
 }
 let ASSESS = null, CLIPS = null, GUIDE = [];
+async function sendProfileInvite(prospectId, name, school){
+  try{
+    const d = await api('createProfileInvite', { prospectId, name, school });
+    let copied = false; try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
+    if(copied) toast('Invite link copied' + (d.reused ? ' (existing open invite)' : ''));
+    else prompt('Copy this invite link:', d.url);
+  }catch(err){ toast(err.message); }
+}
 async function newAssessment(kind, prospectId, name, school){
   const k = kind || document.getElementById('asKind').value;
   const n = name || (document.getElementById('asName')||{}).value;
@@ -2537,6 +2547,7 @@ function renderProfile(){
       <button type="button" class="mini-btn go" style="margin-top:6px;" onclick="ppAddNote()">Save note</button>
     </div>
     <div class="rc-actions" style="margin-top:14px;">
+      <button type="button" class="mini-btn go" onclick="sendProfileInvite(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Send profile invite</button>
       <button type="button" class="mini-btn go" onclick="newAssessment('full', ${p.id})">Send full assessment</button>
       <button type="button" class="mini-btn" onclick="newAssessment('interview', ${p.id})">Interview only</button>
       <button type="button" class="mini-btn" onclick="newAssessment('iq', ${p.id})">IQ only</button>
@@ -3122,6 +3133,11 @@ async function importBoxScore(file){
 /* Confirm the school names the parser found. Editing one renames every
    row from that team, so a bad guess (a wrapped player name read as a
    team) is fixed in one place instead of 30. */
+async function sendProfileInviteQuick(){
+  const n = (document.getElementById('asName')||{}).value, sc = (document.getElementById('asSchool')||{}).value;
+  if(!(n||'').trim()){ toast('Enter a name'); return; }
+  await sendProfileInvite(null, n, sc);
+}
 function fillBadSchools(){
   const sel = document.getElementById('badSchool'); if(!sel) return;
   const counts = {};

@@ -326,12 +326,33 @@
   .rlink:hover{border-color:var(--ink); background:var(--card-2);}
   .rlink img{height:15px; width:auto; max-width:62px; object-fit:contain; display:block;}
   .rlink span{font-size:11px; font-weight:800; letter-spacing:.02em; color:var(--ink);}
+
+  /* ---------- SHARE SHEET (sits above the profile modal) ---------- */
+  .sh-overlay{position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:12000; display:none; align-items:flex-end; justify-content:center;}
+  .sh-overlay.on{display:flex;}
+  @media(min-width:700px){ .sh-overlay{align-items:center; padding:20px;} }
+  .sh{background:#111; border:1px solid var(--line); border-radius:16px 16px 0 0; width:100%; max-width:460px; padding:20px 18px calc(24px + env(safe-area-inset-bottom));}
+  @media(min-width:700px){ .sh{border-radius:16px;} }
+  .sh h3{margin:0 0 4px; font-family:'Anton',sans-serif; font-size:20px;}
+  .sh .who{color:var(--mute); font-size:13px; margin-bottom:14px;}
+  .sh .linkbox{background:var(--card-2); border:1px solid var(--line); border-radius:10px; padding:11px 12px; font-size:12px;
+      color:var(--ink); word-break:break-all; line-height:1.5; margin-bottom:14px; font-family:ui-monospace,Menlo,monospace;}
+  .sh-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .sh-btn{display:flex; align-items:center; justify-content:center; gap:7px; padding:14px 10px; border-radius:11px; border:1.5px solid var(--line);
+      background:var(--card); color:var(--ink); font-size:13.5px; font-weight:700; cursor:pointer; text-decoration:none; font-family:inherit;}
+  .sh-btn:hover{border-color:var(--ink);}
+  .sh-btn.primary{background:var(--ink); color:#000; border-color:var(--ink); grid-column:1/-1;}
+  .sh-btn.ghost{grid-column:1/-1; background:transparent; color:var(--mute); border-color:transparent;}
+  .sh-note{font-size:11.5px; color:var(--dim); margin-top:12px; line-height:1.5;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 <!-- INHOME INTRO: black screen, logo, one line, fades out. Shown once per
      browser session so it never gets in the way of reloads. -->
+<div class="sh-overlay" id="shOverlay" onclick="if(event.target===this) closeShare()">
+  <div class="sh" id="shCard"></div>
+</div>
 <div class="pp-overlay" id="ppOverlay" onclick="if(event.target===this) closeProfile()">
   <div class="pp" id="ppCard"></div>
 </div>
@@ -2220,12 +2241,54 @@ function openPreview(kind){
   window.open('assessment.html?preview=' + kind + (pos ? '&position=' + encodeURIComponent(pos) : ''), '_blank', 'noopener');
 }
 let ASSESS = null, CLIPS = null, GUIDE = [];
+/* One share sheet for every link we hand out. Uses the phone's native
+   share sheet when the browser has one, with copy / text / email as
+   fallbacks, and always shows the link so it can never fail silently. */
+function closeShare(){ document.getElementById('shOverlay').classList.remove('on'); }
+function openShare(opts){
+  const { title, who, url, message, note } = opts;
+  const body = (message || '') + ' ' + url;
+  const card = document.getElementById('shCard');
+  card.innerHTML = `
+    <h3>${esc(title)}</h3>
+    <div class="who">${esc(who||'')}</div>
+    <div class="linkbox" id="shLink">${esc(url)}</div>
+    <div class="sh-grid">
+      ${navigator.share ? `<button type="button" class="sh-btn primary" id="shNative">Share via&hellip;</button>` : ''}
+      <button type="button" class="sh-btn ${navigator.share ? '' : 'primary'}" id="shCopy">Copy link</button>
+      <a class="sh-btn" href="sms:?&body=${encodeURIComponent(body)}">Text it</a>
+      <a class="sh-btn" href="mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}">Email it</a>
+      <a class="sh-btn" href="${esc(url)}" target="_blank" rel="noopener">Open it myself</a>
+      <button type="button" class="sh-btn ghost" onclick="closeShare()">Done</button>
+    </div>
+    ${note ? `<div class="sh-note">${esc(note)}</div>` : ''}`;
+  document.getElementById('shOverlay').classList.add('on');
+  const nat = document.getElementById('shNative');
+  if(nat) nat.addEventListener('click', async () => {
+    try{ await navigator.share({ title, text: message || '', url }); }catch(e){}
+  });
+  document.getElementById('shCopy').addEventListener('click', async () => {
+    const btn = document.getElementById('shCopy');
+    try{ await navigator.clipboard.writeText(url); btn.textContent = 'Copied \u2713'; }
+    catch(e){
+      const r = document.createRange(); r.selectNodeContents(document.getElementById('shLink'));
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      try{ document.execCommand('copy'); btn.textContent = 'Copied \u2713'; }catch(e2){ btn.textContent = 'Select the link above and copy'; }
+    }
+    setTimeout(()=>{ btn.textContent = 'Copy link'; }, 2200);
+  });
+}
+
 async function sendProfileInvite(prospectId, name, school){
   try{
     const d = await api('createProfileInvite', { prospectId, name, school });
-    let copied = false; try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
-    if(copied) toast('Invite link copied' + (d.reused ? ' (existing open invite)' : ''));
-    else prompt('Copy this invite link:', d.url);
+    openShare({
+      title: 'InHome profile invite',
+      who: (name || 'This player') + (d.reused ? ' \u00b7 existing open invite' : ''),
+      url: d.url,
+      message: (name ? name.split(' ')[0] + ', ' : '') + 'this is your InHome profile invite. It goes in front of college programs \u2014 fill it out and take the assessment:',
+      note: 'He fills in his own bio, photo and film links, then flows straight into the assessment. Nothing is public; only someone with this link can open it.'
+    });
   }catch(err){ toast(err.message); }
 }
 async function newAssessment(kind, prospectId, name, school){
@@ -2236,11 +2299,14 @@ async function newAssessment(kind, prospectId, name, school){
   try{
     const d = await api('createAssessment', { kind:k, prospectId: prospectId||null, name:n, school:sc });
     ASSESS = null; if(document.getElementById('paneAssess') && document.getElementById('paneAssess').classList.contains('on')) renderAssessments();
-    let copied = false;
-    try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
     const label = k==='iq' ? 'Football IQ' : k==='full' ? 'Full assessment' : 'Interview';
-    if(copied) toast(label + ' link copied' + (d.reused ? ' (existing open link)' : ''));
-    else prompt('Copy this ' + label + ' link:', d.url);
+    openShare({
+      title: 'InHome ' + label,
+      who: (n || 'This player') + (d.reused ? ' \u00b7 existing open link' : ''),
+      url: d.url,
+      message: (n ? String(n).split(' ')[0] + ', ' : '') + 'here is your InHome ' + label.toLowerCase() + '. College coaches told us what to ask \u2014 take your time with it:',
+      note: 'Saves as he goes, so he can leave and come back. Most guys finish in under thirty minutes.'
+    });
     const st = document.getElementById('asStatus'); if(st) st.textContent = d.url;
     return d.url;
   }catch(err){ toast(err.message); return null; }
@@ -2270,7 +2336,7 @@ async function renderAssessments(){
         <div class="rc-right"><div class="rc-sub">${a.completed_day?fmtDate(a.completed_day):''}</div></div>
       </div>
       <div class="rc-actions">
-        ${a.status==='complete' ? `<button type="button" class="mini-btn go" onclick="viewAssessment(${a.id})">Read answers</button>` : `<button type="button" class="mini-btn" onclick="copyAssess('${esc(url)}')">Copy link</button>`}
+        ${a.status==='complete' ? `<button type="button" class="mini-btn go" onclick="viewAssessment(${a.id})">Read answers</button>` : `<button type="button" class="mini-btn" onclick="copyAssess('${esc(url)}','${esc(a.athlete_name||'')}')">Send link</button>`}
         ${a.prospect_id?`<button type="button" class="mini-btn" onclick="openProfile(${a.prospect_id})">Profile</button>`:''}
         <button type="button" class="mini-btn danger" onclick="deleteAssessment(${a.id})">Delete</button>
       </div>
@@ -2278,7 +2344,7 @@ async function renderAssessments(){
     </div>`;
   }).join('');
 }
-async function copyAssess(url){ try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch(e){ prompt('Copy this link:', url); } }
+function copyAssess(url, who){ openShare({ title:'InHome assessment', who: who || '', url, message:'Here is your InHome assessment:' }); }
 async function deleteAssessment(id){
   if(!confirm('Delete this assessment and its answers?')) return;
   try{ await api('deleteAssessment', { id }); ASSESS = ASSESS.filter(a=>a.id!==id); renderAssessments(); toast('Deleted'); }catch(err){ toast(err.message); }

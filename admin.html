@@ -1724,7 +1724,12 @@ function assignFromBoard(key){
    centroid until resolved, so the map is never blank. Cache means you pay
    for each lookup once, not once per page load.
 ------------------------------------------------------------------ */
-/* Map runs on Leaflet + OpenStreetMap tiles: no API key, no billing. */
+/* Map renders on Leaflet + OpenStreetMap tiles (no key needed). School
+   lookups use Google Geocoding when this key works and fall back to
+   OpenStreetMap when it does not, so a key problem can never take the
+   map down. Restrict the key to this site's referrer in Cloud Console. */
+const GOOGLE_GEOCODE_KEY = 'AIzaSyApqomi20Ld_CvSSXlCHCxofzoHxxen6eo';
+let GOOGLE_GEO_OK = null;   // null = untested, true/false after first call
 
 const STATE_CENTROIDS = {
   "AL":[32.806671,-86.79113],
@@ -1771,23 +1776,41 @@ async function locateSchools(){
     const kind = level === 'JUCO' ? ' community college' : level === 'COLLEGE' ? ' university' : ' high school';
     const q = m.school + (/(college|university|hs|high school|academy|prep)\b/i.test(m.school) ? '' : kind) + (m.state ? ', ' + m.state : '') + ', USA';
     try{
-      const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=' + encodeURIComponent(q), { headers:{ 'Accept':'application/json' } });
-      const arr = res.ok ? await res.json() : [];
-      if(arr && arr[0]){
-        const st = m.state || ((arr[0].display_name||'').match(/,\s*([A-Z][a-z]+(?: [A-Z][a-z]+)?),\s*\d{5}/) || [])[1] || null;
-        await api('saveSchoolLocation', { school: m.school, lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon), state: st });
-        saved++;
-      }
+      const hit = await geocodeSchool(q, m.state);
+      if(hit){ await api('saveSchoolLocation', { school: m.school, lat: hit.lat, lng: hit.lng, state: hit.state || m.state || null }); saved++; }
     }catch(err){ console.error('geocode', m.school, err.message); }
     done++;
-    setMapStatus('Locating schools... ' + done + ' of ' + MAP_MISSING.length);
-    await new Promise(r=>setTimeout(r, 1100));   /* OpenStreetMap asks for about one lookup per second */
+    setMapStatus('Locating schools... ' + done + ' of ' + MAP_MISSING.length + (GOOGLE_GEO_OK===false ? ' (Google key not accepted, using OpenStreetMap)' : GOOGLE_GEO_OK ? ' (Google)' : ''));
+    await new Promise(r=>setTimeout(r, GOOGLE_GEO_OK ? 150 : 1100));   /* OpenStreetMap wants ~1/sec; Google does not */
   }
   geoRunning = false;
   setMapStatus('');
   MAP_PINS = null;
   await drawMap();
   toast('Located ' + saved + ' of ' + done + ' school' + (done===1?'':'s'));
+}
+/* Google first (precise on school names), OpenStreetMap if the key is
+   rejected or Google finds nothing. */
+async function geocodeSchool(q, stateHint){
+  if(GOOGLE_GEOCODE_KEY && GOOGLE_GEO_OK !== false){
+    try{
+      const r = await fetch('https://maps.googleapis.com/maps/api/geocode/json?region=us&address=' + encodeURIComponent(q) + '&key=' + GOOGLE_GEOCODE_KEY);
+      const d = await r.json();
+      if(d.status === 'OK' && d.results && d.results[0]){
+        GOOGLE_GEO_OK = true;
+        const g = d.results[0];
+        const st = (g.address_components||[]).find(c => c.types.includes('administrative_area_level_1'));
+        return { lat: g.geometry.location.lat, lng: g.geometry.location.lng, state: st ? st.short_name : stateHint || null };
+      }
+      if(d.status === 'REQUEST_DENIED' || d.status === 'OVER_QUERY_LIMIT' || d.status === 'INVALID_REQUEST'){ GOOGLE_GEO_OK = false; console.warn('Google geocoding:', d.status, d.error_message||''); }
+      else if(d.status === 'ZERO_RESULTS'){ GOOGLE_GEO_OK = true; }
+    }catch(e){ GOOGLE_GEO_OK = false; }
+  }
+  const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=' + encodeURIComponent(q), { headers:{ 'Accept':'application/json' } });
+  const arr = res.ok ? await res.json() : [];
+  if(!(arr && arr[0])) return null;
+  const st = stateHint || ((arr[0].display_name||'').match(/,\s*([A-Z][a-z]+(?: [A-Z][a-z]+)?),\s*\d{5}/) || [])[1] || null;
+  return { lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon), state: st };
 }
 function setMapStatus(txt){
   const el = document.getElementById('mapStatus');

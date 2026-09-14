@@ -52,15 +52,29 @@ exports.handler = async (event) => {
     } catch (e) {}
     let offers = [], notes = [];
     try {
-      offers = (await sql`SELECT o.id, o.school_key, o.school_other, to_char(o.offer_date,'YYYY-MM-DD') AS offer_date, o.status, o.note, prog.short_name AS school_name
+      offers = (await sql`SELECT o.id, o.school_key, o.school_other, to_char(o.offer_date,'YYYY-MM-DD') AS offer_date, o.status, o.note,
+                                 prog.short_name AS school_name, prog.espn_logo_id, prog.primary_color, prog.conference
                           FROM prospect_offers o LEFT JOIN programs prog ON prog.school_key = o.school_key WHERE o.prospect_id = ${p.id} ORDER BY o.offer_date DESC NULLS LAST`)
-        .map(o => ({ id: o.id, school: o.school_name || o.school_other || o.school_key, status: o.status, date: o.offer_date, note: o.note }));
+        .map(o => ({ id: o.id, school: o.school_name || o.school_other || o.school_key, status: o.status, date: o.offer_date, note: o.note,
+                     /* Logo and colour so the coach view can render a crest rather
+                        than a comma-separated list of school names. An offer from a
+                        school not in the programs table has neither; the front end
+                        falls back to a coloured initial. */
+                     logoUrl: o.espn_logo_id ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${o.espn_logo_id}.png` : null,
+                     color: o.primary_color || null, conference: o.conference || null }));
     } catch (e) {}
     try {
       notes = (await sql`SELECT id, kind, body, author, to_char(note_date,'YYYY-MM-DD') AS note_date, to_char(created_at,'YYYY-MM-DD') AS created_day
                          FROM prospect_notes WHERE prospect_id = ${p.id} AND visible_to_coaches = true ORDER BY created_at DESC`)
         .map(n => ({ id: n.id, kind: n.kind, body: n.body, author: n.author, date: n.note_date || n.created_day }));
     } catch (e) {}
+    /* Crest for the school he is committed to, same treatment as offers. */
+    let commitProg = null;
+    if (p.committed_to) {
+      try {
+        [commitProg] = await sql`SELECT short_name, espn_logo_id, primary_color FROM programs WHERE school_key = ${p.committed_to}`;
+      } catch (e) {}
+    }
     let boards = [];
     try { boards = (await sql`SELECT upper(program_code) AS code FROM program_prospects WHERE prospect_id = ${p.id}`).map(r => r.code); } catch (e) {}
 
@@ -73,7 +87,11 @@ exports.handler = async (event) => {
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,
       logoUrl: logos[schoolKey(p.school)] || null,
       boards, offers, notes,
-      commitment: p.commit_status ? { status: p.commit_status, to: p.committed_to || p.committed_to_other || null, date: p.commit_date || null } : null,
+      commitment: p.commit_status ? { status: p.commit_status,
+        to: (commitProg && commitProg.short_name) || p.committed_to || p.committed_to_other || null,
+        date: p.commit_date || null,
+        logoUrl: (commitProg && commitProg.espn_logo_id) ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${commitProg.espn_logo_id}.png` : null,
+        color: (commitProg && commitProg.primary_color) || null } : null,
       reports: reports.map(r => ({ id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, score: r.inhome_score != null ? Number(r.inhome_score) : null,
         tier: r.recommendation_tier, archetype: r.archetype, position: r.position, date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative })),
       games: games.map(g => ({ date: g.date, statLine: g.stat_line, grade: g.grade != null ? Number(g.grade) : null, link: g.source_link })),

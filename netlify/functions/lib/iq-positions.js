@@ -137,11 +137,10 @@ const BY_POSITION = {
                   'Keep running your original route exactly',
                   'Stop and block the nearest defender', 'Run to the opposite sideline'], answer: 0,
         why: 'Scramble rules: mirror the quarterback, come open late, stay in the throwing lane.' },
-      { id: 'wr_block', type: 'single', q: 'Run play away from you. Your job is',
-        options: ['Stalk block your man and stay engaged through the whistle',
-                  'Jog toward the ball', 'Stand and watch for a cut back',
-                  'Run a fake route to nowhere'], answer: 0,
-        why: 'Effort on the backside block is the single most visible character trait on receiver film.' },
+      { id: 'wr_block', type: 'single', q: 'Run away from you on the backside. Who do you go get?',
+        options: ['The safety in the middle of the field \u2014 he is the one who runs it down from behind',
+                  'The corner over me', 'Nobody, the play is going away', 'The linebacker'], answer: 0,
+        why: 'Backside, the post safety is the player with the angle on a long run. Blocking the corner away from the play accomplishes nothing.' },
       { id: 'wr_text', type: 'text', q: 'Tell me how you set up a defensive back over the course of a game, not just one route.' }
     ]}
   ],

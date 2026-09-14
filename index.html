@@ -1711,7 +1711,7 @@ function railHTML(name){
   return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' +
     RECRUIT_SITES.map(s =>
       '<a class="rlink" href="' + s.url(name) + '" target="_blank" rel="noopener" title="' + s.name + '">' +
-      '<img src="' + siteIcon(s.domain) + '" alt="" onerror="this.remove(); this.parentElement.innerHTML=\'<span>' + s.name + '</span>\';">' +
+      '<img src="' + siteIcon(s.domain) + '" alt="" onerror="this.style.display=\'none\'">' +
       '<span style="font-size:10.5px;color:var(--mute);">' + s.name + '</span></a>').join('') + '</div>';
 }
 function closePlayer(){ const o = document.getElementById('spOverlay'); if(o) o.classList.remove('on'); }

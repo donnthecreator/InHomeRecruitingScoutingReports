@@ -245,7 +245,7 @@ const POS_STATIC = [
   { id: 'q_trips_who', groups: ['QB'], off: 'trips', def: 'tripsAdj', mode: 'tap',
     q: 'Trips right. The defense rolled to it. Tap the defender who is one on one with X on the backside.', answer: 'LC',
     why: 'The safety rotated to the trips side. The backside corner has nobody behind him: that is the matchup the formation was built to create.' },
-  { id: 'q_field_bound', groups: ['QB', 'DB'], off: 'gun11', def: 'over43', mode: 'choice',
+  { id: 'q_field_bound', groups: ['QB', 'WR', 'TE', 'DB', 'LB'], off: 'gun11', def: 'over43', mode: 'choice',
     q: 'The ball is on the left hash. Which side is the field?', options: ['The right, the wide side', 'The left, the short side', 'Wherever the tight end is', 'Always the offense\u2019s right'], answer: 0,
     why: 'Field is the wide side of the formation from the hash. It is a separate call from strength and most defenses set their coverage to it.' },
   { id: 'q_empty_man', groups: ['QB', 'RB'], off: 'empty', def: 'emptyMan', mode: 'tap',

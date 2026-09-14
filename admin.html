@@ -414,7 +414,6 @@
   <div class="layout">
   <div class="tabs">
     <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Prospects<span class="cnt" id="cntPlayers">&mdash;</span></button>
-    <button type="button" class="tab-btn" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
@@ -452,43 +451,6 @@
       <div id="plStats" class="sub" style="margin-top:8px;"></div>
       <div id="plList" style="margin-top:10px;"></div>
     </div>
-  </div>
-
-  <!-- ============ ASSIGN ============ -->
-  <div class="pane" id="paneAssign">
-    <div class="panel">
-      <h3>Assign a Player</h3>
-      <div class="sub">Adds to the scout's Unscouted list. They see it next time they open Scout Home. Search an existing prospect to fill everything in, or just type a new name.</div>
-      <label class="fl">Find an existing prospect <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(anyone in your Prospects tab, including players you just created)</span></label>
-      <input type="text" id="aFind" placeholder="Start typing a name or school" autocomplete="off" oninput="findProspect(this.value)">
-      <div id="aFindList" style="max-height:210px; overflow:auto; display:none; border:1px solid var(--line); border-radius:10px; margin-top:6px; background:var(--card);"></div>
-      <div id="aPicked" class="rc-meta" style="margin-top:6px;"></div>
-      <div class="grid2" style="margin-top:10px;">
-        <div><label class="fl">Player Name</label><input type="text" id="aName" placeholder="First Last"></div>
-        <div><label class="fl">Assign To</label><select id="aScout"></select></div>
-      </div>
-      <div class="grid3">
-        <div><label class="fl">Position</label><select id="aPos"></select></div>
-        <div><label class="fl">Class / Grad Yr</label><input type="text" id="aClass" placeholder="2027"></div>
-        <div><label class="fl">Level</label><select id="aLevel"><option value="HS">High School</option><option value="JUCO">JUCO</option></select></div>
-      </div>
-      <div class="grid2">
-        <div><label class="fl">School</label><input type="text" id="aSchool" placeholder="School name"></div>
-        <div><label class="fl">Priority</label><select id="aPriority"><option value="normal">Normal</option><option value="high">High Priority</option></select></div>
-      </div>
-      <label class="fl">Source Link (optional)</label>
-      <input type="text" id="aLink" placeholder="Paste the 247 / On3 / Hudl / NJCAA link for this player">
-      <label class="fl">Note to Scout (optional)</label>
-      <textarea id="aNote" placeholder="What you want them looking at"></textarea>
-      <button type="button" class="btn" id="aBtn" onclick="createAssignment()">Assign Player</button>
-    </div>
-
-    <div class="tools">
-      <input type="text" id="asgSearch" placeholder="Search assignments..." oninput="renderAssignments()">
-      <select id="asgScoutFilter" onchange="renderAssignments()"><option value="All">All scouts</option></select>
-    </div>
-    <div class="chip-row" id="asgStatusChips"></div>
-    <div id="asgList" class="list"></div>
   </div>
 
   <!-- ============ SCOUT ROSTER ============ -->
@@ -854,9 +816,12 @@ const RECRUIT_SITES = [
   { id:'x',         name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
 function siteIcon(d){ return 'https://www.google.com/s2/favicons?sz=64&domain=' + d; }
-function railHTML(name){
+function railHTML(name, sourceLink){
   if(!name) return '';
-  return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' +
+  const src = sourceLink
+    ? '<a class="rlink" href="' + esc(sourceLink) + '" target="_blank" rel="noopener" title="Source link"><span style="font-size:11px;color:var(--ink);font-weight:800;">Source</span></a>'
+    : '';
+  return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' + src +
     RECRUIT_SITES.map(s =>
       '<a class="rlink" href="' + s.url(name) + '" target="_blank" rel="noopener" title="' + s.name + '">' +
       '<img src="' + siteIcon(s.domain) + '" alt="" onerror="this.remove(); this.parentElement.innerHTML=\'<span>' + s.name + '</span>\';">' +
@@ -1068,7 +1033,6 @@ function renderStats(){
   document.getElementById('stScouts').textContent = active;
   document.getElementById('stPerf').textContent = performances.length;
   document.getElementById('stWeek').textContent = week;
-  document.getElementById('cntAssign').textContent = open + ' open';
   document.getElementById('cntRoster').textContent = SCOUT_ROSTER.filter(s=>s.active).length + ' active';
   document.getElementById('cntScouts').textContent = SCOUT_ROSTER.length + ' scouts';
   document.getElementById('cntReports').textContent = reports.length + ' filed';
@@ -1078,7 +1042,7 @@ function renderStats(){
 /* ---------------- TABS ---------------- */
 function switchTab(t){
   /* element ids are fixed; the visible label can change without touching this */
-  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['players','Prospects'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     const tb = document.getElementById('tb'+cap), pane = document.getElementById('pane'+cap);
     if(tb) tb.classList.toggle('on', k===t);
     if(pane) pane.classList.toggle('on', k===t);
@@ -1116,97 +1080,7 @@ function tierColor(t){
   if(x.includes('pass')||x.includes('no')) return 'var(--bad)';
   return 'var(--warn)';
 }
-function railHTML(name, sourceLink){
-  if(!name) return '';
-  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(name)}" target="_blank" rel="noopener">${s.name}</a>`).join('');
-  const src = sourceLink ? `<a class="src" href="${esc(sourceLink)}" target="_blank" rel="noopener">Source Link</a>` : '';
-  return `<div class="rail"><span class="rail-lbl">Look up</span>${src}${links}</div>`;
-}
-
 /* ---------------- ASSIGN ---------------- */
-/* Prospect picker for the assign form. Pulls the same master list the
-   Prospects tab uses, so anyone you just created is findable here. */
-let A_PICKED = null;
-async function ensureProspectList(){
-  if(KNOWN_PROSPECTS && KNOWN_PROSPECTS.length) return KNOWN_PROSPECTS;
-  try{
-    const d = await api('listProspects', {});
-    KNOWN_PROSPECTS = (d.prospects || []).concat((d.pending || []).map(x => Object.assign({}, x, { id:null, pending:true })));
-    buildKnownNames();
-  }catch(e){ KNOWN_PROSPECTS = []; }
-  return KNOWN_PROSPECTS;
-}
-async function findProspect(q){
-  const box = document.getElementById('aFindList');
-  q = (q||'').trim().toLowerCase();
-  if(q.length < 2){ box.style.display = 'none'; return; }
-  const list = await ensureProspectList();
-  const hits = list.filter(p => (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)).slice(0, 25);
-  if(!hits.length){
-    box.innerHTML = `<div class="rc-meta" style="padding:10px;">No prospect matches that. Type the name in the field below and he will be created when you assign him.</div>`;
-    box.style.display = ''; return;
-  }
-  box.innerHTML = hits.map((p,i) => `<div class="vrow" style="padding:9px 11px; cursor:pointer; border-top-color:#1A1A1A;" onclick="pickProspect(${JSON.stringify(p).replace(/"/g,'&quot;')})">
-      <span style="flex:1;"><b style="font-weight:700;">${esc(p.name)}</b> <span class="rc-meta">${esc(p.position||'')}${p.class_year?' \u00b7 '+esc(p.class_year):''}</span><br>
-      <span class="rc-meta">${esc(p.school||'\u2014')}${p.reports?' \u00b7 '+p.reports+' report'+(p.reports===1?'':'s'):''}${p.pending?' \u00b7 performance log only':''}</span></span>
-    </div>`).join('');
-  box.style.display = '';
-}
-function pickProspect(p){
-  A_PICKED = p;
-  document.getElementById('aName').value = p.name || '';
-  document.getElementById('aSchool').value = p.school || '';
-  document.getElementById('aClass').value = p.class_year || '';
-  const posSel = document.getElementById('aPos');
-  if(p.position && [...posSel.options].some(o => o.value === p.position)) posSel.value = p.position;
-  const lvl = document.getElementById('aLevel');
-  if(p.level && [...lvl.options].some(o => o.value === p.level)) lvl.value = p.level;
-  document.getElementById('aFindList').style.display = 'none';
-  document.getElementById('aFind').value = '';
-  document.getElementById('aPicked').innerHTML = `Assigning <b style="color:var(--ink)">${esc(p.name)}</b>${p.school?' \u00b7 '+esc(p.school):''}${p.id?` \u00b7 prospect #${p.id}`:' \u00b7 new record will be created'} <a href="#" onclick="clearPick(); return false;" style="color:var(--dim);margin-left:6px;">clear</a>`;
-}
-function clearPick(){
-  A_PICKED = null;
-  document.getElementById('aPicked').innerHTML = '';
-  ['aName','aSchool','aClass'].forEach(id => document.getElementById(id).value = '');
-}
-document.addEventListener('click', (e) => {
-  const box = document.getElementById('aFindList');
-  if(box && box.style.display !== 'none' && !e.target.closest('#aFindList') && e.target.id !== 'aFind') box.style.display = 'none';
-});
-
-async function createAssignment(){
-  const name = document.getElementById('aName').value.trim();
-  if(!name){ toast('Player name required'); return; }
-  const rec = {
-    name,
-    scout_id:   document.getElementById('aScout').value,
-    position:   document.getElementById('aPos').value,
-    class_year: document.getElementById('aClass').value.trim(),
-    level:      document.getElementById('aLevel').value,
-    school:     document.getElementById('aSchool').value.trim(),
-    prospect_id: (A_PICKED && A_PICKED.id) || null,
-    priority:   document.getElementById('aPriority').value,
-    source_link:document.getElementById('aLink').value.trim(),
-    note:       document.getElementById('aNote').value.trim()
-  };
-  const btn = document.getElementById('aBtn');
-  btn.disabled = true; btn.textContent = 'Assigning...';
-  try{
-    if(demoMode){
-      assignments.unshift({ id:'demo_'+Date.now(), status:'open', assigned_at:new Date().toISOString(), ...rec });
-    } else {
-      const out = await api('createAssignment', rec);
-      assignments.unshift(out.assignment);
-    }
-    ['aName','aClass','aSchool','aLink','aNote'].forEach(id=>document.getElementById(id).value='');
-    clearPick(); KNOWN_PROSPECTS = []; PLAYERS = null;
-    renderStats(); renderAssignments(); renderScouts();
-    toast(`Assigned to ${scoutName(rec.scout_id)}`);
-  }catch(err){ toast(err.message); }
-  btn.disabled = false; btn.textContent = 'Assign Player';
-}
-
 async function setAssignmentStatus(id, status){
   try{
     if(!demoMode) await api('updateAssignment', { id, status });
@@ -1797,22 +1671,17 @@ function renderBoard(){
   }).join('');
 }
 
-/* Pushes a board player into the assign form, prefilled. */
+/* Board player -> assignment sheet. */
 function assignFromBoard(key){
   const p = boardRows().find(x=>boardKey(x)===key);
   if(!p) return;
-  document.getElementById('aName').value   = p[0];
-  document.getElementById('aSchool').value = p[2];
-  document.getElementById('aLevel').value  = 'HS';
   const live = p[6] || null;
-  const posSel = document.getElementById('aPos');
-  if(live){ if([...posSel.options].some(o=>o.value===p[1])) posSel.value = p[1]; if(live.classYear) document.getElementById('aClass').value = live.classYear; }
-  else posSel.value = 'WR';
-  document.getElementById('aNote').value   = live ? `${LIVE_BOARD_CODE} prospect board` : `Off the offense board (${p[1]})${p[4]?' \u00b7 '+p[4]:''}${p[5]?' / '+p[5]:''}`;
-  switchTab('assign');
-  window.scrollTo({top:0, behavior:'smooth'});
-  toast('Loaded into assign form. Pick a scout.');
+  openAssign(live && live.prospectId ? live.prospectId : null, p[0], p[2], {
+    position: p[1] || 'WR', classYear: (live && live.classYear) || '', level: 'HS',
+    note: live ? LIVE_BOARD_CODE + ' prospect board' : 'Off the offense board (' + p[1] + ')'
+  });
 }
+
 
 /* ---------------- MAP ----------------
    Google Maps view of the board, filed reports, and college programs.
@@ -2317,6 +2186,7 @@ async function renderPlayers(skipFetch){
       <div class="rc-right" style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
         <button type="button" class="mini-btn plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">Open</button>
         <button type="button" class="mini-btn go" onclick="shareProfile(${p.id||'null'}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Share profile</button>
+        <button type="button" class="mini-btn" onclick="openAssign(${p.id||'null'}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}', { position:'${esc(p.position||'')}', classYear:'${esc(p.class_year||'')}', level:'${esc(p.level||'HS')}' })">Assign to scout</button>
       </div>
     </div>
   </div>`).join('') + (list.length>400?`<div class="rc-meta" style="padding:10px;">Showing 400 of ${list.length}. Narrow the search.</div>`:'');
@@ -2400,6 +2270,57 @@ function askInviteReason(name){
     }));
   });
 }
+/* Assign a player to a scout, opened on the player so there is no form to
+   fill twice and no chance of assigning the wrong record. */
+function openAssign(prospectId, name, school, extra){
+  extra = extra || {};
+  const scouts = (SCOUT_ROSTER||[]).filter(x => x.active !== false);
+  if(!scouts.length){ toast('Add a scout on the Scouts tab first'); return; }
+  const card = document.getElementById('shCard');
+  card.innerHTML = `
+    <h3>Assign ${esc(name)}</h3>
+    <div class="who">${esc(school || '')}</div>
+    <label class="fl">Scout</label>
+    <select id="asgScout">${scouts.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}${x.id?' ('+esc(x.id)+')':''}</option>`).join('')}</select>
+    <div class="grid2" style="margin-top:8px;">
+      <div><label class="fl">Position</label><select id="asgPos">${['QB','RB','WR','TE','OL','DL','EDGE','LB','CB','S','ATH','K'].map(x=>`<option ${((extra.position||'').toUpperCase()===x)?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label class="fl">Priority</label><select id="asgPriority"><option value="normal">Normal</option><option value="high">High priority</option></select></div>
+    </div>
+    <div class="grid2">
+      <div><label class="fl">Class</label><input type="text" id="asgClass" value="${esc(extra.classYear||'')}" placeholder="2027"></div>
+      <div><label class="fl">Level</label><select id="asgLevel"><option value="HS" ${extra.level!=='JUCO'?'selected':''}>High School</option><option value="JUCO" ${extra.level==='JUCO'?'selected':''}>JUCO</option></select></div>
+    </div>
+    <label class="fl">Link for the scout <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(optional)</span></label>
+    <input type="text" id="asgLink" value="${esc(extra.link||'')}" placeholder="Hudl, 247, NJCAA box score">
+    <label class="fl">Note to the scout <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(optional)</span></label>
+    <textarea id="asgNote" placeholder="What you want him looking at" style="min-height:70px;">${esc(extra.note||'')}</textarea>
+    <div class="sh-grid" style="margin-top:14px;">
+      <button type="button" class="sh-btn primary" id="asgGo">Add to his list</button>
+      <button type="button" class="sh-btn ghost" onclick="closeShare()">Cancel</button>
+    </div>`;
+  document.getElementById('shOverlay').classList.add('on');
+  document.getElementById('asgGo').addEventListener('click', async () => {
+    const btn = document.getElementById('asgGo'); btn.disabled = true; btn.textContent = 'Assigning...';
+    try{
+      const scoutId = document.getElementById('asgScout').value;
+      await api('createAssignment', {
+        name, scout_id: scoutId, prospect_id: prospectId || null,
+        position: document.getElementById('asgPos').value,
+        class_year: document.getElementById('asgClass').value.trim(),
+        level: document.getElementById('asgLevel').value,
+        school: school || '',
+        priority: document.getElementById('asgPriority').value,
+        source_link: document.getElementById('asgLink').value.trim(),
+        note: document.getElementById('asgNote').value.trim()
+      });
+      closeShare();
+      const who = (scouts.find(x=>x.id===scoutId)||{}).name || 'the scout';
+      toast(name + ' added to ' + who + "'s list");
+      loadAll();
+    }catch(err){ btn.disabled = false; btn.textContent = 'Add to his list'; toast(err.message); }
+  });
+}
+
 /* Public, read-only profile page: everything on file to date. */
 async function shareProfile(prospectId, name, school){
   let id = prospectId;
@@ -2757,6 +2678,7 @@ function renderProfile(){
     </div>
     <div class="rc-actions" style="margin-top:14px;">
       <button type="button" class="mini-btn go" onclick="shareProfile(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Share profile</button>
+      <button type="button" class="mini-btn" onclick="openAssign(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}', { position:'${esc(p.position||'')}', classYear:'${esc(p.class_year||'')}', level:'${esc(p.level||'HS')}' })">Assign to scout</button>
       <button type="button" class="mini-btn go" onclick="sendProfileInvite(${p.id}, '${esc(p.name).replace(/'/g,"\\'")}', '${esc(p.school||'').replace(/'/g,"\\'")}')">Send profile invite</button>
       <button type="button" class="mini-btn go" onclick="newAssessment('full', ${p.id})">Send full assessment</button>
       <button type="button" class="mini-btn" onclick="newAssessment('interview', ${p.id})">Interview only</button>
@@ -3661,18 +3583,13 @@ async function deletePerformance(id){
 }
 /* Sends a logged performance straight into the assign form */
 function assignFromPerf(id){
-  const p = performances.find(p=>p.id===id); if(!p) return;
-  document.getElementById('aName').value   = p.name || '';
-  document.getElementById('aPos').value    = p.position || 'ATH';
-  document.getElementById('aClass').value  = p.class_year || '';
-  document.getElementById('aSchool').value = p.school || '';
-  document.getElementById('aLevel').value  = p.level || 'HS';
-  document.getElementById('aLink').value   = p.source_link || '';
-  document.getElementById('aNote').value   = p.stat_line ? `Flagged on: ${p.stat_line}` : '';
-  switchTab('assign');
-  window.scrollTo({top:0, behavior:'smooth'});
-  toast('Loaded into assign form. Pick a scout.');
+  const p = performances.find(x=>x.id===id); if(!p) return;
+  openAssign(null, p.name || '', p.school || '', {
+    position: p.position || 'ATH', classYear: p.class_year || '', level: p.level || 'HS',
+    link: p.source_link || '', note: p.stat_line ? 'Flagged on: ' + p.stat_line : ''
+  });
 }
+
 
 function renderPerfChips(){
   const opts = ['All','JUCO','HS'];

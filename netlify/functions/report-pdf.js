@@ -92,16 +92,15 @@ exports.handler = async (event) => {
     const H = await pdf.embedFont(StandardFonts.HelveticaBold);
     const F = await pdf.embedFont(StandardFonts.Helvetica);
     const PW = 612, PH = 792, M = 44;
-    /* Centered watermark, drawn first so every later element sits on top of
-       it. Light enough not to fight the body text: measured against the
-       trait rows at 10pt before settling on this value. */
-    const MARK_H = 470;
+    /* Centered watermark: the full lockup, drawn first so every later element
+       sits on top of it. The asset is black on transparent, so the opacity
+       is what makes it read as light grey on the white page. */
+    let wmark = null;
+    try { wmark = await pdf.embedPng(Buffer.from(LOGO.LOCKUP_PNG_BASE64, 'base64')); } catch (e) { wmark = null; }
     const stamp = (p) => {
-      const sc = MARK_H / 73, w = 22 * sc;
-      p.drawSvgPath(MARK_PATH, {
-        x: (PW - w) / 2, y: PH / 2 + MARK_H / 2, scale: sc,
-        color: rgb(0.94, 0.94, 0.94), borderWidth: 0
-      });
+      if (!wmark) return;
+      const w = 380, h = w * (wmark.height / wmark.width);
+      p.drawImage(wmark, { x: (PW - w) / 2, y: (PH - h) / 2, width: w, height: h, opacity: 0.06 });
     };
 
     let page = pdf.addPage([PW, PH]);
@@ -115,14 +114,15 @@ exports.handler = async (event) => {
     /* ---- header band with the real logo ---- */
     const BAND = 64;
     page.drawRectangle({ x: 0, y: PH - BAND, width: PW, height: BAND, color: BLACK });
-    let logo = null;
-    try { logo = await pdf.embedPng(Buffer.from(LOGO.LOGO_PNG_BASE64, 'base64')); } catch (e) { logo = null; }
-    if (logo) {
-      const lh = 40, lw = lh * (logo.width / logo.height);
-      page.drawImage(logo, { x: M - 4, y: PH - BAND + (BAND - lh) / 2, width: lw, height: lh });
-    } else {
-      page.drawText('inhome', { x: M, y: PH - 40, size: 22, font: H, color: WHITE });
-    }
+    /* The icon alone in the band; the full lockup is the watermark now. */
+    const ICON_H = 38, iconSc = ICON_H / 73, iconW = 22 * iconSc;
+    page.drawSvgPath(MARK_PATH, {
+      x: M, y: PH - BAND + (BAND - ICON_H) / 2 + ICON_H,
+      scale: iconSc, color: WHITE, borderWidth: 0
+    });
+    page.drawText('INHOME RECRUITING INTELLIGENCE', {
+      x: M + iconW + 12, y: PH - 38, size: 11, font: H, color: WHITE
+    });
     const hdrR = 'EIS SCOUTING REPORT';
     page.drawText(hdrR, { x: PW - M - H.widthOfTextAtSize(hdrR, 8.5), y: PH - 28, size: 8.5, font: H, color: rgb(0.75, 0.75, 0.75) });
     const rid = 'Report #' + r.id;

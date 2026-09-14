@@ -50,6 +50,10 @@ function loadPositions() { return POSCFG; }
 
 /* ---------- tiny layout helpers ---------- */
 const BLACK = rgb(0.04, 0.04, 0.04), WHITE = rgb(1, 1, 1), RED = rgb(1, 0, 0);
+/* The InHome mark, same path the sites use, in its own 22x73 viewBox.
+   Drawn as vector rather than an embedded bitmap so it stays sharp at any
+   zoom and adds nothing to the function bundle. */
+const MARK_PATH = "M11 1.2 C11.5 1.2 12 1.4 12.4 1.8 L20.8 9.4 C21.6 10.1 21.7 11.3 21 12.1 C20.3 12.9 19.1 13 18.3 12.3 L11 5.7 L3.7 12.3 C2.9 13 1.7 12.9 1 12.1 C0.3 11.3 0.4 10.1 1.2 9.4 L9.6 1.8 C10 1.4 10.5 1.2 11 1.2 Z M4.2 22.5 C4.2 21.1 5.3 20 6.7 20 H15.3 C16.7 20 17.8 21.1 17.8 22.5 V70.5 C17.8 71.9 16.7 73 15.3 73 H6.7 C5.3 73 4.2 71.9 4.2 70.5 Z M5.2 44 C6.9 40.8 15.1 40.8 16.8 44 C15.1 47.2 6.9 47.2 5.2 44 Z";
 const INK = rgb(0.1, 0.1, 0.1), MUTE = rgb(0.42, 0.42, 0.42), LINE = rgb(0.85, 0.85, 0.85), FILL = rgb(0.95, 0.95, 0.95);
 
 function wrap(font, size, text, maxW) {
@@ -88,10 +92,23 @@ exports.handler = async (event) => {
     const H = await pdf.embedFont(StandardFonts.HelveticaBold);
     const F = await pdf.embedFont(StandardFonts.Helvetica);
     const PW = 612, PH = 792, M = 44;
+    /* Centered watermark, drawn first so every later element sits on top of
+       it. Light enough not to fight the body text: measured against the
+       trait rows at 10pt before settling on this value. */
+    const MARK_H = 470;
+    const stamp = (p) => {
+      const sc = MARK_H / 73, w = 22 * sc;
+      p.drawSvgPath(MARK_PATH, {
+        x: (PW - w) / 2, y: PH / 2 + MARK_H / 2, scale: sc,
+        color: rgb(0.94, 0.94, 0.94), borderWidth: 0
+      });
+    };
+
     let page = pdf.addPage([PW, PH]);
+    stamp(page);
     let y = PH;
 
-    const newPage = () => { page = pdf.addPage([PW, PH]); y = PH - M; };
+    const newPage = () => { page = pdf.addPage([PW, PH]); stamp(page); y = PH - M; };
     const need = (h) => { if (y - h < M + 30) newPage(); };
     const text = (s, x, size, font, color, opts = {}) => page.drawText(clean(s), { x, y, size, font, color, ...opts });
 

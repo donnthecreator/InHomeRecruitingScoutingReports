@@ -246,11 +246,12 @@ async function goToAssessment(){
       return;
     }
     /* One place to edit who we work with. Update as the network grows. */
-    const PARTNERS = 'programs across the SEC, ACC, Big 12 and FCS, and scouts from NFL clubs including the Lions and the Chiefs';
+    const PARTNERS = 'programs across the SEC, ACC, Big 12 and FCS';
     const first = (d.prospect && d.prospect.name ? String(d.prospect.name).trim().split(' ')[0] : '');
     const pitchEl = document.getElementById('heroPitch');
     if(pitchEl) pitchEl.innerHTML = (first ? '<b>' + esc(first) + ', you&rsquo;ve been identified as one of the top prospects in your class.</b> ' : '<b>You&rsquo;ve been identified as one of the top prospects in your class.</b> ')
-      + 'InHome builds the scouting reports that ' + PARTNERS + ' use to decide who they recruit. This is your file.';
+      + 'InHome builds the scouting reports that ' + PARTNERS + ' use to decide who they recruit. This is your file. '
+      + 'The same file follows you: when you become draft eligible, this is what goes to NFL scouts.';
     const WHY = {
       board:  'A college staff put your name on a recruiting board and asked InHome for the rest of your file. This is that file.',
       request: 'A college or NFL evaluator requested more information on you before deciding whether to add you to their board. This is what they asked for.',

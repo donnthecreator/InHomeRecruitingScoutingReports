@@ -234,6 +234,24 @@
     font-size:10.5px; font-weight:700; cursor:pointer; margin-top:7px; font-family:'Inter',sans-serif;}
 
   /* ---------- PROSPECT MARKET (matches the coach portal view) ---------- */
+  .xgt-strip{background:#000; border:1px solid #212430; border-radius:12px; padding:11px 0;
+      margin-bottom:14px; overflow:hidden; position:relative;}
+  .xgt-strip::before,.xgt-strip::after{content:''; position:absolute; top:0; bottom:0; width:44px; z-index:2; pointer-events:none;}
+  .xgt-strip::before{left:0; background:linear-gradient(90deg,#000,transparent);}
+  .xgt-strip::after{right:0; background:linear-gradient(270deg,#000,transparent);}
+  .xgt-track{display:flex; gap:28px; white-space:nowrap; width:max-content; animation:xgtScroll 85s linear infinite;}
+  .xgt-strip:hover .xgt-track{animation-play-state:paused;}
+  @keyframes xgtScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+  .xgt-item{display:inline-flex; align-items:baseline; gap:7px; font-family:ui-monospace,Menlo,monospace;
+      font-size:12px; color:#EDEFF4; background:none; border:0; padding:0; margin:0; cursor:pointer;
+      opacity:1; transition:opacity .12s ease;}
+  .xgt-item:hover{opacity:.72;}
+  .xgt-item:focus-visible{outline:2px solid #1B4DE4; outline-offset:3px; border-radius:4px;}
+  .xgt-item b{font-weight:700; letter-spacing:.02em;}
+  .xgt-item .xgt-lvl{color:#7A8094; font-size:9px; margin-right:4px;}
+  .xgt-item .xgt-chg{font-weight:600;}
+  .xgt-item .xgt-chg.up{color:#00C87A;} .xgt-item .xgt-chg.down{color:#FF4D4D;} .xgt-item .xgt-chg.flat{color:#7A8094;}
+  @media (prefers-reduced-motion:reduce){ .xgt-track{animation:none;} }
   .xg-index{display:grid; grid-template-columns:1fr 1.4fr; gap:20px; align-items:center;
       background:#0F1116; border:1px solid #212430; border-radius:13px; padding:18px 20px; margin-bottom:14px;}
   .xg-idx-name{font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:#7A8094; margin-bottom:7px;}
@@ -695,7 +713,7 @@
       <div class="sub">Every player on the Production Market, JUCO and transfer candidates included, exactly as coaches see it. Price is the latest game grade, change is versus the game before. Built from the Performance log; nothing to enter here.</div>
       <div class="tools" style="margin-top:12px;">
         <input type="text" id="mkSearch" placeholder="Search name or school" oninput="renderMarket()">
-        <select id="mkLevel" onchange="renderMarket()"><option value="">JUCO + HS + transfer</option><option value="JUCO">JUCO only</option><option value="HS">High school only</option></select>
+        <select id="mkLevel" onchange="renderMarket()"><option value="">All levels</option><option value="HS">High school</option><option value="JUCO">JUCO</option><option value="FBS">FBS</option><option value="FCS">FCS</option><option value="D2">D2</option></select>
         <select id="mkPos" onchange="renderMarket()"><option value="">All positions</option></select>
         <select id="mkSort" onchange="renderMarket()"><option value="price">Highest grade</option><option value="up">Biggest riser</option><option value="down">Biggest faller</option><option value="games">Most games</option><option value="name">Name</option></select>
         <button type="button" class="mini-btn" onclick="MK=null; renderMarket()">Refresh</button>
@@ -868,6 +886,7 @@ function railHTML(name, sourceLink){
 
 let TOKEN = null;
 let assignments = [], reports = [], performances = [];
+let MK_VIEW = [];   // the market rows currently rendered
 let REPORTS_ERROR = null;
 let demoMode = false;
 let asgStatusFilter = 'open';
@@ -3114,6 +3133,45 @@ function whyHeMoved(p){
     </div>
   </div>`;
 }
+/* The tape. Always every tracked player, never the filtered view: a
+   marquee that empties out when you type in the search box is not a tape.
+   Content is duplicated once so the loop has no visible seam. */
+function marketTickerHTML(items){
+  if(!items.length) return '';
+  const cell = (p, i) => {
+    const arrow = p.dir==='up' ? '\u25b2' : p.dir==='down' ? '\u25bc' : '\u00b7';
+    const chgTxt = p.chg==null ? '1 GM' : (p.chg>0?'+':'') + p.chg;
+    return `<button type="button" class="xgt-item" data-tk="${i}" title="${esc(p.name)}${p.school?' \u00b7 '+esc(p.school):''}">`
+      + `<b>${esc(p.sym)}</b><span class="xgt-lvl">${esc(p.position||'')}${p.level?' '+esc(p.level):''}</span>`
+      + `${p.price.toFixed(1)}<span class="xgt-chg ${p.dir}">${arrow} ${chgTxt}</span></button>`;
+  };
+  const one = items.map(cell).join('');
+  return `<div class="xgt-strip"><div class="xgt-track">${one}${one}</div></div>`;
+}
+
+/* A ticker click jumps to that player's row. He may be filtered out of the
+   current view, so clear the filters first and re-render, then open him. */
+function tickerJump(player){
+  const inView = () => [...document.querySelectorAll('#mkList [data-mk]')]
+    .find(r => (MK_VIEW[Number(r.dataset.mk)] || {}).key === player.key);
+  if(!inView()){
+    document.getElementById('mkSearch').value = '';
+    document.getElementById('mkLevel').value = '';
+    document.getElementById('mkPos').value = '';
+    renderMarket();
+  }
+  setTimeout(() => {
+    const row = inView(); if(!row) return;
+    const d = document.getElementById('mkd-' + row.dataset.mk);
+    if(d) d.style.display = '';
+    row.scrollIntoView({ behavior:'smooth', block:'center' });
+    row.style.transition = 'background .2s';
+    const was = row.style.background;
+    row.style.background = '#1B1E27';
+    setTimeout(()=>{ row.style.background = was; }, 900);
+  }, 60);
+}
+
 function marketRowHTML(p, i){
   const chgTxt = p.chg==null ? '1 game' : (p.chg>0?'+':'') + p.chg + (p.pct!=null ? ` (${p.pct>0?'+':''}${p.pct}%)` : '');
   const arrow = p.dir==='up' ? '\u25b2' : p.dir==='down' ? '\u25bc' : '\u00b7';
@@ -3183,6 +3241,7 @@ async function renderMarket(){
     name:(a,b)=>a.name.localeCompare(b.name)
   };
   list.sort(sorters[sort] || sorters.price);
+  MK_VIEW = list;   // what is on screen right now, for ticker click-through
 
   const up = list.filter(p=>p.chg>0).length, down = list.filter(p=>p.chg<0).length, one = list.filter(p=>p.chg==null).length;
   const idx = list.length ? (list.reduce((a,p)=>a+p.price,0)/list.length) : null;
@@ -3193,6 +3252,7 @@ async function renderMarket(){
 
   const idxSeries = marketIndexSeries(list);
   el.innerHTML =
+    marketTickerHTML(MK) +
     `<div class="xg-index">
       <div>
         <div class="xg-idx-name">InHome Production Index</div>
@@ -3211,6 +3271,9 @@ async function renderMarket(){
     const d = document.getElementById('mkd-' + r.dataset.mk);
     if(d) d.style.display = d.style.display === 'none' ? '' : 'none';
   }));
+  /* Both copies of the duplicated marquee resolve to the same record. */
+  el.querySelectorAll('.xgt-item[data-tk]').forEach(btn =>
+    btn.addEventListener('click', () => tickerJump(MK[Number(btn.dataset.tk)])));
 }
 
 /* ---------------- REPORT ADMIN ACTIONS ---------------- */

@@ -413,7 +413,7 @@
 
   <div class="layout">
   <div class="tabs">
-    <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Players<span class="cnt" id="cntPlayers">&mdash;</span></button>
+    <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Prospects<span class="cnt" id="cntPlayers">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbAssign" onclick="switchTab('assign')">Assign<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
@@ -1053,7 +1053,7 @@ function renderStats(){
 
 /* ---------------- TABS ---------------- */
 function switchTab(t){
-  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['players','Prospects'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     document.getElementById('tb'+cap).classList.toggle('on', k===t);
     document.getElementById('pane'+cap.charAt(0).toUpperCase()+cap.slice(1)).classList.toggle('on', k===t);
   });
@@ -2218,6 +2218,7 @@ async function renderPlayers(skipFetch){
         <div class="rc-name"><span class="plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">${esc(p.name)}</span> <span class="rc-meta">${esc(p.position||'')}</span></div>
         <div class="rc-meta">${esc(p.school||'\u2014')}${p.class_year?' \u00b7 Class of '+esc(p.class_year):''}${p.home_state?' \u00b7 '+esc(p.home_state):''} \u00b7 ${esc(p.level||'HS')}</div>
         ${p.boards?`<span class="pill">${esc(p.boards)}</span>`:''}${p.reports?`<span class="pill" style="border-color:var(--good);color:var(--good)">${p.reports} report${p.reports===1?'':'s'}</span>`:''}${assessed.has(String(p.id))?'<span class="pill" style="border-color:var(--ink);color:var(--ink)">assessed</span>':''}${p.pending?'<span class="pill" style="color:var(--warn);border-color:var(--warn)">performance log only</span>':''}
+        ${railHTML(p.name)}
       </div>
       <div class="rc-right"><button type="button" class="mini-btn plink" data-pid="${p.id||''}" data-pname="${esc(p.name)}" data-pschool="${esc(p.school||'')}" data-ppos="${esc(p.position||'')}" data-pclass="${esc(p.class_year||'')}" data-plevel="${esc(p.level||'HS')}">Open</button></div>
     </div>

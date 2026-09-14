@@ -198,8 +198,14 @@ exports.handler = async (event) => {
            photos attach to the same record the report will use. Same
            matching rules as submit-report.js. */
         const nameKey = String(name).toLowerCase().replace(/[^a-z]/g, '');
-        let prospectId = null;
-        if (nameKey) {
+        /* If admin picked an existing prospect in the search box, use that
+           row outright: no re-matching, no chance of a second record. */
+        let prospectId = body.prospect_id ? parseInt(body.prospect_id, 10) || null : null;
+        if (prospectId) {
+          const [ok2] = await sql`SELECT id FROM prospects WHERE id = ${prospectId}`;
+          if (!ok2) prospectId = null;
+        }
+        if (!prospectId && nameKey) {
           const [exact] = await sql`
             SELECT id FROM prospects
             WHERE name_key = ${nameKey}

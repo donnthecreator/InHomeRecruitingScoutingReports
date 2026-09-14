@@ -458,8 +458,12 @@
   <div class="pane" id="paneAssign">
     <div class="panel">
       <h3>Assign a Player</h3>
-      <div class="sub">Adds to the scout's Unscouted list. They see it next time they open Scout Home.</div>
-      <div class="grid2">
+      <div class="sub">Adds to the scout's Unscouted list. They see it next time they open Scout Home. Search an existing prospect to fill everything in, or just type a new name.</div>
+      <label class="fl">Find an existing prospect <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(anyone in your Prospects tab, including players you just created)</span></label>
+      <input type="text" id="aFind" placeholder="Start typing a name or school" autocomplete="off" oninput="findProspect(this.value)">
+      <div id="aFindList" style="max-height:210px; overflow:auto; display:none; border:1px solid var(--line); border-radius:10px; margin-top:6px; background:var(--card);"></div>
+      <div id="aPicked" class="rc-meta" style="margin-top:6px;"></div>
+      <div class="grid2" style="margin-top:10px;">
         <div><label class="fl">Player Name</label><input type="text" id="aName" placeholder="First Last"></div>
         <div><label class="fl">Assign To</label><select id="aScout"></select></div>
       </div>
@@ -1120,6 +1124,57 @@ function railHTML(name, sourceLink){
 }
 
 /* ---------------- ASSIGN ---------------- */
+/* Prospect picker for the assign form. Pulls the same master list the
+   Prospects tab uses, so anyone you just created is findable here. */
+let A_PICKED = null;
+async function ensureProspectList(){
+  if(KNOWN_PROSPECTS && KNOWN_PROSPECTS.length) return KNOWN_PROSPECTS;
+  try{
+    const d = await api('listProspects', {});
+    KNOWN_PROSPECTS = (d.prospects || []).concat((d.pending || []).map(x => Object.assign({}, x, { id:null, pending:true })));
+    buildKnownNames();
+  }catch(e){ KNOWN_PROSPECTS = []; }
+  return KNOWN_PROSPECTS;
+}
+async function findProspect(q){
+  const box = document.getElementById('aFindList');
+  q = (q||'').trim().toLowerCase();
+  if(q.length < 2){ box.style.display = 'none'; return; }
+  const list = await ensureProspectList();
+  const hits = list.filter(p => (p.name||'').toLowerCase().includes(q) || (p.school||'').toLowerCase().includes(q)).slice(0, 25);
+  if(!hits.length){
+    box.innerHTML = `<div class="rc-meta" style="padding:10px;">No prospect matches that. Type the name in the field below and he will be created when you assign him.</div>`;
+    box.style.display = ''; return;
+  }
+  box.innerHTML = hits.map((p,i) => `<div class="vrow" style="padding:9px 11px; cursor:pointer; border-top-color:#1A1A1A;" onclick="pickProspect(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+      <span style="flex:1;"><b style="font-weight:700;">${esc(p.name)}</b> <span class="rc-meta">${esc(p.position||'')}${p.class_year?' \u00b7 '+esc(p.class_year):''}</span><br>
+      <span class="rc-meta">${esc(p.school||'\u2014')}${p.reports?' \u00b7 '+p.reports+' report'+(p.reports===1?'':'s'):''}${p.pending?' \u00b7 performance log only':''}</span></span>
+    </div>`).join('');
+  box.style.display = '';
+}
+function pickProspect(p){
+  A_PICKED = p;
+  document.getElementById('aName').value = p.name || '';
+  document.getElementById('aSchool').value = p.school || '';
+  document.getElementById('aClass').value = p.class_year || '';
+  const posSel = document.getElementById('aPos');
+  if(p.position && [...posSel.options].some(o => o.value === p.position)) posSel.value = p.position;
+  const lvl = document.getElementById('aLevel');
+  if(p.level && [...lvl.options].some(o => o.value === p.level)) lvl.value = p.level;
+  document.getElementById('aFindList').style.display = 'none';
+  document.getElementById('aFind').value = '';
+  document.getElementById('aPicked').innerHTML = `Assigning <b style="color:var(--ink)">${esc(p.name)}</b>${p.school?' \u00b7 '+esc(p.school):''}${p.id?` \u00b7 prospect #${p.id}`:' \u00b7 new record will be created'} <a href="#" onclick="clearPick(); return false;" style="color:var(--dim);margin-left:6px;">clear</a>`;
+}
+function clearPick(){
+  A_PICKED = null;
+  document.getElementById('aPicked').innerHTML = '';
+  ['aName','aSchool','aClass'].forEach(id => document.getElementById(id).value = '');
+}
+document.addEventListener('click', (e) => {
+  const box = document.getElementById('aFindList');
+  if(box && box.style.display !== 'none' && !e.target.closest('#aFindList') && e.target.id !== 'aFind') box.style.display = 'none';
+});
+
 async function createAssignment(){
   const name = document.getElementById('aName').value.trim();
   if(!name){ toast('Player name required'); return; }
@@ -1130,6 +1185,7 @@ async function createAssignment(){
     class_year: document.getElementById('aClass').value.trim(),
     level:      document.getElementById('aLevel').value,
     school:     document.getElementById('aSchool').value.trim(),
+    prospect_id: (A_PICKED && A_PICKED.id) || null,
     priority:   document.getElementById('aPriority').value,
     source_link:document.getElementById('aLink').value.trim(),
     note:       document.getElementById('aNote').value.trim()
@@ -1144,6 +1200,7 @@ async function createAssignment(){
       assignments.unshift(out.assignment);
     }
     ['aName','aClass','aSchool','aLink','aNote'].forEach(id=>document.getElementById(id).value='');
+    clearPick(); KNOWN_PROSPECTS = []; PLAYERS = null;
     renderStats(); renderAssignments(); renderScouts();
     toast(`Assigned to ${scoutName(rec.scout_id)}`);
   }catch(err){ toast(err.message); }

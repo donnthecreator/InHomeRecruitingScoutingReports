@@ -2297,9 +2297,34 @@ function openShare(opts){
   });
 }
 
+/* The invite page states why he got it, so pick the true reason. The
+   page never claims a coach asked for him unless you say one did. */
+function askInviteReason(name){
+  return new Promise(resolve => {
+    const card = document.getElementById('shCard');
+    card.innerHTML = `
+      <h3>Why is ${esc(name || 'he')} getting this?</h3>
+      <div class="who">He sees this sentence at the top of his invite. Pick the one that is actually true.</div>
+      <div class="sh-grid">
+        <button type="button" class="sh-btn primary" data-r="film">An InHome evaluator pulled his film</button>
+        <button type="button" class="sh-btn primary" data-r="board">A college staff put him on a board and wants his file</button>
+        <button type="button" class="sh-btn primary" data-r="request">A college or NFL evaluator asked for more on him</button>
+        <button type="button" class="sh-btn ghost" data-r="">Cancel</button>
+      </div>
+      <div class="sh-note">Only pick one of the bottom two if it actually happened. He will repeat it to his family and his high school coach.</div>`;
+    document.getElementById('shOverlay').classList.add('on');
+    card.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => {
+      const r = b.dataset.r;
+      if(!r){ closeShare(); resolve(null); return; }
+      resolve(r);
+    }));
+  });
+}
 async function sendProfileInvite(prospectId, name, school){
+  const reason = await askInviteReason(name);
+  if(!reason) return;
   try{
-    const d = await api('createProfileInvite', { prospectId, name, school });
+    const d = await api('createProfileInvite', { prospectId, name, school, reason });
     openShare({
       title: 'InHome profile invite',
       who: (name || 'This player') + (d.reused ? ' \u00b7 existing open invite' : ''),

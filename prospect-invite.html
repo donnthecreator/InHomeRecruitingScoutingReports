@@ -61,6 +61,11 @@
   .faq summary::after{content:'+'; float:right; color:var(--dim);}
   .faq details[open] summary::after{content:'\u2013';}
   .faq p{color:#C4C4C4; font-size:13.5px; margin:10px 0 0;}
+
+  .rules{text-align:left; max-width:34em; margin:22px auto 16px; display:grid; gap:10px;}
+  .rules div{background:var(--card); border:1px solid var(--line); border-left:3px solid var(--red); border-radius:10px;
+             padding:12px 14px; font-size:13.5px; color:#D6D6D6; line-height:1.55;}
+  .rules b{color:var(--ink);}
 </style>
 </head>
 <body>
@@ -69,9 +74,14 @@
 
   <div class="hero">
     <div class="badge">Invite Only &middot; InHome Network</div>
-    <h1 id="heroTitle">Your file starts here.</h1>
-    <p class="lede" id="heroLede">This is going in front of college programs. InHome scouts real players and puts verified profiles like this one in the hands of Directors of Player Personnel — this is one of the earliest steps toward an offer.</p>
-    <p class="fine">Not everyone gets this link. Take five minutes and do it right.</p>
+    <h1 id="heroTitle">You got here on film.</h1>
+    <p class="lede" id="heroWhy">Loading your invite&hellip;</p>
+    <div class="rules">
+      <div><b>This link is not public.</b> It was generated for you and nobody else. It cannot be forwarded, found, or searched for. Athletes who are not on a board do not get one.</div>
+      <div><b>These profiles are not for sale.</b> There is no fee, no membership, no package, no upgrade. Nobody can buy their way onto this platform, and nobody has.</div>
+      <div><b>No politics. Film.</b> You are here because of what an evaluator saw on your tape. Not who your coach knows, not who your trainer is, not what camp you paid for.</div>
+    </div>
+    <p class="fine">Now finish it properly. What you put here is what a college staff opens.</p>
   </div>
 
   <div class="steps">
@@ -234,6 +244,13 @@ async function goToAssessment(){
       $('app').innerHTML = '<div class="done-screen"><div class="big">Your profile is with InHome</div><p>You already completed this. If something needs to change, tell whoever sent you this link.</p></div>';
       return;
     }
+    const WHY = {
+      board:  'A college staff put your name on a recruiting board and asked InHome for the rest of your file. This is that file.',
+      request: 'A college or NFL evaluator requested more information on you before deciding whether to add you to their board. This is what they asked for.',
+      film:   'An InHome evaluator watched your film and pulled your name out. That is the only reason you are seeing this link.'
+    };
+    const whyEl = document.getElementById('heroWhy');
+    if(whyEl) whyEl.textContent = (d.reasonDetail && String(d.reasonDetail).trim()) || WHY[d.reason] || WHY.film;
     PROSPECT = d.prospect || null;
     stepOne();
   }catch(err){
@@ -244,10 +261,12 @@ async function goToAssessment(){
 
 <div class="wrap">
   <div class="faq">
-    <details><summary>Is this really going to college coaches?</summary><p>Yes. InHome puts evaluated profiles in front of Directors of Player Personnel at college programs. Filling this out is the profile a coach opens.</p></details>
+    <details><summary>Is this really going to college coaches?</summary><p>Yes. InHome profiles sit in front of Directors of Player Personnel at college programs. What you fill in here is what they open.</p></details>
+    <details><summary>Can I buy a profile, or pay to get ranked higher?</summary><p>No, and nobody else can either. There is no paid tier on this platform. The ranking comes from evaluators watching film. That is the whole point of it being worth something.</p></details>
+    <details><summary>Can I send this link to a teammate?</summary><p>It will not work for him. Each link is tied to one athlete. If you think a teammate deserves a look, tell whoever sent you this and an evaluator will watch his film.</p></details>
     <details><summary>Do I need a Hudl account?</summary><p>Yes, or another way to show real film. Coaches need to see you play, not just read your numbers.</p></details>
     <details><summary>What if I don't have verified track times?</summary><p>Skip that field. Only include a link if it's real and verifiable.</p></details>
-    <details><summary>Does this cost anything?</summary><p>No. Nothing about this is paid.</p></details>
+    <details><summary>What happens after I finish?</summary><p>An InHome evaluator reviews everything you submitted, including the assessment. If the tape and the answers hold up, your profile goes live to the programs on this platform.</p></details>
   </div>
 </div>
 </body>

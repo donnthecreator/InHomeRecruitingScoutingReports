@@ -25,6 +25,8 @@ async function ensure() {
     id SERIAL PRIMARY KEY, token TEXT UNIQUE NOT NULL, prospect_id INTEGER,
     athlete_name TEXT, school TEXT, sent_to TEXT, sent_by TEXT, status TEXT NOT NULL DEFAULT 'sent',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(), completed_at TIMESTAMPTZ)`;
+  await sql`ALTER TABLE profile_invites ADD COLUMN IF NOT EXISTS reason TEXT`;
+  await sql`ALTER TABLE profile_invites ADD COLUMN IF NOT EXISTS reason_detail TEXT`;
 }
 
 function frameStore() {
@@ -48,6 +50,7 @@ exports.handler = async (event) => {
       if (inv.status === 'sent') await sql`UPDATE profile_invites SET status = 'started' WHERE id = ${inv.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         status: inv.status === 'completed' ? 'completed' : 'open',
+        reason: inv.reason || 'film', reasonDetail: inv.reason_detail || null,
         prospect: p ? {
           id: p.id, name: p.name, school: p.school, position: p.position, classYear: p.class_year, level: p.level,
           homeCity: p.home_city, homeState: p.home_state, height: p.height, weight: p.weight, filmLink: p.film_link,

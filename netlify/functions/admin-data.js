@@ -510,9 +510,14 @@ exports.handler = async (event) => {
         await sql`CREATE TABLE IF NOT EXISTS profile_invites (
           id SERIAL PRIMARY KEY, token TEXT UNIQUE NOT NULL, prospect_id INTEGER, athlete_name TEXT, school TEXT,
           sent_to TEXT, sent_by TEXT, status TEXT NOT NULL DEFAULT 'sent', created_at TIMESTAMPTZ NOT NULL DEFAULT now(), completed_at TIMESTAMPTZ)`;
+        await sql`ALTER TABLE profile_invites ADD COLUMN IF NOT EXISTS reason TEXT`;
+        await sql`ALTER TABLE profile_invites ADD COLUMN IF NOT EXISTS reason_detail TEXT`;
         const [open] = await sql`SELECT token FROM profile_invites WHERE status <> 'completed' AND (prospect_id = ${prospectId} OR (prospect_id IS NULL AND lower(athlete_name) = ${String(name||'').toLowerCase()})) LIMIT 1`;
         const token = open ? open.token : crypto2.randomBytes(16).toString('base64url');
-        if (!open) await sql`INSERT INTO profile_invites (token, prospect_id, athlete_name, school, sent_to, sent_by) VALUES (${token}, ${prospectId}, ${name}, ${school}, ${body.sentTo || null}, 'admin')`;
+        const reason = ['board', 'request', 'film'].includes(body.reason) ? body.reason : 'film';
+        if (open) await sql`UPDATE profile_invites SET reason = ${reason}, reason_detail = ${body.reasonDetail || null} WHERE token = ${token}`;
+        else await sql`INSERT INTO profile_invites (token, prospect_id, athlete_name, school, sent_to, sent_by, reason, reason_detail)
+                       VALUES (${token}, ${prospectId}, ${name}, ${school}, ${body.sentTo || null}, 'admin', ${reason}, ${body.reasonDetail || null})`;
         return ok({ token, url: `${siteBase(event)}/prospect-invite.html?t=${token}`, reused: !!open });
       }
       case 'listProfileInvites': {

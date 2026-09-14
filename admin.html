@@ -317,6 +317,15 @@
 
   .plink{cursor:pointer; text-decoration:none; border-bottom:1px dotted transparent;}
   .plink:hover{border-bottom-color:var(--ink);}
+
+  /* Recruiting lookups as logo buttons */
+  .rail{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;}
+  .rail-lbl{font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:800; width:100%; margin-bottom:1px;}
+  .rlink{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:44px; height:34px; padding:0 10px;
+         border:1px solid var(--line); border-radius:9px; background:var(--card); text-decoration:none; transition:border-color .12s, background .12s;}
+  .rlink:hover{border-color:var(--ink); background:var(--card-2);}
+  .rlink img{height:15px; width:auto; max-width:62px; object-fit:contain; display:block;}
+  .rlink span{font-size:11px; font-weight:800; letter-spacing:.02em; color:var(--ink);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -531,7 +540,7 @@
         <div><label class="fl">Level</label><select id="pLevel"><option value="JUCO">JUCO</option><option value="HS">High School</option></select></div>
       </div>
       <div class="grid3">
-        <div><label class="fl">Position</label><select id="pPos"></select></div>
+        <div><label class="fl">Position</label><select id="pPos" onchange="renderStatBoxes()"></select></div>
         <div><label class="fl">Class / Grad Yr</label><input type="text" id="pClass" placeholder="2027"></div>
         <div><label class="fl">Date</label><input type="date" id="pDate"></div>
       </div>
@@ -540,7 +549,9 @@
       <label class="fl">School</label>
       <input type="text" id="pSchool" placeholder="School name">
       <label class="fl">Stat Line</label>
-      <textarea id="pStat" placeholder="e.g. 14 tackles, 3 TFL, 1 sack vs Northwest Mississippi"></textarea>
+      <div id="statBoxes" style="margin:6px 0 10px;"></div>
+      <label class="fl">Stat line <span style="text-transform:none;letter-spacing:0;color:var(--dim)">(written for you from the boxes; edit if you want)</span></label>
+      <textarea id="pStat" placeholder="Fill the boxes above, or type it out"></textarea>
       <label class="fl">Source Link</label>
       <input type="text" id="pLink" placeholder="NJCAA box score, MaxPreps game, Hudl, film link">
       <button type="button" class="btn" onclick="createPerformance()">Log Performance</button>
@@ -800,17 +811,31 @@ function demoScouts(){
      X          site-wide search on the player's name, newest first
    These are search links, not scrapes: nothing is pulled into this page.
    If a site changes its profile path, edit the path here. */
-const profileSearch = (path, n) =>
-  'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
+/* Outside lookups. Each opens a profile-path search on that site, except
+   X and MileSplit which are site-wide searches (recruits are found by
+   posts and meet results, not by a guessable profile URL). Logos are
+   loaded from each site's own favicon service; if one fails to load the
+   button falls back to its name, so a blocked image never leaves a hole. */
+const profileSearch = (path, n) => 'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
 const RECRUIT_SITES = [
-  { id:'247',      name:'247Sports', url:n => profileSearch('247sports.com/player/', n) },
-  { id:'on3',      name:'On3',       url:n => profileSearch('on3.com/db/', n) },
-  { id:'rivals',   name:'Rivals',    url:n => profileSearch('on3.com/rivals/', n) },
-  { id:'maxpreps', name:'MaxPreps',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') },
-  /* X search, not a profile-path lookup: recruits are found by what they
-     post and who tags them, so search the whole site for the name. */
-  { id:'x',        name:'X',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
+  { id:'247',       name:'247Sports', domain:'247sports.com', url:n => profileSearch('247sports.com/player/', n) },
+  { id:'on3',       name:'On3',       domain:'on3.com',       url:n => profileSearch('on3.com/db/', n) },
+  { id:'rivals',    name:'Rivals',    domain:'rivals.com',    url:n => profileSearch('on3.com/rivals/', n) },
+  { id:'maxpreps',  name:'MaxPreps',  domain:'maxpreps.com',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') },
+  { id:'milesplit', name:'MileSplit', domain:'milesplit.com', url:n => 'https://www.milesplit.com/search?q=' + encodeURIComponent(n) },
+  { id:'hudl',      name:'Hudl',      domain:'hudl.com',      url:n => profileSearch('hudl.com/profile/', n) },
+  { id:'x',         name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
+function siteIcon(d){ return 'https://www.google.com/s2/favicons?sz=64&domain=' + d; }
+function railHTML(name){
+  if(!name) return '';
+  return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' +
+    RECRUIT_SITES.map(s =>
+      '<a class="rlink" href="' + s.url(name) + '" target="_blank" rel="noopener" title="' + s.name + '">' +
+      '<img src="' + siteIcon(s.domain) + '" alt="" onerror="this.remove(); this.parentElement.innerHTML=\'<span>' + s.name + '</span>\';">' +
+      '<span style="font-size:10.5px;color:var(--mute);">' + s.name + '</span></a>').join('') + '</div>';
+}
+
 
 let TOKEN = null;
 let assignments = [], reports = [], performances = [];
@@ -979,6 +1004,7 @@ function renderAll(){
 function initBoard(){
   loadBoardStatus();
   buildBoardFilters();
+  renderStatBoxes();
   renderBoardProgress();
   renderBoard();
   loadMapsScript();
@@ -1811,7 +1837,7 @@ async function drawMap(){
 }
 
 function pinPopHTML(p){
-  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p.name)}" target="_blank" rel="noopener" style="margin-right:8px;font-size:11px;color:#FF0000">${s.name}</a>`).join('');
+  const links = RECRUIT_SITES.map(s=>`<a href="${s.url(p.name)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;margin:0 6px 6px 0;padding:4px 7px;border:1px solid #ddd;border-radius:7px;font-size:11px;font-weight:700;color:#111;text-decoration:none"><img src="${siteIcon(s.domain)}" style="height:13px" alt="" onerror="this.remove()">${s.name}</a>`).join('');
   const face = p.headshotUrl ? `<img src="${esc(p.headshotUrl)}" alt="" style="width:44px;height:44px;border-radius:9px;object-fit:cover;float:right;margin-left:8px" onerror="this.style.display='none'">` : '';
   const logo = p.logoUrl ? `<img src="${esc(p.logoUrl)}" alt="" style="width:14px;height:14px;object-fit:contain;vertical-align:-2px;margin-right:4px" onerror="this.remove()">` : '';
   return `<div style="font-family:Inter,system-ui,sans-serif;min-width:200px;color:#111">${face}
@@ -2176,7 +2202,7 @@ async function newAssessment(kind, prospectId, name, school){
   if(!prospectId && !(n||'').trim()){ toast('Enter a name'); return null; }
   try{
     const d = await api('createAssessment', { kind:k, prospectId: prospectId||null, name:n, school:sc });
-    ASSESS = null; if(currentView==='assess') renderAssessments();
+    ASSESS = null; if(document.getElementById('paneAssess') && document.getElementById('paneAssess').classList.contains('on')) renderAssessments();
     let copied = false;
     try{ await navigator.clipboard.writeText(d.url); copied = true; }catch(e){}
     const label = k==='iq' ? 'Football IQ' : k==='full' ? 'Full assessment' : 'Interview';
@@ -3297,6 +3323,54 @@ async function logSelectedBox(){
   alert(summary + (failed.length ? '\n\nFailed:\n' + failed.join('\n') : ''));
 }
 
+/* Structured stat entry: the boxes a coach actually reads for that
+   position. Filling them writes the stat line and grades it with the
+   same formula the box score importer uses. */
+const STAT_GROUPS = {
+  pass: { label:'Passing', fields:[['passCmp','Comp'],['passAtt','Att'],['passYds','Yds'],['passTd','TD'],['passInt','INT']] },
+  rush: { label:'Rushing', fields:[['rushAtt','Car'],['rushYds','Yds'],['rushTd','TD'],['rushLg','Long']] },
+  rcv:  { label:'Receiving', fields:[['rec','Rec'],['recYds','Yds'],['recTd','TD'],['recLg','Long']] },
+  def:  { label:'Defense', fields:[['solo','Solo'],['ast','Ast'],['tfl','TFL'],['sacks','Sacks'],['int','INT'],['pd','PD']] }
+};
+const POS_STATS = { QB:['pass','rush'], RB:['rush','rcv'], FB:['rush','rcv'], WR:['rcv','rush'], TE:['rcv'],
+  OL:[], OT:[], OG:[], C:[],
+  DL:['def'], DE:['def'], DT:['def'], NG:['def'], EDGE:['def'], LB:['def'], ILB:['def'], OLB:['def'],
+  DB:['def'], CB:['def'], S:['def'], FS:['def'], SS:['def'], ATH:['rush','rcv','pass','def'], K:[] };
+function renderStatBoxes(){
+  const host = document.getElementById('statBoxes'); if(!host) return;
+  const pos = (document.getElementById('pPos').value || '').toUpperCase();
+  const groups = POS_STATS[pos] || ['rush','rcv','def'];
+  if(!groups.length){ host.innerHTML = '<div class="rc-meta">No box-score stats for this position. Write the line yourself and set the grade by hand.</div>'; return; }
+  host.innerHTML = groups.map(g => {
+    const G = STAT_GROUPS[g];
+    return `<div style="margin-bottom:8px;">
+      <div class="rc-meta" style="margin-bottom:4px;">${G.label}</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); gap:6px;">
+        ${G.fields.map(([id,lab])=>`<div><label class="fl" style="margin:0 0 2px;font-size:9.5px;">${lab}</label><input type="text" inputmode="numeric" id="st_${id}" oninput="statsChanged()" style="padding:8px;text-align:center;"></div>`).join('')}
+      </div></div>`;
+  }).join('') + `<div class="rc-meta" id="statGradeNote" style="margin-top:4px;"></div>`;
+}
+function collectStats(){
+  const out = {};
+  document.querySelectorAll('[id^="st_"]').forEach(el => { const v = el.value.trim(); if(v !== '') out[el.id.slice(3)] = v; });
+  return out;
+}
+let _statTimer = null;
+function statsChanged(){ clearTimeout(_statTimer); _statTimer = setTimeout(gradeStatsNow, 400); }
+async function gradeStatsNow(){
+  const stats = collectStats();
+  const note = document.getElementById('statGradeNote');
+  if(!Object.keys(stats).length){ if(note) note.textContent = ''; return; }
+  try{
+    const d = await api('gradeStats', { position: document.getElementById('pPos').value, stats });
+    if(d.statLine) document.getElementById('pStat').value = d.statLine;
+    if(d.grade != null){
+      document.getElementById('pGrade').value = d.grade;
+      if(note) note.innerHTML = `Suggested grade <b style="color:var(--ink)">${d.grade}</b> \u00b7 <span style="color:var(--dim)">${esc(d.why||'')}</span>. Override it if the film says otherwise.`;
+    }
+  }catch(err){ if(note) note.textContent = err.message; }
+}
+
 async function createPerformance(){
   const name = document.getElementById('pName').value.trim();
   if(!name){ toast('Player name required'); return; }
@@ -3320,6 +3394,8 @@ async function createPerformance(){
       performances.unshift(out.performance);
     }
     ['pName','pClass','pSchool','pStat','pLink','pGrade'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('[id^="st_"]').forEach(el=>el.value='');
+    const gn = document.getElementById('statGradeNote'); if(gn) gn.textContent='';
     renderStats(); renderPerfChips(); renderPerf();
     toast('Performance logged');
   }catch(err){ toast(err.message); }

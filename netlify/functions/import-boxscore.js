@@ -504,3 +504,4 @@ exports.handler = async (event) => {
 };
 
 exports._parseText = parseText;
+exports._suggestGrade = suggestGrade;

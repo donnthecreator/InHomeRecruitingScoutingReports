@@ -488,6 +488,15 @@
   .mk-logo{width:16px; height:16px; object-fit:contain; vertical-align:-3px; margin-right:4px;}
   .xg-filters{display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
   .xg-sel{background:#14161C; color:#EDEFF4; border:1px solid #212430; border-radius:8px; padding:7px 9px; font-size:12px; font-family:inherit;}
+
+  /* Recruiting lookups as logo buttons */
+  .rail{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:8px;}
+  .rail-lbl{font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:800; width:100%; margin-bottom:1px;}
+  .rlink{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:44px; height:34px; padding:0 10px;
+         border:1px solid var(--line); border-radius:9px; background:var(--card); text-decoration:none; transition:border-color .12s, background .12s;}
+  .rlink:hover{border-color:var(--ink); background:var(--card-2);}
+  .rlink img{height:15px; width:auto; max-width:62px; object-fit:contain; display:block;}
+  .rlink span{font-size:11px; font-weight:800; letter-spacing:.02em; color:var(--ink);}
 </style>
 </head>
 <body>
@@ -1679,23 +1688,29 @@ function reportPhoto(r){
   return null;
 }
 /* ---------------- RECRUITING LINKS + PLAYER PROFILE ---------------- */
-/* Profile-path searches, not each site's own search box, so you land on
-   the player's page instead of a forum thread. */
+/* Outside lookups. Each opens a profile-path search on that site, except
+   X and MileSplit which are site-wide searches (recruits are found by
+   posts and meet results, not by a guessable profile URL). Logos are
+   loaded from each site's own favicon service; if one fails to load the
+   button falls back to its name, so a blocked image never leaves a hole. */
 const profileSearch = (path, n) => 'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
 const RECRUIT_SITES = [
-  { id:'247',      name:'247',      url:n => profileSearch('247sports.com/player/', n) },
-  { id:'on3',      name:'On3',      url:n => profileSearch('on3.com/db/', n) },
-  { id:'rivals',   name:'Rivals',   url:n => profileSearch('on3.com/rivals/', n) },
-  { id:'maxpreps', name:'MaxPreps', url:n => profileSearch('maxpreps.com/athlete/', n) },
-  { id:'hudl',     name:'Hudl',     url:n => profileSearch('hudl.com/profile/', n) },
-  /* X: search the name site-wide, newest first. Recruits get found by
-     what they post and who tags them, not by a profile path. */
-  { id:'x',        name:'X',        url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
+  { id:'247',       name:'247Sports', domain:'247sports.com', url:n => profileSearch('247sports.com/player/', n) },
+  { id:'on3',       name:'On3',       domain:'on3.com',       url:n => profileSearch('on3.com/db/', n) },
+  { id:'rivals',    name:'Rivals',    domain:'rivals.com',    url:n => profileSearch('on3.com/rivals/', n) },
+  { id:'maxpreps',  name:'MaxPreps',  domain:'maxpreps.com',  url:n => profileSearch('maxpreps.com', n) + encodeURIComponent(' athletes') },
+  { id:'milesplit', name:'MileSplit', domain:'milesplit.com', url:n => 'https://www.milesplit.com/search?q=' + encodeURIComponent(n) },
+  { id:'hudl',      name:'Hudl',      domain:'hudl.com',      url:n => profileSearch('hudl.com/profile/', n) },
+  { id:'x',         name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
+function siteIcon(d){ return 'https://www.google.com/s2/favicons?sz=64&domain=' + d; }
 function railHTML(name){
   if(!name) return '';
-  return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look up</span>' +
-    RECRUIT_SITES.map(s => '<a href="' + s.url(name) + '" target="_blank" rel="noopener">' + s.name + '</a>').join('') + '</div>';
+  return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' +
+    RECRUIT_SITES.map(s =>
+      '<a class="rlink" href="' + s.url(name) + '" target="_blank" rel="noopener" title="' + s.name + '">' +
+      '<img src="' + siteIcon(s.domain) + '" alt="" onerror="this.remove(); this.parentElement.innerHTML=\'<span>' + s.name + '</span>\';">' +
+      '<span style="font-size:10.5px;color:var(--mute);">' + s.name + '</span></a>').join('') + '</div>';
 }
 function closePlayer(){ const o = document.getElementById('spOverlay'); if(o) o.classList.remove('on'); }
 async function openPlayer(idOrName, school){

@@ -619,6 +619,32 @@ exports.handler = async (event) => {
         return ok({ request: rows[0] || null });
       }
 
+      /* Grade a hand-entered stat line with the same formula the box score
+         importer uses, so a manual entry and an imported one are comparable. */
+      case 'gradeStats': {
+        const { _suggestGrade } = require('./import-boxscore');
+        const pos = String(body.position || '').toUpperCase();
+        const n = (v) => { const x = parseFloat(v); return Number.isFinite(x) ? x : 0; };
+        const f = body.stats || {};
+        const m = {};
+        if (n(f.passAtt) || n(f.passCmp) || n(f.passYds)) m.pass = { att: n(f.passAtt), cmp: n(f.passCmp), yds: n(f.passYds), td: n(f.passTd), int: n(f.passInt), pct: n(f.passAtt) ? Math.round(n(f.passCmp) / n(f.passAtt) * 100) : 0, ypa: n(f.passAtt) ? +(n(f.passYds) / n(f.passAtt)).toFixed(1) : 0 };
+        if (n(f.rushAtt) || n(f.rushYds)) m.rush = { att: n(f.rushAtt), yds: n(f.rushYds), td: n(f.rushTd), ypc: n(f.rushAtt) ? +(n(f.rushYds) / n(f.rushAtt)).toFixed(1) : 0, lg: n(f.rushLg) || null };
+        if (n(f.rec) || n(f.recYds)) m.rcv = { no: n(f.rec), yds: n(f.recYds), td: n(f.recTd), ypr: n(f.rec) ? +(n(f.recYds) / n(f.rec)).toFixed(1) : 0, lg: n(f.recLg) || null };
+        if (n(f.tkl) || n(f.solo) || n(f.ast) || n(f.sacks) || n(f.tfl) || n(f.int) || n(f.pd)) {
+          const solo = n(f.solo), ast = n(f.ast), total = n(f.tkl) || (solo + ast);
+          m.def = { solo, ast, total, sacks: n(f.sacks), tfl: n(f.tfl), int: n(f.int), pd: n(f.pd), unknown: 0, extra: [] };
+        }
+        if (!Object.keys(m).length) return ok({ grade: null, statLine: '', why: 'No stats entered' });
+        const g = _suggestGrade(pos, m);
+        /* readable line built from the same numbers */
+        const parts = [];
+        if (m.pass) parts.push(`${m.pass.cmp}/${m.pass.att}, ${m.pass.yds} pass yds${m.pass.td ? ', ' + m.pass.td + ' TD' : ''}${m.pass.int ? ', ' + m.pass.int + ' INT' : ''}${m.pass.ypa ? ' (' + m.pass.ypa + ' ypa)' : ''}`);
+        if (m.rush) parts.push(`${m.rush.att} car, ${m.rush.yds} yds${m.rush.ypc ? ', ' + m.rush.ypc + ' ypc' : ''}${m.rush.td ? ', ' + m.rush.td + ' TD' : ''}`);
+        if (m.rcv) parts.push(`${m.rcv.no} rec, ${m.rcv.yds} yds${m.rcv.ypr ? ', ' + m.rcv.ypr + ' ypr' : ''}${m.rcv.td ? ', ' + m.rcv.td + ' TD' : ''}`);
+        if (m.def) parts.push(`${m.def.total} tkl${m.def.solo ? ' (' + m.def.solo + ' solo)' : ''}${m.def.tfl ? ', ' + m.def.tfl + ' TFL' : ''}${m.def.sacks ? ', ' + m.def.sacks + ' sack' + (m.def.sacks === 1 ? '' : 's') : ''}${m.def.int ? ', ' + m.def.int + ' INT' : ''}${m.def.pd ? ', ' + m.def.pd + ' PD' : ''}`);
+        return ok({ grade: g.grade, why: g.why, statLine: parts.join(' | '), metrics: m });
+      }
+
       /* ---------------- PROSPECT NOTES: interviews, background, anything on file before a scout starts ---------------- */
       case 'listNotes': {
         const pid = parseInt(body.prospectId, 10); if (!pid) return fail(400, 'prospectId required');

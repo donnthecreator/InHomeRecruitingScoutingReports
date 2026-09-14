@@ -241,6 +241,14 @@ async function goToAssessment(){
     const res = await fetch('/.netlify/functions/profile-invite?t=' + encodeURIComponent(TOKEN));
     const d = await res.json(); if(!res.ok) throw new Error(d.error || 'This link is not valid');
     if(d.status === 'completed'){
+      if(d.assessmentToken){
+        /* Profile is in; the assessment is not. Pick up where he left off. */
+        $('heroTitle').textContent = 'Almost done.';
+        $('app').innerHTML = '<div class="done-screen"><div class="big">Your profile is in. Finish the assessment.</div>'
+          + '<p>Your answers are saved as you go, so you can pick up exactly where you left off.</p>'
+          + '<a class="submit" href="assessment.html?t=' + encodeURIComponent(d.assessmentToken) + '" style="display:block;max-width:360px;margin:8px auto 0;text-align:center;text-decoration:none;">Continue the assessment</a></div>';
+        return;
+      }
       $('heroTitle').textContent = 'Already in.';
       $('app').innerHTML = '<div class="done-screen"><div class="big">Your profile is with InHome</div><p>You already completed this. If something needs to change, tell whoever sent you this link.</p></div>';
       return;

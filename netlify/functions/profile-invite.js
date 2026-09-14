@@ -48,8 +48,21 @@ exports.handler = async (event) => {
       let p = null;
       if (inv.prospect_id) [p] = await sql`SELECT * FROM prospects WHERE id = ${inv.prospect_id}`;
       if (inv.status === 'sent') await sql`UPDATE profile_invites SET status = 'started' WHERE id = ${inv.id}`;
+      /* The invite is marked completed the moment the athlete clicks into the
+         assessment, before he has answered anything. If he leaves and comes
+         back on the same link, the profile is done but the assessment may
+         not be. Hand the open assessment token back so the page can send him
+         straight to where he left off instead of dead-ending him. */
+      let openAssessment = null;
+      if (inv.status === 'completed' && inv.prospect_id) {
+        try {
+          const [a] = await sql`SELECT token, status FROM assessments WHERE kind = 'full' AND prospect_id = ${inv.prospect_id} ORDER BY created_at DESC LIMIT 1`;
+          if (a && a.status !== 'complete') openAssessment = a.token;
+        } catch (e) { openAssessment = null; }
+      }
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         status: inv.status === 'completed' ? 'completed' : 'open',
+        assessmentToken: openAssessment,
         reason: inv.reason || 'film', reasonDetail: inv.reason_detail || null,
         prospect: p ? {
           id: p.id, name: p.name, school: p.school, position: p.position, classYear: p.class_year, level: p.level,

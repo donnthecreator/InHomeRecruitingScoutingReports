@@ -425,6 +425,7 @@
   <div class="layout">
   <div class="tabs">
     <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Prospects<span class="cnt" id="cntPlayers">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbAssign" onclick="switchTab('assign')">Assignments<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
@@ -461,6 +462,20 @@
       </div>
       <div id="plStats" class="sub" style="margin-top:8px;"></div>
       <div id="plList" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ ASSIGNMENTS (list) ============ -->
+  <div class="pane" id="paneAssign">
+    <div class="panel">
+      <h3>Assignments</h3>
+      <div class="sub">Every player on a scout's list, and where it stands. To put a player on a list, use <b>Assign to scout</b> on the Prospects tab.</div>
+      <div class="tools" style="margin-top:10px;">
+        <input type="text" id="asgSearch" placeholder="Search assignments..." oninput="renderAssignments()">
+        <select id="asgScoutFilter" onchange="renderAssignments()"><option value="All">All scouts</option></select>
+      </div>
+      <div class="chip-row" id="asgStatusChips"></div>
+      <div id="asgList" class="list"></div>
     </div>
   </div>
 
@@ -941,10 +956,7 @@ function boot(){
   loadAll();
 }
 function fillSelects(){
-  const scoutOpts = SCOUT_ROSTER.map(s=>`<option value="${s.id}">${s.name} — ${s.region}</option>`).join('');
-  document.getElementById('aScout').innerHTML = scoutOpts;
   const posOpts = POSITIONS.map(p=>`<option value="${p}">${p}</option>`).join('');
-  document.getElementById('aPos').innerHTML = posOpts;
   document.getElementById('pPos').innerHTML = posOpts;
   const filterOpts = '<option value="All">All scouts</option>' +
     SCOUT_ROSTER.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
@@ -964,8 +976,8 @@ function normalizeScouts(rows){
 }
 
 async function loadAll(){
-  document.getElementById('asgList').innerHTML = '<div class="loading">Loading assignments...</div>';
-  document.getElementById('repList').innerHTML = '<div class="loading">Loading reports...</div>';
+  const _al = document.getElementById('asgList'); if(_al) _al.innerHTML = '<div class="loading">Loading assignments...</div>';
+  const _rl = document.getElementById('repList'); if(_rl) _rl.innerHTML = '<div class="loading">Loading reports...</div>';
   document.getElementById('perfList').innerHTML = '<div class="loading">Loading performances...</div>';
 
   if(demoMode){ loadDemo(); return; }
@@ -1035,6 +1047,7 @@ function initBoard(){
 
 /* ---------------- STATS ---------------- */
 function renderStats(){
+  { const c = document.getElementById('cntAssign'); if(c) c.textContent = assignments.filter(a=>a.status!=='complete').length + ' open'; }
   const open = assignments.filter(a=>a.status!=='complete').length;
   const weekAgo = Date.now() - 7*86400000;
   const week = reports.filter(r=>new Date(r.date_evaluated||r.created_at||0).getTime() >= weekAgo).length;
@@ -1053,7 +1066,7 @@ function renderStats(){
 /* ---------------- TABS ---------------- */
 function switchTab(t){
   /* element ids are fixed; the visible label can change without touching this */
-  [['players','Prospects'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['players','Prospects'],['assign','Assignments'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     const tb = document.getElementById('tb'+cap), pane = document.getElementById('pane'+cap);
     if(tb) tb.classList.toggle('on', k===t);
     if(pane) pane.classList.toggle('on', k===t);
@@ -2283,10 +2296,14 @@ function askInviteReason(name){
 }
 /* Assign a player to a scout, opened on the player so there is no form to
    fill twice and no chance of assigning the wrong record. */
-function openAssign(prospectId, name, school, extra){
+async function openAssign(prospectId, name, school, extra){
   extra = extra || {};
-  const scouts = (SCOUT_ROSTER||[]).filter(x => x.active !== false);
-  if(!scouts.length){ toast('Add a scout on the Scouts tab first'); return; }
+  let scouts = (SCOUT_ROSTER||[]).filter(x => x.active !== false);
+  if(!scouts.length){
+    toast('Loading scouts...');
+    try{ const d = await api('loadAll', {}); SCOUT_ROSTER = normalizeScouts(d.scouts); scouts = SCOUT_ROSTER.filter(x => x.active !== false); }catch(e){}
+    if(!scouts.length){ toast('No scouts on the roster yet. Add one on the Scouts tab.'); return; }
+  }
   const card = document.getElementById('shCard');
   card.innerHTML = `
     <h3>Assign ${esc(name)}</h3>

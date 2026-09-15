@@ -142,6 +142,25 @@ exports.handler = async (event) => {
       }
 
       case 'loadAll': {
+        /* Self-healing schema. The admin used to drop into demo mode with a
+           banner pointing at scouts-schema.sql if any one of these was
+           missing. Everything the page needs is created or added here on
+           first use, so there is no migration to run by hand. */
+        await sql`CREATE TABLE IF NOT EXISTS scouts (
+          id SERIAL PRIMARY KEY, scout_id TEXT UNIQUE, access_code TEXT UNIQUE, name TEXT,
+          role TEXT, region TEXT, active BOOLEAN NOT NULL DEFAULT TRUE,
+          headshot_key TEXT, cover_key TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS role TEXT`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS region TEXT`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS cover_key TEXT`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now()`; } catch (e) {}
+        await sql`CREATE TABLE IF NOT EXISTS scout_assignments (
+          id SERIAL PRIMARY KEY, name TEXT NOT NULL, scout_id TEXT, position TEXT, class_year TEXT,
+          level TEXT DEFAULT 'HS', school TEXT, priority TEXT DEFAULT 'normal', source_link TEXT, note TEXT,
+          status TEXT NOT NULL DEFAULT 'open', prospect_id INTEGER, assigned_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+
         const scouts = await sql`SELECT * FROM scouts ORDER BY active DESC, name`;
         const assignments = await sql`
           SELECT * FROM scout_assignments ORDER BY assigned_at DESC`;

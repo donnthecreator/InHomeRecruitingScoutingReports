@@ -890,6 +890,7 @@ let assignments = [], reports = [], performances = [];
 let MK_VIEW = [];   // the market rows currently rendered
 let REPORTS_ERROR = null;
 let demoMode = false;
+let demoReason = '';   // the actual error, so the banner can say what broke
 let asgStatusFilter = 'open';
 let perfLevelFilter = 'All';
 
@@ -1023,6 +1024,7 @@ async function loadAll(){
   }catch(err){
     console.error(err);
     demoMode = true;
+    demoReason = err && err.message ? err.message : String(err);
     loadDemo();
     return;
   }
@@ -1218,7 +1220,7 @@ function renderAssignments(){
     return;
   }
   const scoutOpts = id => SCOUT_ROSTER.map(s=>`<option value="${s.id}" ${s.id===id?'selected':''}>${s.name}</option>`).join('');
-  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Deploy verify-admin.js and admin-data.js to go live.</div>` : '')
+  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Live load failed${demoReason ? ': ' + esc(demoReason) : ''}. Sign out and back in to retry.</div>` : '')
     + list.map(a=>`
     <div class="row-card">
       <div class="rc-top">
@@ -2014,7 +2016,7 @@ function renderRoster(){
     return;
   }
   const sorted = SCOUT_ROSTER.slice().sort((a,b)=>(b.active-a.active) || a.name.localeCompare(b.name));
-  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Deploy scouts-schema.sql and list-scouts.js to go live.</div>` : '')
+  el.innerHTML = (demoMode ? `<div class="banner">Demo data. Live load failed${demoReason ? ': ' + esc(demoReason) : ''}. Sign out and back in to retry.</div>` : '')
     + sorted.map(s=>`
     <div class="row-card">
       <div class="rc-top">

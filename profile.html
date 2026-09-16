@@ -38,6 +38,19 @@
   .row:first-of-type{border-top:none;}
   .pill{display:inline-block; font-size:11px; font-weight:700; border:1px solid var(--line); border-radius:999px; padding:4px 10px; margin:0 6px 6px 0; color:var(--ink);}
   .pill.commit{border-color:var(--good); color:var(--good);}
+  .offers{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px;}
+  .offer-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:9px;
+      padding:6px 10px 6px 7px; background:var(--card); max-width:100%;}
+  .offer-chip img{width:22px; height:22px; object-fit:contain; flex:0 0 auto;}
+  .offer-chip .offer-fb{width:22px; height:22px; border-radius:5px; flex:0 0 auto; display:grid; place-items:center;
+      font-family:'Anton',sans-serif; font-size:10px;}
+  .offer-chip b{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .offer-chip .offer-yr{font-size:10.5px; color:var(--dim); white-space:nowrap;}
+  .offer-chip.committed{border-color:var(--good);}
+  .commit-line{display:flex; align-items:center; gap:9px; margin-bottom:8px;}
+  .commit-line img{width:30px; height:30px; object-fit:contain;}
+  .commit-st{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .commit-to{font-family:'Anton',sans-serif; font-size:17px; line-height:1.1;}
   .narr{background:var(--card); border-left:2px solid var(--red); border-radius:0 10px 10px 0; padding:11px 13px; font-size:13.5px; color:#D6D6D6; white-space:pre-wrap;}
 
   .rail{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
@@ -66,6 +79,25 @@
 
 <script>
 const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+/* Offer as a crest. Uses the logoUrl and colour player.js attaches from the
+   programs table; a school not in that table gets a colour block with
+   initials, text flipped by luminance so a light gold stays readable. */
+function onColor(hex){
+  const c = String(hex||'').replace('#',''); if(c.length!==6) return '#fff';
+  const n = parseInt(c,16); const L=[(n>>16)&255,(n>>8)&255,n&255].map(v=>{v/=255; return v<=.03928? v/12.92 : Math.pow((v+.055)/1.055,2.4)});
+  return (.2126*L[0]+.7152*L[1]+.0722*L[2]) > 0.45 ? '#0A0A0A' : '#FFFFFF';
+}
+function offerChip(o, commitment){
+  const name = o.school || '';
+  const isCommit = commitment && commitment.to && name && String(commitment.to).toLowerCase() === String(name).toLowerCase();
+  const init = name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase();
+  const bg = o.color || '#555';
+  const mark = o.logoUrl
+    ? `<img src="${esc(o.logoUrl)}" alt="" onerror="this.outerHTML='<span class=&quot;offer-fb&quot; style=&quot;background:${esc(bg)};color:${onColor(bg)}&quot;>${esc(init)}</span>'">`
+    : `<span class="offer-fb" style="background:${esc(bg)};color:${onColor(bg)}">${esc(init)}</span>`;
+  const yr = o.date ? String(o.date).slice(0,4) : '';
+  return `<span class="offer-chip${isCommit?' committed':''}" title="${esc(name)}${o.date?' \u00b7 '+esc(o.date):''}">${mark}<b>${esc(name)}</b>${yr?`<span class="offer-yr">${yr}</span>`:''}</span>`;
+}
 const QS = new URLSearchParams(location.search);
 
 const profileSearch = (path, n) => 'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
@@ -128,9 +160,14 @@ function render(p){
 
   if(p.commitment || (p.offers||[]).length){
     h += `<h2>Recruitment</h2>`;
-    if(p.commitment) h += `<span class="pill commit">${esc(p.commitment.status)}${p.commitment.to?' \u00b7 '+esc(p.commitment.to):''}</span><br>`;
-    if((p.offers||[]).length) h += `<div style="margin-top:4px;">${p.offers.map(o=>`<span class="pill">${esc(o.school)}${o.date?' <span style="color:var(--dim)">'+esc(o.date)+'</span>':''}</span>`).join('')}</div>`;
-    else h += `<div class="sub">No offers logged yet.</div>`;
+    if(p.commitment){
+      h += `<div class="commit-line">${p.commitment.logoUrl?`<img src="${esc(p.commitment.logoUrl)}" alt="" onerror="this.remove()">`:''}`
+         + `<div><div class="commit-st">${esc(p.commitment.status)}${p.commitment.date?' \u00b7 '+esc(p.commitment.date):''}</div>`
+         + (p.commitment.to?`<div class="commit-to">${esc(p.commitment.to)}</div>`:'') + `</div></div>`;
+    }
+    if((p.offers||[]).length){
+      h += `<div class="offers">${p.offers.map(o=>offerChip(o, p.commitment)).join('')}</div>`;
+    } else h += `<div class="sub">No offers logged yet.</div>`;
   }
 
   if(links.length){

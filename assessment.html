@@ -7,6 +7,20 @@
 <title>InHome Assessment</title>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  .wl-tag{display:inline-block; font-size:10px; letter-spacing:.22em; text-transform:uppercase; font-weight:800;
+      color:#F5F5F5; border:1px solid #F5F5F5; border-radius:999px; padding:4px 11px; margin-bottom:16px;}
+  .wl-head{display:flex; gap:14px; align-items:center; padding-bottom:16px; border-bottom:1px solid #2A2A2A;}
+  .wl-photo{width:84px; height:84px; border-radius:14px; background:#141414; border:1px solid #2A2A2A; overflow:hidden;
+      display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:28px; color:#8A8A8A; flex:0 0 auto;}
+  .wl-photo img{width:100%; height:100%; object-fit:cover;}
+  .wl-name{font-family:'Anton',sans-serif; font-size:30px; line-height:1;}
+  .wl-sub{font-size:13px; color:#C4C4C4; margin-top:5px; display:flex; align-items:center; gap:6px;}
+  .wl-logo{width:18px; height:18px; object-fit:contain;}
+  .wl-meta{font-size:12px; color:#8A8A8A; margin-top:3px;}
+  .wl-body{padding:16px 0 6px;}
+  .wl-body p{font-size:14.5px; line-height:1.6; color:#DADADA; margin:0 0 10px;}
+  .wl-body p b{color:#fff;}
+  .wl-fine{font-size:11.5px; color:#6A6A6A; text-align:center; margin-top:10px;}
   .consent-row{display:flex; gap:11px; align-items:flex-start; background:#141414; border:1px solid #2A2A2A;
       border-radius:10px; padding:13px 14px; margin-top:10px; cursor:pointer; font-size:14px; line-height:1.45; color:#DADADA;}
   .consent-row input{width:19px; height:19px; margin:1px 0 0; flex:0 0 auto; accent-color:#CC0000;}
@@ -115,6 +129,7 @@ let DATA = null, ANSWERS = {}, DIRTY = false;
    to it being taken and shared with programs. Stored per token so a
    returning athlete is not asked twice. */
 let CONSENTED = false;
+let WELCOMED  = false;   // the profile page has been seen this session
 const consentKey = () => 'ih_consent_' + (new URLSearchParams(location.search).get('t') || 'preview');
 
 function totalQuestions(){
@@ -225,6 +240,48 @@ function keyHTML(it){
   return bits.length ? `<div class="fine" style="margin-top:8px;color:#E0A419;">${esc(bits.join(' \u2014 '))}</div>` : '';
 }
 const POS_LIST = [['QB','Quarterback'],['RB','Running back'],['WR','Wide receiver'],['TE','Tight end'],['OL','Offensive line'],['DL','Defensive line / edge'],['LB','Linebacker'],['CB','Cornerback'],['S','Safety'],['K','Kicker / punter']];
+/* Page one: the athlete's own profile and why he is here. Invite-only,
+   and it says so. The wording changes on whether a program has actually
+   asked for him (he is on a board) or an InHome evaluator flagged him,
+   so it is never a claim we cannot back. */
+function renderWelcome(){
+  const pr = DATA.profile || {};
+  const name = pr.name || DATA.athlete || 'Athlete';
+  const first = name.split(' ')[0];
+  const initials = name.split(/\s+/).map(w => w[0] || '').join('').slice(0,2).toUpperCase();
+  const meta = [pr.position, pr.classYear ? 'Class of ' + pr.classYear : null,
+                [pr.homeCity, pr.homeState].filter(Boolean).join(', ') || null].filter(Boolean).map(esc).join(' &middot; ');
+  const size = [pr.height, pr.weight].filter(Boolean).map(esc).join(' &middot; ');
+  const identified = pr.onBoard
+    ? 'A college program has asked InHome to evaluate you.'
+    : 'An InHome evaluator has flagged you as a prospect.';
+
+  $('who').innerHTML = `<b>${esc(name)}</b>${esc(pr.school || DATA.school || '')}`;
+  $('app').innerHTML = `
+    <div class="card wl">
+      <div class="wl-tag">Invite only</div>
+      <div class="wl-head">
+        <div class="wl-photo">${pr.headshotUrl ? `<img src="${esc(pr.headshotUrl)}" alt="" onerror="this.parentElement.textContent='${esc(initials)}'">` : esc(initials)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="wl-name">${esc(name)}</div>
+          <div class="wl-sub">${pr.logoUrl ? `<img class="wl-logo" src="${esc(pr.logoUrl)}" alt="" onerror="this.remove()">` : ''}${esc(pr.school || DATA.school || '')}</div>
+          ${meta ? `<div class="wl-meta">${meta}</div>` : ''}
+          ${size ? `<div class="wl-meta">${size}</div>` : ''}
+        </div>
+      </div>
+
+      <div class="wl-body">
+        <p><b>${esc(first)}, this link was made for you and nobody else.</b> ${identified} Athletes are not on this platform unless a D1, D2, JUCO or NAIA program or an InHome scout put them here. There is no fee, no membership and no way to buy in.</p>
+        <p>Your profile is already with us. What you do next is the part a college staff actually reads: how you think, how you learn, how you read the field. It takes about twenty minutes and your answers save as you go.</p>
+      </div>
+
+      <button type="button" class="btn" id="wlGo" style="width:100%;">Start the assessment</button>
+      <div class="wl-fine">One page of terms comes first, then the questions.</div>
+    </div>`;
+
+  $('wlGo').addEventListener('click', () => { WELCOMED = true; render(); window.scrollTo({top:0}); });
+}
+
 function renderConsent(){
   const name = esc(DATA.athlete || 'this athlete');
   $('who').innerHTML = `<b>${name}</b>${esc(DATA.school||'')}`;
@@ -302,6 +359,7 @@ function renderPositionPick(){
   }));
 }
 function render(){
+  if(!WELCOMED && !DATA.preview){ renderWelcome(); return; }
   if(!CONSENTED && !DATA.preview){ renderConsent(); return; }
   if(DATA.needsPosition){ renderPositionPick(); return; }
   const isIQ = DATA.kind === 'iq';

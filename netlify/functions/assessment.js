@@ -122,12 +122,44 @@ exports.handler = async (event) => {
       return o;
     });
 
+    /* Profile card for the welcome page: the athlete sees himself first,
+       then the consent screen, then the questions. Everything here is his
+       own public-facing record. onBoard says whether a program has asked
+       for him, which changes the wording on the welcome page. */
+    let profile = null;
+    if (a.prospect_id) {
+      try {
+        const h = event.headers || {};
+        const base = `${h['x-forwarded-proto'] || 'https'}://${h['x-forwarded-host'] || h.host || 'inhomecollegescouts.com'}`;
+        const [pr] = await sql`SELECT id, name, school, position, class_year, level, home_city, home_state, height, weight, headshot_key FROM prospects WHERE id = ${a.prospect_id}`;
+        if (pr) {
+          let logoUrl = null, onBoard = false, boardLevels = [];
+          try {
+            const [lg] = await sql`SELECT espn_logo_id FROM programs WHERE lower(regexp_replace(short_name,'[^A-Za-z0-9]','','g')) = lower(regexp_replace(${pr.school || ''},'[^A-Za-z0-9]','','g')) LIMIT 1`;
+            if (lg && lg.espn_logo_id) logoUrl = `https://a.espncdn.com/i/teamlogos/ncaa/500/${lg.espn_logo_id}.png`;
+          } catch (e) {}
+          try {
+            const rows = await sql`SELECT DISTINCT COALESCE(pg.division,'') AS division FROM program_prospects pp LEFT JOIN programs pg ON upper(pg.access_code) = upper(pp.program_code) WHERE pp.prospect_id = ${pr.id}`;
+            onBoard = rows.length > 0;
+            boardLevels = rows.map(r => r.division).filter(Boolean);
+          } catch (e) {}
+          profile = {
+            name: pr.name, school: pr.school, position: pr.position, classYear: pr.class_year, level: pr.level,
+            homeCity: pr.home_city, homeState: pr.home_state, height: pr.height, weight: pr.weight,
+            headshotUrl: pr.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(pr.headshot_key)}` : null,
+            logoUrl, onBoard, boardLevels
+          };
+        }
+      } catch (e) { profile = null; }
+    }
+
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position, positionGroup: groupFor(a.position),
         needsPosition: usesClips(a.kind) && !groupFor(a.position),
         status: a.status === 'complete' ? 'complete' : 'open',
+        profile,
         sections: forAthlete(bank(a.kind, a.position)),
         dots: usesClips(a.kind) ? forAthlete(scenariosFor(groupFor(a.position))) : [],
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,

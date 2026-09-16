@@ -61,9 +61,8 @@
   .dot .tri{fill:#1C1C1C; stroke:#E9E9E9; stroke-width:2.2;}
   .dot:hover .ring, .dot:hover .tri{stroke:#FFF; stroke-width:3;}
   .dot.picked .ring, .dot.picked .tri{fill:#FFF;}
-  .dot.right .ring, .dot.right .tri{fill:#35C759; stroke:#35C759;}
-  .dot.wrong .ring, .dot.wrong .tri{fill:#FF4D4D; stroke:#FF4D4D;}
-  .dot.reveal .ring, .dot.reveal .tri{stroke:#35C759; stroke-width:3.5; stroke-dasharray:4 3;}
+  .dot.picked .ring, .dot.picked .tri{fill:#F5F5F5; stroke:#F5F5F5;}
+  .verdict.rec{color:var(--mute);}
   .off .ball{fill:#FFF;}
   .off text{fill:#000; font:700 11px 'Inter',sans-serif; text-anchor:middle; dominant-baseline:central; pointer-events:none;}
   .snapbar{display:flex; gap:8px; align-items:center; margin:-2px 0 10px;}
@@ -207,16 +206,15 @@ function snapReset(scId){
   const btn = document.querySelector(`[data-snap="${scId}"]`), rst = document.querySelector(`[data-reset="${scId}"]`);
   if(btn) btn.disabled = false; if(rst) rst.disabled = true;
 }
-function dotVerdict(sc, ok, given){
+/* The athlete never learns whether a read was right. The server holds the
+   key and scores on submit; the evaluator sees the result in admin. The
+   read locks on first answer so what is measured is instinct, not a
+   second guess. */
+function dotVerdict(sc){
   const box = document.getElementById('dv_' + sc.id);
   const q = document.getElementById('dq_' + sc.id);
-  if(!box) return;
-  box.className = 'verdict ' + (ok ? 'ok' : 'no');
-  box.innerHTML = (ok ? '<b>That\'s it.</b>' : '<b>Not that one.</b>') + (sc.why ? `<small>${esc(sc.why)}</small>` : '');
-  if(q){
-    q.classList.add('locked');
-    if(!ok && sc.mode === 'tap'){ const el = q.querySelector(`[data-def="${sc.answer}"]`); if(el) el.classList.add('reveal'); }
-  }
+  if(box){ box.className = 'verdict rec'; box.innerHTML = '<b>Recorded.</b>'; }
+  if(q) q.classList.add('locked');
 }
 function keyHTML(it){
   if(!DATA.preview || !DATA.admin) return '';
@@ -339,7 +337,7 @@ function render(){
 
     ${(DATA.dots||[]).length ? `
       <div class="sec-title">Live reads</div>
-      <div class="sec-count">${DATA.dots.length} looks &middot; the offense is labeled, the defense is not &middot; you get the answer right away</div>
+      <div class="sec-count">${DATA.dots.length} looks &middot; the offense is labeled, the defense is not &middot; your first read is the one that counts</div>
       ${DATA.dots.map((sc, n) => `
         <div class="q" id="dq_${esc(sc.id)}">
           <div class="q-text">${n+1}. ${esc(sc.q)}</div>
@@ -378,9 +376,8 @@ function render(){
       const sc = (DATA.dots||[]).find(x => x.id === el.dataset.sc); if(!sc || sc.mode !== 'tap') return;
       const q = document.getElementById('dq_' + sc.id); if(q && q.classList.contains('locked')) return;
       setAns('dot_' + sc.id, el.dataset.def);
-      const ok = el.dataset.def === sc.answer;
-      el.classList.add(ok ? 'right' : 'wrong');
-      dotVerdict(sc, ok, el.dataset.def);
+      el.classList.add('picked');
+      dotVerdict(sc);
     });
   });
   document.querySelectorAll('[data-dot]').forEach(el => {
@@ -389,7 +386,7 @@ function render(){
       const q = document.getElementById('dq_' + sc.id); if(q && q.classList.contains('locked')) return;
       setAns('dot_' + sc.id, el.dataset.v);
       el.parentElement.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', b === el));
-      dotVerdict(sc, String(el.dataset.v) === String(sc.answer), el.dataset.v);
+      dotVerdict(sc);
     });
   });
   document.querySelectorAll('[data-q]').forEach(el => {

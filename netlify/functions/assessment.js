@@ -109,16 +109,27 @@ exports.handler = async (event) => {
 
     const clips = usesClips(a.kind) ? await activeClips(groupFor(a.position)) : [];
 
+    /* Everything the athlete receives goes through this. The answer key,
+       the explanation for each read, and the personality-dimension tag on
+       each question never leave the server for an athlete session. The
+       page grades nothing; the server re-scores on submit. Preview (admin,
+       returned above) keeps the full objects. */
+    const forAthlete = (items) => (items || []).map(it => {
+      const o = Object.assign({}, it);
+      delete o.answer; delete o.why; delete o.mb;
+      if (Array.isArray(o.items)) o.items = forAthlete(o.items);
+      if (Array.isArray(o.questions)) o.questions = forAthlete(o.questions);
+      return o;
+    });
+
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position, positionGroup: groupFor(a.position),
         needsPosition: usesClips(a.kind) && !groupFor(a.position),
         status: a.status === 'complete' ? 'complete' : 'open',
-        sections: bank(a.kind, a.position),
-        /* dot scenarios carry their answers because the page grades on the spot,
-           whiteboard style; the server re-scores on submit regardless */
-        dots: usesClips(a.kind) ? scenariosFor(groupFor(a.position)) : [],
+        sections: forAthlete(bank(a.kind, a.position)),
+        dots: usesClips(a.kind) ? forAthlete(scenariosFor(groupFor(a.position))) : [],
         clips: clips.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
                                  options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT })),
         answers: a.answers || {}
@@ -138,8 +149,8 @@ exports.handler = async (event) => {
       const clips2 = usesClips(a.kind) ? await activeClips(groupFor(pos)) : [];
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         position: pos, positionGroup: groupFor(pos),
-        sections: bank(a.kind, pos),
-        dots: usesClips(a.kind) ? scenariosFor(groupFor(pos)) : [],
+        sections: forAthlete(bank(a.kind, pos)),
+        dots: usesClips(a.kind) ? forAthlete(scenariosFor(groupFor(pos))) : [],
         clips: clips2.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
                                   options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT }))
       }) };
@@ -158,7 +169,8 @@ exports.handler = async (event) => {
     try { sc.diagnosis = require('./lib/diagnosis').diagnosis(a.kind, sc, clean, a.position, sc.mbti); } catch (e) { sc.diagnosis = null; }
     await sql`UPDATE assessments SET answers = ${JSON.stringify(clean)}, status = 'complete', completed_at = now(),
               score_pct = ${sc.total ? sc.pct : null}, score_detail = ${JSON.stringify(sc)} WHERE id = ${a.id}`;
-    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ done: true, scored: sc.total > 0, pct: sc.pct, correct: sc.correct, total: sc.total }) };
+    /* The athlete gets a receipt, not a score. Results are read in admin. */
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ done: true, scored: sc.total > 0 }) };
   } catch (err) {
     console.error('assessment error:', err);
     return fail(500, err.message);

@@ -497,6 +497,20 @@
   .rlink:hover{border-color:var(--ink); background:var(--card-2);}
   .rlink img{height:15px; width:auto; max-width:62px; object-fit:contain; display:block;}
   .rlink span{font-size:11px; font-weight:800; letter-spacing:.02em; color:var(--ink);}
+  /* offers as crests on the player profile */
+  .offers{display:flex; flex-wrap:wrap; gap:7px; margin-top:2px;}
+  .offer-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:9px;
+      padding:6px 10px 6px 7px; background:var(--card); max-width:100%;}
+  .offer-chip img{width:22px; height:22px; object-fit:contain; flex:0 0 auto;}
+  .offer-chip .offer-fb{width:22px; height:22px; border-radius:5px; flex:0 0 auto; display:grid; place-items:center;
+      font-family:'Anton',sans-serif; font-size:10px;}
+  .offer-chip b{font-size:12.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .offer-chip .offer-yr{font-size:10.5px; color:var(--dim); white-space:nowrap;}
+  .offer-chip.committed{border-color:#F5F5F5;}
+  .commit-line{display:flex; align-items:center; gap:9px; margin-bottom:6px;}
+  .commit-line img{width:30px; height:30px; object-fit:contain;}
+  .commit-st{font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .commit-to{font-family:'Anton',sans-serif; font-size:17px; line-height:1.1;}
 </style>
 </head>
 <body>
@@ -1707,6 +1721,29 @@ const RECRUIT_SITES = [
   { id:'x',         name:'X',         domain:'x.com',         url:n => 'https://x.com/search?f=live&q=' + encodeURIComponent(`"${n}"`) }
 ];
 function siteIcon(d){ return 'https://www.google.com/s2/favicons?sz=64&domain=' + d; }
+/* One offer as a crest. Uses the logoUrl and colour player.js returns from
+   the programs table; a school not in that table falls back to a colour
+   block with initials, text flipped by luminance so a light gold stays
+   readable. */
+function offerOnColor(hex){
+  const c = String(hex||'').replace('#',''); if(c.length!==6) return '#fff';
+  const n = parseInt(c,16); const r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  const L = [r,g,b].map(v=>{v/=255; return v<=.03928? v/12.92 : Math.pow((v+.055)/1.055,2.4)});
+  return (.2126*L[0]+.7152*L[1]+.0722*L[2]) > 0.45 ? '#0A0A0A' : '#FFFFFF';
+}
+function offerChipHTML(o, commitment){
+  const name = o.school || '';
+  const isCommit = commitment && commitment.to && name && String(commitment.to).toLowerCase() === String(name).toLowerCase();
+  const init = name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,3).toUpperCase();
+  const bg = o.color || '#555';
+  const mark = o.logoUrl
+    ? '<img src="' + esc(o.logoUrl) + '" alt="" onerror="this.outerHTML=\'<span class=&quot;offer-fb&quot; style=&quot;background:' + esc(bg) + ';color:' + offerOnColor(bg) + '&quot;>' + esc(init) + '</span>\'">'
+    : '<span class="offer-fb" style="background:' + esc(bg) + ';color:' + offerOnColor(bg) + '">' + esc(init) + '</span>';
+  const yr = o.date ? String(o.date).slice(0,4) : '';
+  return '<span class="offer-chip' + (isCommit?' committed':'') + '" title="' + esc(name) + (o.date?' \u00b7 '+esc(o.date):'') + '">'
+    + mark + '<b>' + esc(name) + '</b>' + (yr ? '<span class="offer-yr">' + yr + '</span>' : '') + '</span>';
+}
+
 function railHTML(name){
   if(!name) return '';
   return '<div class="rail" onclick="event.stopPropagation()"><span class="rail-lbl">Look him up</span>' +
@@ -1751,8 +1788,16 @@ function renderPlayerSheet(p){
   html += railHTML(p.name);
   if((p.offers&&p.offers.length) || p.commitment){
     html += '<h4>Recruitment</h4>';
-    if(p.commitment) html += '<div style="font-size:13px;margin-bottom:4px;"><b>' + esc(p.commitment.status) + '</b>' + (p.commitment.to?' to '+esc(p.commitment.to):'') + '</div>';
-    if((p.offers||[]).length) html += '<div style="font-size:13px;color:#C4C4C4;">Offers: ' + p.offers.map(o=>esc(o.school)).join(', ') + '</div>';
+    if(p.commitment){
+      html += '<div class="commit-line">'
+        + (p.commitment.logoUrl ? '<img src="' + esc(p.commitment.logoUrl) + '" alt="" onerror="this.remove()">' : '')
+        + '<div><div class="commit-st">' + esc(p.commitment.status) + (p.commitment.date?' \u00b7 '+esc(p.commitment.date):'') + '</div>'
+        + (p.commitment.to ? '<div class="commit-to">' + esc(p.commitment.to) + '</div>' : '') + '</div></div>';
+    }
+    if((p.offers||[]).length){
+      html += '<div class="sp-sub" style="margin:8px 0 4px;">Offers (' + p.offers.length + ')</div>'
+        + '<div class="offers">' + p.offers.map(o => offerChipHTML(o, p.commitment)).join('') + '</div>';
+    }
   }
   if((p.notes||[]).length){
     html += '<h4>InHome notes</h4>' + p.notes.map(n => '<div style="padding:8px 0;border-top:1px solid var(--line);font-size:13px;"><div style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700;">' + esc(n.kind) + (n.date?' \u00b7 '+esc(n.date):'') + '</div><div style="color:#C4C4C4;line-height:1.55;white-space:pre-wrap;margin-top:3px;">' + esc(n.body) + '</div></div>').join('');

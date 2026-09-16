@@ -1157,6 +1157,14 @@ function fmtDate(d){
 }
 function dateOnly(d){ const m = String(d||'').match(/^(\d{4}-\d{2}-\d{2})/); return m ? m[1] : ''; }
 function scoutName(id){ const s = SCOUT_ROSTER.find(s=>s.id===id); return s ? s.name : (id||'Unassigned'); }
+/* Small crest in front of a school name, using the logoUrl player.js
+   attaches from the programs table. Nothing rendered when there is none. */
+function crest(o, size){
+  size = size || 16;
+  return o && o.logoUrl
+    ? '<img src="' + esc(o.logoUrl) + '" alt="" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:-3px;margin-right:6px;" onerror="this.remove()">'
+    : '';
+}
 function esc(s){ return String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 function tierColor(t){
   const x=(t||'').toLowerCase();
@@ -2427,8 +2435,8 @@ async function shareProfile(prospectId, name, school){
       <div style="border:1px solid var(--line); border-radius:11px; padding:12px; margin-bottom:14px; background:var(--card);">
         <div class="rc-meta" style="margin-bottom:6px;">Offers on this profile <span style="color:var(--dim)">— add any before you send</span></div>
         <div id="shOffers" style="margin-bottom:8px;">
-          ${commitment ? `<span class="pill" style="border-color:var(--good);color:var(--good)">${esc(commitment.status)}${commitment.to?' \u00b7 '+esc(commitment.to):''}</span>` : ''}
-          ${offers.length ? offers.map(o=>`<span class="pill">${esc(o.school)}${o.date?` <span style="color:var(--dim)">${esc(o.date)}</span>`:''} <a href="#" onclick="shRemoveOffer(${id}, ${o.id}, '${esc(name).replace(/'/g,"\\'")}', '${esc(school||'').replace(/'/g,"\\'")}'); return false;" style="color:var(--dim);margin-left:4px;">\u2715</a></span>`).join('')
+          ${commitment ? `<span class="pill" style="border-color:var(--good);color:var(--good)">${crest(commitment)}${esc(commitment.status)}${commitment.to?' \u00b7 '+esc(commitment.to):''}</span>` : ''}
+          ${offers.length ? offers.map(o=>`<span class="pill">${crest(o)}${esc(o.school)}${o.date?` <span style="color:var(--dim)">${esc(o.date)}</span>`:''} <a href="#" onclick="shRemoveOffer(${id}, ${o.id}, '${esc(name).replace(/'/g,"\\'")}', '${esc(school||'').replace(/'/g,"\\'")}'); return false;" style="color:var(--dim);margin-left:4px;">\u2715</a></span>`).join('')
                         : '<span class="rc-meta">None on file yet.</span>'}
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -2889,8 +2897,8 @@ async function ppLoadOffersNotes(){
   try{
     const r = await fetch('/.netlify/functions/player?id=' + PP.id, {cache:'no-store'}); const d = await r.json();
     const el = document.getElementById('ppOffers');
-    if(el) el.innerHTML = (d.offers||[]).length ? d.offers.map(o=>`<div class="vrow"><span style="flex:1;">${esc(o.school)}${o.status && o.status!=='open' ? ` <span class="pill">${esc(o.status)}</span>` : ''}${o.date?` <span class="rc-meta">\u00b7 ${esc(o.date)}</span>`:''}</span><button type="button" class="mini-btn danger" onclick="ppRemoveOffer(${o.id})">\u2715</button></div>`).join('')
-      + (d.commitment ? `<div class="rc-meta" style="margin-top:4px;">Commitment: <b style="color:var(--ink)">${esc(d.commitment.status)}${d.commitment.to?' \u00b7 '+esc(d.commitment.to):''}</b></div>` : '') : 'No offers on file.';
+    if(el) el.innerHTML = (d.offers||[]).length ? d.offers.map(o=>`<div class="vrow"><span style="flex:1;">${crest(o,18)}${esc(o.school)}${o.status && o.status!=='open' ? ` <span class="pill">${esc(o.status)}</span>` : ''}${o.date?` <span class="rc-meta">\u00b7 ${esc(o.date)}</span>`:''}</span><button type="button" class="mini-btn danger" onclick="ppRemoveOffer(${o.id})">\u2715</button></div>`).join('')
+      + (d.commitment ? `<div class="rc-meta" style="margin-top:4px;">Commitment: <b style="color:var(--ink)">${crest(d.commitment,18)}${esc(d.commitment.status)}${d.commitment.to?' \u00b7 '+esc(d.commitment.to):''}</b></div>` : '') : 'No offers on file.';
   }catch(e){}
   try{
     const d = await api('listNotes', { prospectId: PP.id });

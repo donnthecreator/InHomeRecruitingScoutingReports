@@ -68,6 +68,37 @@
   .iq-p{font-size:13.5px; line-height:1.55; color:#DADADA; margin:0 0 8px;}
   .iq-about{border-top:1px solid var(--line); padding-top:10px; margin-top:6px;}
   .iq-about p{font-size:12.5px; line-height:1.55; color:#9A9A9A; margin:0 0 7px;}
+  /* full scouting report */
+  .rp{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card); margin-bottom:14px;}
+  .rp-head{display:flex; gap:14px; align-items:flex-start; padding-bottom:12px; border-bottom:1px solid var(--line);}
+  .rp-scout{font-size:14px;}
+  .rp-score{font-family:'Anton',sans-serif; font-size:34px; line-height:.9;}
+  .rp-score small{font-size:13px; color:var(--dim);}
+  .rp-bars{padding:12px 0 4px; border-bottom:1px solid var(--line);}
+  .rb-row{display:flex; align-items:center; gap:8px; font-size:12px; margin-bottom:6px;}
+  .rb-l{width:96px; color:var(--dim); font-weight:600;} .rb-l span{opacity:.7;}
+  .rb-t{flex:1; height:6px; background:#2A2A2A; border-radius:4px; overflow:hidden;}
+  .rb-f{display:block; height:100%; background:#F5F5F5;}
+  .rb-v{width:26px; text-align:right; font-weight:700;}
+  .rp-side{display:flex; gap:20px; margin-top:10px;}
+  .rp-side .k{font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); font-weight:700;}
+  .rp-side .v{font-family:'Anton',sans-serif; font-size:20px; line-height:1.1;} .rp-side small{font-size:11px; color:var(--dim);}
+  .rp .sech{font-family:'Anton',sans-serif; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; margin:16px 0 7px; display:flex; align-items:baseline;}
+  .rp .sech span{margin-left:auto; font-family:'Inter',sans-serif; font-size:9.5px; letter-spacing:.08em; color:var(--dim); font-weight:700;}
+  .rt{border:1px solid var(--line); border-radius:9px; padding:10px 12px; margin-bottom:7px;}
+  .rt-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .rt-n{font-weight:700; font-size:13.5px;} .rt-g{font-family:'Anton',sans-serif; font-size:13px; white-space:nowrap;}
+  .rt-g.g1,.rt-g.g2{color:var(--dim);}
+  .rt-p{font-size:12px; color:#9A9A9A; margin-top:4px; line-height:1.45;}
+  .rt-m{font-size:12px; margin-top:5px; font-weight:600;} .rt-m span{color:var(--dim); font-weight:400;}
+  .gt{display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); border-radius:9px; padding:9px 12px; margin-bottom:6px; font-size:13px; font-weight:600;}
+  .pill.c{color:var(--dim);} .pill.f{text-decoration:underline; text-decoration-color:#CC0000; text-underline-offset:3px;}
+  .narr{border-left:3px solid #F5F5F5; padding:10px 13px; font-size:13.5px; line-height:1.55; color:#DADADA; background:var(--paper); border-radius:0 9px 9px 0;}
+  .rec{border:1px solid var(--line); border-radius:10px; padding:11px 13px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .rec .k{font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); font-weight:700;} .rec .v{font-family:'Anton',sans-serif; font-size:18px; margin-top:2px;}
+  .btn-sm{border:1px solid #F5F5F5; color:#F5F5F5; border-radius:8px; padding:8px 12px; font-size:11.5px; font-weight:700; text-decoration:none; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap;}
+  .syn{border:1px solid var(--line); border-left:3px solid #F5F5F5; border-radius:0 12px 12px 0; padding:14px 16px; background:var(--card);}
+  .syn p{font-size:14px; line-height:1.65; color:#EDEDED; margin:0 0 10px;} .syn p:last-child{margin-bottom:0;}
   /* full assessment */
   .fq{border:1px solid var(--line); border-left-width:3px; border-radius:10px; padding:11px 13px; margin-bottom:8px; background:var(--card);}
   .fq.ok{border-left-color:var(--good);} .fq.no{border-left-color:#FF4D4D;}
@@ -122,6 +153,68 @@
 </div>
 
 <script>
+/* The full scouting report, laid out the way the coach portal shows it:
+   score with the weighted breakdown, film traits, athletic testing,
+   production, the gates, football IQ, the scout's prompts and narrative,
+   the recommendation. Config and grades come from the server. */
+function reportHTML(r){
+  const cfg = r.config, raw = r.raw || {}, GL = r.gradeLabels || ['Poor','Below Avg','Average','Above Avg','Elite'];
+  const gw = (n) => n ? (n + ' \u00b7 ' + (GL[n-1]||'')) : 'Not graded';
+  const bd = r.breakdown || {};
+  const bar = (lbl, v, wt) => `<div class="rb-row"><span class="rb-l">${lbl} <span>${wt}</span></span><span class="rb-t"><span class="rb-f" style="width:${Math.min(v||0,100)}%"></span></span><span class="rb-v">${Math.round(v||0)}</span></div>`;
+  const trait = (t, g, metric) => `<div class="rt"><div class="rt-top"><span class="rt-n">${esc(t.name)}</span><span class="rt-g g${g||0}">${gw(g)}</span></div>${t.p?`<div class="rt-p">${esc(t.p)}</div>`:''}${metric?`<div class="rt-m">${esc(metric)}${t.metric?` <span>\u00b7 ${esc(t.metric)}</span>`:''}</div>`:''}</div>`;
+  const head = `
+    <div class="rp-head">
+      <div style="flex:1;min-width:0;">
+        <div class="rp-scout"><b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` <span class="sub">\u00b7 ${esc(r.scoutRole)}</span>`:''}</div>
+        ${r.scoutPlayed?`<div class="played">${esc(r.scoutPlayed)}</div>`:''}
+        <div class="sub">${esc(r.date||'')}${r.archetype?' \u00b7 '+esc(r.archetype):''}${r.evalCamp?' \u00b7 Evaluated at '+esc(r.evalCamp):''}</div>
+      </div>
+      <div style="text-align:right;"><div class="rp-score">${r.score!=null?Number(r.score).toFixed(1):'\u2014'}<small>/100</small></div><div class="sub">${esc(r.tier||'')}</div></div>
+    </div>
+    <div class="rp-bars">
+      ${bar('Film', bd.film, '50%')}${bar('Athletic', bd.athletic, '25%')}${bar('Character', bd.character, '15%')}${bar('Production', bd.production, '10%')}
+      <div class="rp-side"><div><div class="k">Translation idx</div><div class="v">${bd.ti!=null?Number(bd.ti).toFixed(2):'n/a'}</div></div><div><div class="k">Football IQ</div><div class="v">${r.footballIQ!=null?r.footballIQ:'\u2014'}<small>/10</small></div></div></div>
+    </div>`;
+  if(!cfg) return `<div class="rp">${head}${r.narrative?`<div class="sech">Scout narrative</div><div class="narr">${esc(r.narrative)}</div>`:''}</div>`;
+  const filmRows = cfg.film.map(t => trait(t, (raw.traitGrades||{})[t.id])).join('');
+  const athRows  = cfg.athletic.map(t => trait(t, (raw.athleticGrades||{})[t.id], (raw.athleticRaw||{})[t.id] || 'n/a')).join('');
+  const prodRows = cfg.production.map(t => trait(t, (raw.productionGrades||{})[t.id], (raw.productionRaw||{})[t.id] || 'n/a')).join('');
+  const store = raw.gates || {};
+  const gateRows = cfg.gates.map((g, i) => { const key = g.replace(/[^a-zA-Z0-9]/g,''); const v = (Array.isArray(store) ? store[i] : store[key]) || 'fail';
+    return `<div class="gt"><span>${esc(g)}</span><span class="pill ${v==='concern'?'c':v==='fail'?'f':''}">${v==='pass'?'Pass':v==='concern'?'Concern':'Flag'}</span></div>`; }).join('');
+  const prompts = raw.prompts || {};
+  const PQ = { signature:'What does he do that shows up on every rep?', loses:'Where does he lose, and against what kind of player?', adversity:'How does he respond after a bad play or a bad drive?', comp:'Who does he remind you of, and where does the comparison break?', competition:'Who has he actually done it against?', projection:'Best-case version of him in three years, and what has to happen?', nextlook:'What would he still need to show before the scout stakes his name on him?' };
+  const promptRows = Object.keys(PQ).filter(k => prompts[k]).map(k => `<div class="wq"><div class="wq-q">${esc(PQ[k])}</div><div class="wq-a">${esc(prompts[k])}</div></div>`).join('');
+  const iqPct = r.footballIQ!=null ? Math.round((r.footballIQ/10)*100) : 0;
+  return `<div class="rp">
+    ${head}
+    <div class="sech">Film evaluation <span>50% weight</span></div>${filmRows}
+    <div class="sech">Athletic testing <span>25% weight</span></div>${athRows}
+    <div class="sech">Production <span>10% weight</span></div>${prodRows}
+    <div class="sech">The gates <span>character \u00b7 15% weight</span></div>${gateRows}
+    <div class="sech">Football IQ <span>scout's read \u00b7 standalone</span></div>
+    <div class="iq"><div class="iq-top"><div class="iq-big">${r.footballIQ!=null?r.footballIQ+'/10':'\u2014'}</div><div class="iq-track"><div class="iq-fill" style="width:${iqPct}%"></div></div></div></div>
+    ${promptRows?`<div class="sech">Scout's answers</div>${promptRows}`:''}
+    ${r.narrative?`<div class="sech">Scout narrative</div><div class="narr">${esc(r.narrative)}</div>`:''}
+    <div class="rec"><div><div class="k">Recommendation</div><div class="v">${esc(r.tier||'\u2014')}</div></div>${r.filmLink?`<a class="btn-sm" href="${esc(r.filmLink)}" target="_blank" rel="noopener">Watch film</a>`:''}</div>
+  </div>`;
+}
+
+/* AI synopsis at the end of the full profile: fetched after render, shown
+   with a clear label so the reader knows what wrote it. */
+async function loadSynopsis(id, code){
+  const host = document.getElementById('synopsis'); if(!host) return;
+  try{
+    const res = await fetch('/.netlify/functions/profile-synopsis', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, code }) });
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || 'Synopsis unavailable');
+    if(!d.text){ host.innerHTML = `<div class="sub">${esc(d.reason || 'Nothing to summarize yet.')}</div>`; return; }
+    host.innerHTML = `<div class="syn">${d.text.split(/\n{2,}/).map(par => `<p>${esc(par.trim())}</p>`).join('')}</div>
+      <div class="sub" style="margin-top:8px;color:var(--dim);">Written by AI from this file only: the scouting report, the assessment and the offers above. Nothing outside it. ${d.generatedAt ? 'Generated ' + esc(String(d.generatedAt).slice(0,10)) + '.' : ''}</div>`;
+  }catch(err){ host.innerHTML = `<div class="sub" style="color:#FF7D7D;">${esc(err.message)}</div>`; }
+}
+
 const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 /* Offer as a crest. Uses the logoUrl and colour player.js attaches from the
    programs table; a school not in that table gets a colour block with
@@ -143,6 +236,7 @@ function offerChip(o, commitment){
   return `<span class="offer-chip${isCommit?' committed':''}" title="${esc(name)}${o.date?' \u00b7 '+esc(o.date):''}">${mark}<b>${esc(name)}</b>${yr?`<span class="offer-yr">${yr}</span>`:''}</span>`;
 }
 const QS = new URLSearchParams(location.search);
+let CURRENT_CODE = null;
 
 const profileSearch = (path, n) => 'https://www.google.com/search?q=' + encodeURIComponent(`site:${path} "${n}"`);
 const SITES = [
@@ -235,14 +329,7 @@ function render(p){
   }
 
   if(p.fullProfile && (p.reports||[]).length){
-    h += `<h2>Scouting reports (${p.reports.length})</h2>` + p.reports.map(r => `
-      <div class="row"><div style="flex:1;"><b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` <span class="sub">\u00b7 ${esc(r.scoutRole)}</span>`:''}
-        ${r.scoutPlayed?`<div class="played">${esc(r.scoutPlayed)}</div>`:''}
-        <div class="sub">${esc(r.date||'')}${r.archetype?' \u00b7 '+esc(r.archetype):''}</div></div>
-        <div style="text-align:right;"><div style="font-family:'Anton',sans-serif;font-size:19px;">${r.score!=null?r.score.toFixed(1):'\u2014'}</div>
-        <div class="sub" style="font-size:10.5px;">${esc(r.tier||'')}</div></div></div>`).join('');
-    const withNarr = p.reports.find(r => r.narrative);
-    if(withNarr) h += `<div class="narr" style="margin-top:10px;">${esc(withNarr.narrative)}</div>`;
+    h += `<h2>Scouting report${p.reports.length>1?'s ('+p.reports.length+')':''}</h2>` + p.reports.map(reportHTML).join('');
   }
 
   if((p.assessments||[]).length){
@@ -314,9 +401,15 @@ function render(p){
           });
         }
       });
-      const who = p.viewer ? (p.viewer.program ? ' for ' + esc(p.viewer.program) : p.viewer.scout ? ' for ' + esc(p.viewer.scout) + ' (InHome)' : '') : '';
-      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">Full profile unlocked${who}. Shared with the athlete's consent for recruiting evaluation. Please keep it within your staff.</div>`;
     }
+  }
+
+  /* Synopsis and the unlock footer belong to every full profile, with or
+     without an assessment on file. */
+  if(p.fullProfile){
+    const who = p.viewer ? (p.viewer.program ? ' for ' + esc(p.viewer.program) : p.viewer.scout ? ' for ' + esc(p.viewer.scout) + ' (InHome)' : '') : '';
+    h += `<h2>Synopsis</h2><div id="synopsis"><div class="sub">Reading the file\u2026</div></div>`;
+    h += `<div class="sub" style="margin-top:14px;color:var(--dim);">Full profile unlocked${who}. Shared with the athlete's consent for recruiting evaluation. Please keep it within your staff.</div>`;
   }
 
   if((p.notes||[]).length){
@@ -338,6 +431,7 @@ function render(p){
         A blue check means InHome confirmed that measurable at the source. This page is private and was shared with you directly.</footer>`;
 
   document.getElementById('app').innerHTML = h;
+  if(p.fullProfile && document.getElementById('synopsis')) loadSynopsis(p.id, CURRENT_CODE);
   const uf = document.getElementById('unlockForm');
   if(uf) uf.addEventListener('submit', e => {
     e.preventDefault();
@@ -356,6 +450,7 @@ function render(p){
     const q = id ? 'id=' + encodeURIComponent(id) : 'name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(QS.get('school')||'');
     let code = QS.get('code');
     if(!code){ try{ code = sessionStorage.getItem('ih_prog_code'); }catch(err){} }
+    CURRENT_CODE = code || null;
     const qf = code ? q + '&code=' + encodeURIComponent(code) : q;
     const res = await fetch('/.netlify/functions/player?' + qf, { cache:'no-store' });
     const p = await res.json();

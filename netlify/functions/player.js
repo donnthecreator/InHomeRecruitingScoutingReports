@@ -11,6 +11,22 @@
 const { neon } = require('@neondatabase/serverless');
 const { explain: explainType } = require('./lib/mbti-locker');
 const { bank, scenariosFor, groupFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const { POSITIONS, GRADE_LABELS } = require('./lib/positions');
+
+/* Same math as the report builder and the coach portal. Kept here so the
+   profile page renders numbers it did not compute itself. */
+function scoreReport(raw, footballIQ, storedScore) {
+  const avg = (o) => { const v = Object.values(o || {}).map(Number).filter(n => !isNaN(n)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const filmAvg = avg(raw.traitGrades), athAvg = avg(raw.athleticGrades), prodAvg = avg(raw.productionGrades);
+  const g = raw.gates || {}; const gv = Array.isArray(g) ? g : Object.values(g);
+  const charScore = gv.length ? gv.map(x => x === 'pass' ? 100 : x === 'concern' ? 60 : 0).reduce((a, b) => a + b, 0) / gv.length : null;
+  const filmScore = filmAvg != null ? filmAvg * 20 : 0, athScore = athAvg != null ? athAvg * 20 : 0, prodScore = prodAvg != null ? prodAvg * 20 : 0, cScore = charScore != null ? charScore : 0;
+  const noGrades = filmAvg == null && athAvg == null && prodAvg == null;
+  if (noGrades && storedScore != null) return { composite: Number(storedScore), filmScore: 0, athScore: 0, cScore: 0, prodScore: 0, ti: null, estimated: true };
+  const composite = filmScore * 0.50 + athScore * 0.25 + cScore * 0.15 + prodScore * 0.10;
+  const ti = (filmAvg != null && athAvg != null && athScore > 0 && footballIQ != null) ? (Number(footballIQ) * filmScore) / athScore : null;
+  return { composite, filmScore, athScore, cScore, prodScore, ti, estimated: false };
+}
 
 /* Defender codes from the field-diagram reads, in words a coach reads
    without decoding. Unknown codes fall through unchanged. */
@@ -72,6 +88,7 @@ exports.handler = async (event) => {
 
     const logos = await logoMap(sql, base);
     const reports = await sql`SELECT id, scout_name, scout_role, scout_id, inhome_score, recommendation_tier, archetype, position, date_evaluated, created_at, narrative,
+                 raw, film_grades, athletic_grades, athletic_raw, production_grades, production_raw, gates, interview_data, track, football_iq, height, weight, film_link, eval_camp, wingspan, verifications,
                  (SELECT sc.played FROM scouts sc WHERE sc.scout_id = reports.scout_id LIMIT 1) AS scout_played
                               FROM reports WHERE prospect_id = ${p.id} ORDER BY created_at DESC`;
     let games = [];
@@ -181,8 +198,24 @@ exports.handler = async (event) => {
          tier; the full profile gets every report with the scout's name,
          role and playing background. */
       reports: full
-        ? reports.map(r => ({ id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, scoutPlayed: r.scout_played || null, score: r.inhome_score != null ? Number(r.inhome_score) : null,
-        tier: r.recommendation_tier, archetype: r.archetype, position: r.position, date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative }))
+        ? reports.map(r => {
+            const rw = r.raw || {};
+            const raw = {
+              traitGrades: rw.traitGrades || r.film_grades || {}, athleticGrades: rw.athleticGrades || r.athletic_grades || {},
+              athleticRaw: rw.athleticRaw || r.athletic_raw || {}, productionGrades: rw.productionGrades || r.production_grades || {},
+              productionRaw: rw.productionRaw || r.production_raw || {}, gates: rw.gates || r.gates || {},
+              interview: rw.interview || r.interview_data || {}, track: rw.track || r.track || null, prompts: rw.prompts || {}
+            };
+            const sc = scoreReport(raw, r.football_iq, r.inhome_score);
+            return { id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, scoutPlayed: r.scout_played || null,
+              score: r.inhome_score != null ? Number(r.inhome_score) : (sc.composite != null ? Math.round(sc.composite * 10) / 10 : null),
+              tier: r.recommendation_tier, archetype: r.archetype, position: r.position,
+              date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative,
+              footballIQ: r.football_iq != null ? Number(r.football_iq) : null, height: r.height, weight: r.weight, filmLink: r.film_link,
+              evalCamp: r.eval_camp, wingspan: r.wingspan, verifications: r.verifications || {},
+              breakdown: { film: sc.filmScore, athletic: sc.athScore, character: sc.cScore, production: sc.prodScore, ti: sc.ti, estimated: sc.estimated },
+              raw, config: POSITIONS[r.position] || null, gradeLabels: GRADE_LABELS };
+          })
         : (() => {
             const best = reports.reduce((a, r) => (Number(r.inhome_score) || 0) > (Number(a && a.inhome_score) || 0) ? r : a, null);
             return best ? [{ score: best.inhome_score != null ? Number(best.inhome_score) : null, tier: best.recommendation_tier }] : [];

@@ -367,6 +367,11 @@
   .sh-btn.primary{background:var(--ink); color:#000; border-color:var(--ink); grid-column:1/-1;}
   .sh-btn.ghost{grid-column:1/-1; background:transparent; color:var(--mute); border-color:transparent;}
   .sh-note{font-size:11.5px; color:var(--dim); margin-top:12px; line-height:1.5;}
+  .mg-card{display:flex; gap:12px; align-items:center; border:1px solid var(--line); border-radius:10px;
+      padding:11px 13px; margin-bottom:8px; background:var(--card); flex-wrap:wrap;}
+  .mg-card.keep{border-color:var(--good);}
+  .mg-card.drop{border-color:#CC0000; opacity:.75;}
+  .mg-confirm{border:1px solid var(--line); border-left:3px solid #CC0000; border-radius:10px; padding:12px 14px; background:var(--paper); margin-top:4px;}
   .rc-played{margin-top:3px; font-size:12px; cursor:pointer;}
   .rc-played-v{color:var(--ink); border-bottom:1px dotted var(--dim);}
   .rc-played-e{color:var(--dim);}
@@ -463,6 +468,16 @@
   <div class="panes">
   <!-- ============ PLAYERS (master board) ============ -->
   <div class="pane on" id="panePlayers">
+    <div class="panel">
+      <h3>Merge duplicate records</h3>
+      <div class="sub">Two records for the same athlete, usually from an intake and an invite landing under different spellings or levels. Merging moves every report, assessment, offer, note and board entry onto the record you keep, then deletes the empty one. Nothing a scout or an athlete produced is thrown away.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="mgSearch" placeholder="Search a name, e.g. Carlos Benjamin" onkeydown="if(event.key==='Enter')findDupes()">
+        <button type="button" class="mini-btn go" onclick="findDupes()">Find records</button>
+      </div>
+      <div id="mgResults" style="margin-top:12px;"></div>
+    </div>
+
     <div class="panel">
       <h3>Master Board</h3>
       <div class="sub">Every player in the system, one list. Scouted, on a program board, in the performance log, or submitted through the public page. Tap a name anywhere in admin to open his profile.</div>
@@ -2039,6 +2054,73 @@ async function savePlayed(pk){
     if(!demoMode) await api('updateScout', { id: pk, played: val });
     const s = SCOUT_ROSTER.find(x => String(x.pkId) === String(pk)); if(s) s.played = val || null;
     renderRoster(); toast(val ? 'Saved' : 'Cleared');
+  }catch(err){ toast(err.message); }
+}
+
+/* ---- merge duplicates ---- */
+let MG_MATCHES = [], MG_KEEP = null, MG_DROP = null;
+async function findDupes(){
+  const q = (document.getElementById('mgSearch').value || '').trim();
+  const host = document.getElementById('mgResults');
+  if(q.length < 2){ host.innerHTML = '<div class="sub">Type at least two letters.</div>'; return; }
+  host.innerHTML = '<div class="sub">Searching\u2026</div>';
+  try{
+    const d = await api('findDuplicates', { q });
+    MG_MATCHES = d.matches || []; MG_KEEP = null; MG_DROP = null;
+    if(!MG_MATCHES.length){ host.innerHTML = '<div class="sub">No records match that name.</div>'; return; }
+    if(MG_MATCHES.length === 1){ host.innerHTML = '<div class="sub">Only one record for that name, nothing to merge.</div>'; return; }
+    renderDupes();
+  }catch(err){ host.innerHTML = '<div class="sub">' + esc(err.message) + '</div>'; }
+}
+function renderDupes(){
+  const host = document.getElementById('mgResults');
+  const card = (m) => {
+    const c = m.counts, has = [];
+    if(c.reports) has.push(c.reports + (c.reports===1?' report':' reports'));
+    if(c.assessments) has.push(c.assessments + (c.assessments===1?' assessment':' assessments'));
+    if(c.offers) has.push(c.offers + (c.offers===1?' offer':' offers'));
+    if(c.boards) has.push('on ' + c.boards + (c.boards===1?' board':' boards'));
+    const role = MG_KEEP === m.id ? 'keep' : MG_DROP === m.id ? 'drop' : '';
+    return `<div class="mg-card ${role}">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;">${esc(m.name)} <span class="rc-meta">#${m.id}</span></div>
+        <div class="rc-meta">${[m.position, m.level, m.classYear?'Class of '+m.classYear:null, m.school].filter(Boolean).map(esc).join(' &middot; ')}</div>
+        <div class="rc-meta" style="margin-top:3px;color:${has.length?'var(--ink)':'var(--dim)'}">${has.length ? has.join(' &middot; ') : 'nothing attached'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button type="button" class="mini-btn ${MG_KEEP===m.id?'go':''}" onclick="mgPick('keep',${m.id})">Keep this</button>
+        <button type="button" class="mini-btn ${MG_DROP===m.id?'danger':''}" onclick="mgPick('drop',${m.id})">Merge away</button>
+      </div>
+    </div>`;
+  };
+  let h = MG_MATCHES.map(card).join('');
+  if(MG_KEEP && MG_DROP){
+    const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
+    h += `<div class="mg-confirm">
+      <div style="font-size:13px;line-height:1.55;">Everything attached to <b>${esc(drop.name)} #${drop.id}</b> moves to <b>${esc(keep.name)} #${keep.id}</b>, then record #${drop.id} is deleted. Any blank on the record you keep gets filled from the one being retired.</div>
+      <button type="button" class="mini-btn danger" style="margin-top:10px;" onclick="doMerge()">Merge and delete #${drop.id}</button>
+    </div>`;
+  } else if(MG_KEEP || MG_DROP){
+    h += `<div class="sub" style="margin-top:8px;">Now pick the other one.</div>`;
+  }
+  host.innerHTML = h;
+}
+function mgPick(role, id){
+  if(role === 'keep'){ MG_KEEP = MG_KEEP === id ? null : id; if(MG_DROP === MG_KEEP) MG_DROP = null; }
+  else { MG_DROP = MG_DROP === id ? null : id; if(MG_KEEP === MG_DROP) MG_KEEP = null; }
+  renderDupes();
+}
+async function doMerge(){
+  const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
+  if(!keep || !drop) return;
+  if(!confirm(`Merge ${drop.name} #${drop.id} into ${keep.name} #${keep.id}?\n\nRecord #${drop.id} will be deleted. This cannot be undone.`)) return;
+  try{
+    const d = await api('mergeProspects', { from: drop.id, into: keep.id });
+    const parts = Object.keys(d.moved || {}).filter(k => d.moved[k] && d.moved[k] !== 'skipped').map(k => d.moved[k] + ' ' + k);
+    toast('Merged' + (parts.length ? ': ' + parts.join(', ') + ' moved' : ''));
+    document.getElementById('mgResults').innerHTML = `<div class="sub">Merged into <b>${esc(keep.name)} #${keep.id}</b>.${parts.length?' Moved '+esc(parts.join(', '))+'.':''} Record #${drop.id} deleted.</div>`;
+    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null;
+    loadAll();
   }catch(err){ toast(err.message); }
 }
 

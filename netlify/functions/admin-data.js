@@ -148,6 +148,83 @@ exports.handler = async (event) => {
         return ok({ success: true });
       }
 
+      /* ---- duplicate prospects: preview, then merge ----
+         Two records for the same athlete happen when an intake and an
+         invite land under different spellings or levels. Merging moves
+         every attached record onto the one you keep and deletes only the
+         emptied duplicate, so nothing a scout or an athlete produced is
+         ever thrown away. */
+      case 'findDuplicates': {
+        const q = String(body.q || '').trim();
+        if (q.length < 2) return ok({ matches: [] });
+        const nk = q.toLowerCase().replace(/[^a-z]/g, '');
+        const rows = await sql`
+          SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.headshot_key,
+                 (SELECT COUNT(*) FROM reports r WHERE r.prospect_id = p.id) AS reports,
+                 (SELECT COUNT(*) FROM assessments a WHERE a.prospect_id = p.id AND a.status = 'complete') AS assessments,
+                 (SELECT COUNT(*) FROM prospect_offers o WHERE o.prospect_id = p.id) AS offers,
+                 (SELECT COUNT(*) FROM program_prospects b WHERE b.prospect_id = p.id) AS boards
+          FROM prospects p
+          WHERE p.name_key = ${nk} OR p.name_key LIKE ${'%' + nk + '%'} OR lower(p.name) LIKE ${'%' + q.toLowerCase() + '%'}
+          ORDER BY p.id`;
+        return ok({ matches: rows.map(r => ({
+          id: r.id, name: r.name, school: r.school, position: r.position, classYear: r.class_year,
+          level: r.level, headshotKey: r.headshot_key,
+          counts: { reports: Number(r.reports), assessments: Number(r.assessments), offers: Number(r.offers), boards: Number(r.boards) }
+        })) });
+      }
+
+      case 'mergeProspects': {
+        const from = parseInt(body.from, 10), into = parseInt(body.into, 10);
+        if (!from || !into) return fail(400, 'from and into required');
+        if (from === into) return fail(400, 'Pick two different records');
+        const [a] = await sql`SELECT id, name FROM prospects WHERE id = ${from}`;
+        const [b] = await sql`SELECT id, name FROM prospects WHERE id = ${into}`;
+        if (!a || !b) return fail(404, 'One of those records no longer exists');
+
+        const moved = {};
+        const move = async (label, fn) => { try { const r = await fn(); moved[label] = Array.isArray(r) ? r.length : (r && r.count) || 0; } catch (e) { moved[label] = 'skipped'; } };
+
+        await move('reports',      () => sql`UPDATE reports            SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        await move('assessments',  () => sql`UPDATE assessments        SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        await move('notes',        () => sql`UPDATE prospect_notes     SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        await move('invites',      () => sql`UPDATE profile_invites    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        await move('assignments',  () => sql`UPDATE scout_assignments  SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        await move('intake',       () => sql`UPDATE intake_requests    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+        /* offers and board entries can collide on a unique pair, so drop
+           the duplicates first and move what is left */
+        await move('offers', async () => {
+          await sql`DELETE FROM prospect_offers o WHERE o.prospect_id = ${from}
+                    AND EXISTS (SELECT 1 FROM prospect_offers x WHERE x.prospect_id = ${into}
+                                AND COALESCE(x.school_key,'') = COALESCE(o.school_key,'')
+                                AND COALESCE(x.school_other,'') = COALESCE(o.school_other,''))`;
+          return sql`UPDATE prospect_offers SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
+        });
+        await move('boards', async () => {
+          await sql`DELETE FROM program_prospects b WHERE b.prospect_id = ${from}
+                    AND EXISTS (SELECT 1 FROM program_prospects x WHERE x.prospect_id = ${into} AND upper(x.program_code) = upper(b.program_code))`;
+          return sql`UPDATE program_prospects SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
+        });
+
+        /* fill any blank on the keeper from the record being retired, so a
+           merge never loses a detail the duplicate happened to have */
+        try {
+          await sql`UPDATE prospects k SET
+              school = COALESCE(NULLIF(k.school,''), d.school),
+              position = COALESCE(NULLIF(k.position,''), d.position),
+              class_year = COALESCE(NULLIF(k.class_year,''), d.class_year),
+              height = COALESCE(NULLIF(k.height,''), d.height),
+              weight = COALESCE(NULLIF(k.weight,''), d.weight),
+              home_city = COALESCE(NULLIF(k.home_city,''), d.home_city),
+              home_state = COALESCE(NULLIF(k.home_state,''), d.home_state),
+              headshot_key = COALESCE(k.headshot_key, d.headshot_key)
+            FROM prospects d WHERE k.id = ${into} AND d.id = ${from}`;
+        } catch (e) {}
+
+        await sql`DELETE FROM prospects WHERE id = ${from}`;
+        return ok({ merged: true, from: a.name, into: b.name, moved });
+      }
+
       case 'loadAll': {
         /* Self-healing schema. The admin used to drop into demo mode with a
            banner pointing at scouts-schema.sql if any one of these was

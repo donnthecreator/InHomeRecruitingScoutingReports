@@ -9,6 +9,8 @@
    diagnosis, never the raw interview text), and which boards he is on.
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
+const { explain: explainType } = require('./lib/mbti-locker');
+const { bank } = require('./lib/assessment-banks');
 const { logoMap, schoolKey } = require('./lib/logos');
 const sql = neon(process.env.DATABASE_URL);
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -44,11 +46,46 @@ exports.handler = async (event) => {
       games = await sql`SELECT to_char(performance_date,'YYYY-MM-DD') AS date, stat_line, grade, source_link, school, level
                         FROM player_performances WHERE lower(regexp_replace(name,'[^A-Za-z]','','g')) = ${p.name_key} ORDER BY performance_date DESC NULLS LAST LIMIT 30`;
     } catch (e) {}
+    /* Full profile: the written interview answers and the per-question
+       results. Only with the prospect's share token, which admin generates
+       when you click Send full profile, so it is never reachable by id. */
+    let full = false;
+    if (qs.full) {
+      try {
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS share_token TEXT`;
+        const [row] = await sql`SELECT share_token FROM prospects WHERE id = ${p.id}`;
+        full = !!(row && row.share_token && String(row.share_token) === String(qs.full));
+      } catch (e) { full = false; }
+    }
+
     let assessments = [];
     try {
-      const rows = await sql`SELECT kind, score_pct, score_detail, to_char(completed_at,'YYYY-MM-DD') AS completed FROM assessments WHERE prospect_id = ${p.id} AND status = 'complete' ORDER BY completed_at DESC`;
-      assessments = rows.map(a => ({ kind: a.kind, pct: a.score_pct != null ? Number(a.score_pct) : null, completed: a.completed,
-        diagnosis: a.score_detail ? a.score_detail.diagnosis || null : null, mbti: a.score_detail && a.score_detail.mbti ? a.score_detail.mbti.type : null }));
+      const rows = await sql`SELECT kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed FROM assessments WHERE prospect_id = ${p.id} AND status = 'complete' ORDER BY completed_at DESC`;
+      assessments = rows.map(a => {
+        const sd = a.score_detail || {};
+        const mbti = sd.mbti ? sd.mbti.type : null;
+        const out = { kind: a.kind, pct: a.score_pct != null ? Number(a.score_pct) : null, completed: a.completed,
+          diagnosis: sd.diagnosis || null, mbti,
+          /* the type explained for a coach, on every profile that has one */
+          personality: mbti ? explainType(mbti) : null };
+        if (full) {
+          out.detail = Array.isArray(sd.detail) ? sd.detail.map(d => ({
+            id: d.id, q: d.q, correct: !!d.correct, why: d.why || null, clip: !!d.clip, dots: !!d.dots,
+            given: d.options ? ((d.options[d.given] !== undefined) ? d.options[d.given] : (d.shown || d.given)) : (d.shown || d.given),
+            answer: d.options ? ((d.options[d.answer] !== undefined) ? d.options[d.answer] : d.answer) : d.answer
+          })) : [];
+          out.correct = sd.correct != null ? sd.correct : null;
+          out.total = sd.total != null ? sd.total : null;
+          /* written answers: anything the athlete typed, keyed by question id */
+          const ans = a.answers || {};
+          const qtext = {}, qsec = {};
+          try { bank(a.kind, p.position).forEach(sec => (sec.items || []).forEach(it => { qtext[it.id] = it.q; qsec[it.id] = sec.title || null; })); } catch (e) {}
+          out.written = Object.keys(ans)
+            .filter(k => typeof ans[k] === 'string' && ans[k].trim().length > 0 && !k.startsWith('dot_') && !k.startsWith('clip_') && k !== '_consent' && qtext[k])
+            .map(k => ({ id: k, section: qsec[k], q: qtext[k], text: ans[k] }));
+        }
+        return out;
+      });
     } catch (e) {}
     let offers = [], notes = [];
     try {
@@ -86,7 +123,7 @@ exports.handler = async (event) => {
       headshotUrl: p.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}` : null,
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,
       logoUrl: logos[schoolKey(p.school)] || null,
-      boards, offers, notes,
+      boards, offers, notes, fullProfile: full,
       commitment: p.commit_status ? { status: p.commit_status,
         to: (commitProg && commitProg.short_name) || p.committed_to || p.committed_to_other || null,
         date: p.commit_date || null,

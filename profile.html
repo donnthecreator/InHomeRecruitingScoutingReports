@@ -38,6 +38,36 @@
   .row:first-of-type{border-top:none;}
   .pill{display:inline-block; font-size:11px; font-weight:700; border:1px solid var(--line); border-radius:999px; padding:4px 10px; margin:0 6px 6px 0; color:var(--ink);}
   .pill.commit{border-color:var(--good); color:var(--good);}
+  /* personality */
+  .pt{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card);}
+  .pt-head{display:flex; gap:12px; align-items:center; margin-bottom:12px;}
+  .pt-type{font-family:'Anton',sans-serif; font-size:30px; letter-spacing:.04em; line-height:1; flex:0 0 auto;}
+  .pt-name{font-weight:700; font-size:15px;}
+  .pt-letters{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px;}
+  .pt-letters div{background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:8px 8px 7px; min-width:0;}
+  .pt-letters b{font-family:'Anton',sans-serif; font-size:16px; display:block; line-height:1;}
+  .pt-letters span{display:block; font-size:9px; letter-spacing:.09em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-top:3px;}
+  .pt-letters small{display:block; font-size:10px; color:#C4C4C4; line-height:1.35; margin-top:4px;}
+  .pt-k{font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-bottom:5px;}
+  .pt p{font-size:13.5px; line-height:1.55; color:#DADADA; margin:0 0 12px;}
+  .pt-cols{display:grid; grid-template-columns:1fr; gap:12px;}
+  @media(min-width:640px){ .pt-cols{grid-template-columns:1fr 1fr 1fr;} }
+  .pt-cols ul{margin:0; padding-left:16px;}
+  .pt-cols li{font-size:12.5px; line-height:1.45; color:#DADADA; margin-bottom:4px;}
+  /* full assessment */
+  .fq{border:1px solid var(--line); border-left-width:3px; border-radius:10px; padding:11px 13px; margin-bottom:8px; background:var(--card);}
+  .fq.ok{border-left-color:var(--good);} .fq.no{border-left-color:#FF4D4D;}
+  .fq-top{display:flex; gap:9px; align-items:flex-start;}
+  .fq-n{font-family:'Anton',sans-serif; font-size:13px; color:var(--dim); min-width:18px;}
+  .fq-q{flex:1; font-size:13.5px; font-weight:600; line-height:1.4;}
+  .fq-mark{font-size:10.5px; font-weight:800; letter-spacing:.06em; white-space:nowrap;}
+  .fq.ok .fq-mark{color:var(--good);} .fq.no .fq-mark{color:#FF4D4D;}
+  .fq-ans{font-size:12.5px; margin-top:6px; padding-left:27px; color:#DADADA;}
+  .fq-ans .k{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-right:6px;}
+  .fq-why{font-size:12px; color:#9A9A9A; line-height:1.45; margin-top:6px; padding-left:27px;}
+  .wq{margin-bottom:12px;}
+  .wq-q{font-size:12.5px; font-weight:700; color:#C4C4C4; line-height:1.4;}
+  .wq-a{font-size:13.5px; line-height:1.55; color:#EDEDED; margin-top:4px; padding-left:11px; border-left:2px solid var(--line); white-space:pre-wrap;}
   .offers{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px;}
   .offer-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:9px;
       padding:6px 10px 6px 7px; background:var(--card); max-width:100%;}
@@ -188,9 +218,58 @@ function render(p){
   if((p.assessments||[]).length){
     h += `<h2>Assessments</h2>` + p.assessments.map(a => `
       <div class="row"><div style="flex:1;"><b>${a.kind==='iq'?'Football IQ':a.kind==='full'?'Athlete Assessment':'Athlete Interview'}</b>
-        <div class="sub">${esc(a.completed||'')}${a.mbti?' \u00b7 '+esc(a.mbti):''}</div>
+        <div class="sub">${esc(a.completed||'')}${a.mbti?' \u00b7 '+esc(a.mbti):''}${a.total!=null?' \u00b7 '+a.correct+' of '+a.total:''}</div>
         ${a.diagnosis?`<div class="sub" style="color:#C4C4C4;margin-top:4px;">${esc(a.diagnosis.summary)}</div>`:''}</div>
         ${a.pct!=null?`<div style="font-family:'Anton',sans-serif;font-size:19px;">${a.pct}%</div>`:''}</div>`).join('');
+
+    /* Personality, explained. Shown on every profile that has a type. */
+    const withType = p.assessments.find(a => a.personality);
+    if(withType){
+      const t = withType.personality;
+      h += `<h2>Personality</h2>
+        <div class="pt">
+          <div class="pt-head"><span class="pt-type">${esc(t.type)}</span><div><div class="pt-name">${esc(t.name)}</div><div class="sub">${esc(t.line)}</div></div></div>
+          <div class="pt-letters">${t.letters.map(l => `<div><b>${esc(l.letter)}</b><span>${esc(l.word)}</span><small>${esc(l.gloss)}</small></div>`).join('')}</div>
+          <div class="pt-k">In a college locker room</div>
+          <p>${esc(t.room)}</p>
+          <div class="pt-cols">
+            <div><div class="pt-k">What you get</div><ul>${t.strengths.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+            <div><div class="pt-k">Where it goes sideways</div><ul>${t.watch.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+            <div><div class="pt-k">How to coach him</div><ul>${t.coach.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+          </div>
+          <div class="sub" style="margin-top:10px;color:var(--dim);">From a forced-choice inventory the athlete completed himself. A tendency, not a verdict, and it never touches the InHome Score.</div>
+        </div>`;
+    }
+
+    /* Full assessment: only present when the page was opened with the
+       prospect's share token. Every scored question with his answer, the
+       right answer and the reason, then his written answers verbatim. */
+    if(p.fullProfile){
+      p.assessments.filter(a => (a.detail && a.detail.length) || (a.written && a.written.length)).forEach(a => {
+        const scored = a.detail || [];
+        if(scored.length){
+          const right = scored.filter(d=>d.correct).length;
+          h += `<h2>Football IQ, question by question <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400;">${right} of ${scored.length} right</span></h2>`;
+          h += scored.map((d,i) => `
+            <div class="fq ${d.correct?'ok':'no'}">
+              <div class="fq-top"><span class="fq-n">${i+1}</span><span class="fq-q">${esc(d.q)}</span><span class="fq-mark">${d.correct?'\u2713 Right':'\u2717 Missed'}</span></div>
+              <div class="fq-ans"><span class="k">He answered</span> ${esc(String(d.given ?? '\u2014'))}</div>
+              ${d.correct ? '' : `<div class="fq-ans"><span class="k">Right answer</span> ${esc(String(d.answer ?? '\u2014'))}</div>`}
+              ${d.why ? `<div class="fq-why">${esc(d.why)}</div>` : ''}
+            </div>`).join('');
+        }
+        const written = a.written || [];
+        if(written.length){
+          h += `<h2>Interview, in his words</h2>`;
+          let lastSec = null;
+          written.forEach(w => {
+            if(w.section && w.section !== lastSec){ h += `<div class="pt-k" style="margin-top:12px;">${esc(w.section)}</div>`; lastSec = w.section; }
+            h += `<div class="wq"><div class="wq-q">${esc(w.q)}</div><div class="wq-a">${esc(w.text)}</div></div>`;
+          });
+        }
+      });
+      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">This full profile was shared privately by InHome with the athlete's consent. Please do not forward it beyond your staff.</div>`;
+    }
   }
 
   if((p.notes||[]).length){
@@ -220,7 +299,8 @@ function render(p){
   if(!id && !name){ document.getElementById('app').innerHTML = '<div class="empty"><div class="big">No player specified</div></div>'; return; }
   try{
     const q = id ? 'id=' + encodeURIComponent(id) : 'name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(QS.get('school')||'');
-    const res = await fetch('/.netlify/functions/player?' + q, { cache:'no-store' });
+    const full = QS.get('full'); const qf = full ? q + '&full=' + encodeURIComponent(full) : q;
+    const res = await fetch('/.netlify/functions/player?' + qf, { cache:'no-store' });
     const p = await res.json();
     if(!res.ok) throw new Error(p.error || 'Not found');
     render(p);

@@ -2455,7 +2455,35 @@ async function shareProfile(prospectId, name, school){
         <a class="sh-btn" href="${esc(url)}" target="_blank" rel="noopener">Open it myself</a>
         <button type="button" class="sh-btn ghost" onclick="closeShare()">Done</button>
       </div>
-      <div class="sh-note">The page is live: anything you add to his record, including these offers, shows up for anyone holding this link.</div>`;
+      <div class="sh-note">The page is live: anything you add to his record, including these offers, shows up for anyone holding this link.</div>
+
+      <div style="border:1px solid var(--line); border-radius:11px; padding:12px; margin-top:14px; background:var(--card);">
+        <div class="rc-meta" style="margin-bottom:4px;">Full profile <span style="color:var(--dim)">&mdash; for a college staff</span></div>
+        <div style="font-size:12px; color:var(--dim); line-height:1.5; margin-bottom:9px;">Everything on the basic profile plus the assessment in full: every question, what he answered, what was right, and his written interview answers. Its own private link, not reachable by id.</div>
+        <div id="shFullWrap"><button type="button" class="sh-btn primary" id="shFullMake" style="width:100%;">Send full profile</button></div>
+      </div>`;
+    document.getElementById('shFullMake').addEventListener('click', async () => {
+      const b = document.getElementById('shFullMake'); b.disabled = true; b.textContent = 'Building link\u2026';
+      try{
+        const d = await api('getFullShareToken', { id });
+        const fullUrl = url + '&full=' + encodeURIComponent(d.token);
+        document.getElementById('shFullWrap').innerHTML = `
+          <div class="linkbox" id="shFullLink">${esc(fullUrl)}</div>
+          <div class="sh-grid">
+            <button type="button" class="sh-btn primary" id="shFullCopy">Copy full link</button>
+            <a class="sh-btn" href="sms:?&body=${encodeURIComponent(name + ' \u2014 InHome full profile with assessment: ' + fullUrl)}">Text it</a>
+            <a class="sh-btn" href="mailto:?subject=${encodeURIComponent('InHome full profile: ' + name)}&body=${encodeURIComponent(name + ' \u2014 InHome full profile with assessment detail: ' + fullUrl)}">Email it</a>
+            <a class="sh-btn" href="${esc(fullUrl)}" target="_blank" rel="noopener">Open it myself</a>
+          </div>
+          <div class="sh-note">Contains his written answers. Send it to a staff, not to a group.</div>`;
+        document.getElementById('shFullCopy').addEventListener('click', async () => {
+          const c = document.getElementById('shFullCopy');
+          try{ await navigator.clipboard.writeText(fullUrl); c.textContent = 'Copied \u2713'; }
+          catch(e){ c.textContent = 'Select the link and copy'; }
+          setTimeout(()=>{ c.textContent = 'Copy full link'; }, 2200);
+        });
+      }catch(err){ b.disabled = false; b.textContent = 'Send full profile'; toast(err.message); }
+    });
     const nat = document.getElementById('shNative');
     if(nat) nat.addEventListener('click', async () => { try{ await navigator.share({ title:'InHome prospect profile', text: name, url }); }catch(e){} });
     document.getElementById('shCopy').addEventListener('click', async () => {

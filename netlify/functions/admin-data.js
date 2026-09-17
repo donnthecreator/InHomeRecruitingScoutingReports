@@ -141,6 +141,22 @@ exports.handler = async (event) => {
         return ok({ success: true });
       }
 
+      /* Mint or return the prospect's full-profile token. Random, 24 chars,
+         stored once and reused so the link stays stable. Revoke by
+         clearing it; the next click mints a new one and old links die. */
+      case 'getFullShareToken': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS share_token TEXT`;
+        let [row] = await sql`SELECT share_token FROM prospects WHERE id = ${id}`;
+        if (!row) return fail(404, 'prospect not found');
+        let token = row.share_token;
+        if (!token || body.rotate) {
+          token = require('crypto').randomBytes(18).toString('base64url');
+          await sql`UPDATE prospects SET share_token = ${token} WHERE id = ${id}`;
+        }
+        return ok({ token });
+      }
       case 'loadAll': {
         /* Self-healing schema. The admin used to drop into demo mode with a
            banner pointing at scouts-schema.sql if any one of these was

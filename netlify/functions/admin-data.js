@@ -185,18 +185,30 @@ async function deleteProspectRecord(sql, id) {
 
 /* One-shot: Carlos Benjamin exists twice, an HS record a scout filed on
    and a JUCO record the athlete completed his assessment on. Keep the
-   JUCO record, merge the HS one into it. Runs on admin load and is a
-   no-op once there is only one record, so it retires itself. */
+   record that has the completed assessment (that is the fact we were
+   given), fall back to the one marked JUCO, and merge every other match
+   into it. Runs on admin load, reports everything it saw, and is a no-op
+   once one record remains. */
 async function autoMergeOnce(sql) {
+  const report = { name: 'Carlos Benjamin', found: [], keptId: null, results: [] };
   try {
-    const rows = await sql`SELECT id, level, school FROM prospects WHERE name_key = 'carlosbenjamin' ORDER BY id`;
-    if (rows.length < 2) return null;
-    const keep = rows.find(r => String(r.level || '').toUpperCase() === 'JUCO') || rows.find(r => /college|cc|community/i.test(r.school || ''));
-    if (!keep) return { skipped: 'Two Carlos Benjamin records but neither is marked JUCO; merge by hand.' };
-    const results = [];
-    for (const r of rows) { if (r.id !== keep.id) results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
-    return { name: 'Carlos Benjamin', keptId: keep.id, results };
-  } catch (e) { return { error: e.message }; }
+    const rows = await sql`
+      SELECT p.id, p.name, p.level, p.school,
+             (SELECT COUNT(*) FROM reports r WHERE r.prospect_id = p.id) AS reports,
+             (SELECT COUNT(*) FROM assessments a WHERE a.prospect_id = p.id AND a.status = 'complete') AS assessments
+      FROM prospects p
+      WHERE p.name_key LIKE '%benjamin%' AND lower(p.name) LIKE '%carlos%'
+      ORDER BY p.id`;
+    report.found = rows.map(r => ({ id: r.id, name: r.name, level: r.level, school: r.school, reports: Number(r.reports), assessments: Number(r.assessments) }));
+    if (rows.length < 2) return rows.length ? Object.assign(report, { note: 'Only one Carlos Benjamin record exists; nothing to merge.' }) : null;
+    const keep = rows.find(r => Number(r.assessments) > 0)
+              || rows.find(r => String(r.level || '').toUpperCase() === 'JUCO')
+              || null;
+    if (!keep) return Object.assign(report, { skipped: 'Found ' + rows.length + ' records but none has a completed assessment or a JUCO level, so I could not tell which to keep.' });
+    report.keptId = keep.id;
+    for (const r of rows) { if (r.id !== keep.id) report.results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
+    return report;
+  } catch (e) { return Object.assign(report, { error: String(e && e.message || e) }); }
 }
 
 /* ---------- HANDLER ---------- */

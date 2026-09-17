@@ -371,6 +371,9 @@
       padding:11px 13px; margin-bottom:8px; background:var(--card); flex-wrap:wrap;}
   .mg-card.keep{border-color:var(--good);}
   .mg-card.drop{border-color:#CC0000; opacity:.75;}
+  .mg-tag{font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:6px; border:1px solid;}
+  .mg-tag.keep{color:var(--good); border-color:var(--good);}
+  .mg-tag.drop{color:#FF7D7D; border-color:#CC0000;}
   .mg-confirm{border:1px solid var(--line); border-left:3px solid #CC0000; border-radius:10px; padding:12px 14px; background:var(--paper); margin-top:4px;}
   .rc-played{margin-top:3px; font-size:12px; cursor:pointer;}
   .rc-played-v{color:var(--ink); border-bottom:1px dotted var(--dim);}
@@ -2088,12 +2091,22 @@ function renderDupes(){
         <div class="rc-meta" style="margin-top:3px;color:${has.length?'var(--ink)':'var(--dim)'}">${has.length ? has.join(' &middot; ') : 'nothing attached'}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button type="button" class="mini-btn ${MG_KEEP===m.id?'go':''}" onclick="mgPick('keep',${m.id})">Keep this</button>
-        <button type="button" class="mini-btn ${MG_DROP===m.id?'danger':''}" onclick="mgPick('drop',${m.id})">Merge away</button>
+        ${MG_KEEP === null
+          ? `<button type="button" class="mini-btn go" onclick="mgPick('keep',${m.id})">Keep this one</button>`
+          : MG_KEEP === m.id
+            ? `<span class="mg-tag keep">Keeping</span><button type="button" class="mini-btn" onclick="mgPick('keep',${m.id})">Change</button>`
+            : MG_DROP === m.id
+              ? `<span class="mg-tag drop">Merging into #${MG_KEEP}</span>`
+              : `<button type="button" class="mini-btn danger" onclick="mgPick('drop',${m.id})">Merge this into #${MG_KEEP}</button>`}
       </div>
     </div>`;
   };
-  let h = MG_MATCHES.map(card).join('');
+  const lead = MG_KEEP === null
+    ? 'Which record is the right one? Tap <b>Keep this one</b> on it.'
+    : MG_DROP === null
+      ? 'Now tap <b>Merge this into #' + MG_KEEP + '</b> on the duplicate.'
+      : '';
+  let h = (lead ? `<div class="sub" style="margin-bottom:10px;">${lead}</div>` : '') + MG_MATCHES.map(card).join('');
   if(MG_KEEP && MG_DROP){
     const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
     h += `<div class="mg-confirm" id="mgConfirm">
@@ -2107,15 +2120,21 @@ function renderDupes(){
         : `<button type="button" class="mini-btn danger" style="margin-top:10px;" onclick="MG_ARMED=true; renderDupes()">Merge and delete #${drop.id}</button>`}
       <div id="mgStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
     </div>`;
-  } else if(MG_KEEP || MG_DROP){
-    h += `<div class="sub" style="margin-top:8px;">Now pick the other one.</div>`;
   }
   host.innerHTML = h;
 }
 function mgPick(role, id){
   MG_ARMED = false;
-  if(role === 'keep'){ MG_KEEP = MG_KEEP === id ? null : id; if(MG_DROP === MG_KEEP) MG_DROP = null; }
-  else { MG_DROP = MG_DROP === id ? null : id; if(MG_KEEP === MG_DROP) MG_KEEP = null; }
+  if(role === 'keep'){
+    if(MG_KEEP === id){ MG_KEEP = null; MG_DROP = null; }   // Change: start over
+    else {
+      MG_KEEP = id;
+      const others = MG_MATCHES.filter(m => m.id !== id);
+      MG_DROP = others.length === 1 ? others[0].id : null;  // two records: the other is the duplicate
+    }
+  } else {
+    MG_DROP = id;
+  }
   renderDupes();
 }
 async function doMerge(){

@@ -143,11 +143,41 @@ exports.handler = async (event) => {
           out.total = sd.total != null ? sd.total : null;
           /* written answers: anything the athlete typed, keyed by question id */
           const ans = a.answers || {};
-          const qtext = {}, qsec = {};
-          try { bank(a.kind, p.position).forEach(sec => (sec.items || []).forEach(it => { qtext[it.id] = it.q; qsec[it.id] = sec.title || null; })); } catch (e) {}
+          const qtext = {}, qsec = {}, qopts = {};
+          try { bank(a.kind, p.position).forEach(sec => (sec.items || []).forEach(it => {
+            qtext[it.id] = it.q; qsec[it.id] = sec.section || sec.title || null; if (it.options) qopts[it.id] = it.options;
+          })); } catch (e) {}
+          /* Seventeen interview items offer choices but have no right answer,
+             so they never reach the scored list. They are stored as the option
+             index; resolve each to its text or the coach reads a bare number. */
+          const readable = (k) => {
+            const v = ans[k];
+            if (qopts[k]) { const i = Number(v); if (Number.isInteger(i) && qopts[k][i] !== undefined) return qopts[k][i]; }
+            return typeof v === 'string' ? v : String(v);
+          };
           out.written = Object.keys(ans)
-            .filter(k => typeof ans[k] === 'string' && ans[k].trim().length > 0 && !k.startsWith('dot_') && !k.startsWith('clip_') && k !== '_consent' && qtext[k])
-            .map(k => ({ id: k, section: qsec[k], q: qtext[k], text: ans[k] }));
+            .filter(k => qtext[k] && !k.startsWith('dot_') && !k.startsWith('clip_') && k !== '_consent'
+                      && ans[k] !== null && ans[k] !== undefined && String(ans[k]).trim() !== '')
+            .map(k => ({ id: k, section: qsec[k], q: qtext[k], text: readable(k), choice: !!qopts[k] }));
+
+          /* NIL and money, pulled out of the interview into its own read. */
+          const NIL_IDS = ['motiv_rank','motiv_second','nil_open','nil_tradeoff','money_advice','agent_has','agent_who','agent_role'];
+          const nil = NIL_IDS.filter(k => qtext[k] && ans[k] !== undefined && ans[k] !== null && String(ans[k]).trim() !== '')
+                              .map(k => ({ id: k, q: qtext[k], text: readable(k), choice: !!qopts[k] }));
+          if (nil.length) {
+            const money1 = (ans.motiv_rank !== undefined && qopts.motiv_rank) ? qopts.motiv_rank[Number(ans.motiv_rank)] : null;
+            const money2 = (ans.motiv_second !== undefined && qopts.motiv_second) ? qopts.motiv_second[Number(ans.motiv_second)] : null;
+            const lean = (ans.nil_tradeoff !== undefined && qopts.nil_tradeoff) ? qopts.nil_tradeoff[Number(ans.nil_tradeoff)] : null;
+            const rep = (ans.agent_has !== undefined && qopts.agent_has) ? qopts.agent_has[Number(ans.agent_has)] : null;
+            out.nil = {
+              items: nil,
+              /* headline reads, so a staff gets it without reading the block */
+              moneyIsTopPriority: /NIL and what I can earn/i.test(String(money1 || '')),
+              moneyInTopTwo: /NIL and what I can earn/i.test(String(money1 || '') + ' ' + String(money2 || '')),
+              firstPriority: money1, secondPriority: money2, tradeoff: lean, representation: rep,
+              hasRepresentation: !!(rep && !/^No, nobody$/i.test(rep))
+            };
+          }
         }
         return out;
       });

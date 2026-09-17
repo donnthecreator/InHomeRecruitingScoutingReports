@@ -113,6 +113,13 @@
   .wq{margin-bottom:12px;}
   .wq-q{font-size:12.5px; font-weight:700; color:#C4C4C4; line-height:1.4;}
   .wq-a{font-size:13.5px; line-height:1.55; color:#EDEDED; margin-top:4px; padding-left:11px; border-left:2px solid var(--line); white-space:pre-wrap;}
+  .wq-c{display:inline-block; font-size:13px; font-weight:600; color:#EDEDED; margin-top:5px;
+      border:1px solid var(--line); border-radius:8px; padding:6px 11px; background:var(--card);}
+  .nil{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card);}
+  .nil-flags{display:flex; flex-direction:column; gap:6px; margin-bottom:12px;}
+  .nil-flag{font-size:12.5px; font-weight:600; border-left:3px solid var(--line); padding:6px 0 6px 11px; color:#DADADA;}
+  .nil-flag.watch{border-left-color:#E0A419; color:#EDD9A6;}
+  .nil-flag.ok{border-left-color:var(--good);}
   .offers{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px;}
   .offer-chip{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:9px;
       padding:6px 10px 6px 7px; background:var(--card); max-width:100%;}
@@ -391,13 +398,36 @@ function render(p){
               ${d.why ? `<div class="fq-why">${esc(d.why)}</div>` : ''}
             </div>`).join('');
         }
-        const written = a.written || [];
+        /* NIL, on its own, because it is the first thing a staff asks about
+           and the answers are scattered through the interview. */
+        const nil = a.nil;
+        if(nil && nil.items.length){
+          const flags = [];
+          if(nil.moneyIsTopPriority) flags.push({t:'Money is his stated first priority', k:'watch'});
+          else if(nil.moneyInTopTwo) flags.push({t:'Money is in his top two priorities', k:'watch'});
+          else if(nil.firstPriority) flags.push({t:'First priority: ' + nil.firstPriority, k:'ok'});
+          if(nil.hasRepresentation) flags.push({t:'Has representation: ' + nil.representation, k:'watch'});
+          else if(nil.representation) flags.push({t:'No representation', k:'ok'});
+          if(nil.tradeoff) flags.push({t:'Money vs playing time: ' + nil.tradeoff, k:''});
+          h += `<h2>NIL perspective</h2>
+            <div class="nil">
+              ${flags.length ? `<div class="nil-flags">${flags.map(f=>`<div class="nil-flag ${f.k}">${esc(f.t)}</div>`).join('')}</div>` : ''}
+              ${nil.items.map(w => `<div class="wq"><div class="wq-q">${esc(w.q)}</div>${w.choice
+                ? `<div class="wq-c">${esc(w.text)}</div>`
+                : `<div class="wq-a">${esc(w.text)}</div>`}</div>`).join('')}
+              <div class="sub" style="margin-top:10px;color:var(--dim);">We ask every athlete about money directly rather than around it. These are his answers, not our assessment of them.</div>
+            </div>`;
+        }
+
+        const written = (a.written || []).filter(w => !(a.nil && a.nil.items.some(n => n.id === w.id)));
         if(written.length){
           h += `<h2>Interview, in his words</h2>`;
           let lastSec = null;
           written.forEach(w => {
             if(w.section && w.section !== lastSec){ h += `<div class="pt-k" style="margin-top:12px;">${esc(w.section)}</div>`; lastSec = w.section; }
-            h += `<div class="wq"><div class="wq-q">${esc(w.q)}</div><div class="wq-a">${esc(w.text)}</div></div>`;
+            h += `<div class="wq"><div class="wq-q">${esc(w.q)}</div>${w.choice
+              ? `<div class="wq-c">${esc(w.text)}</div>`
+              : `<div class="wq-a">${esc(w.text)}</div>`}</div>`;
           });
         }
       });

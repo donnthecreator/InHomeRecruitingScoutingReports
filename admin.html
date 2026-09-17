@@ -917,10 +917,10 @@ let asgStatusFilter = 'open';
 let perfLevelFilter = 'All';
 
 /* ---------------- TOAST ---------------- */
-function toast(msg){
+function toast(msg, ms){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2600);
+  setTimeout(()=>t.classList.remove('show'), ms || 2600);
 }
 
 /* ---------------- AUTH ---------------- */
@@ -1038,6 +1038,13 @@ async function loadAll(){
   if(demoMode){ loadDemo(); return; }
   try{
     const data = await api('loadAll', {});
+    if(data.autoMerge){
+      const am = data.autoMerge;
+      if(am.results && am.results.length){
+        const moved = am.results.map(r => Object.keys(r.moved||{}).filter(k=>r.moved[k]&&r.moved[k]!=='skipped').map(k=>r.moved[k]+' '+k).join(', ')).filter(Boolean).join('; ');
+        toast('Auto-merged ' + am.name + ' into #' + am.keptId + (moved ? ': ' + moved + ' moved' : ''), 9000);
+      } else if(am.error || am.skipped){ toast('Auto-merge: ' + (am.error || am.skipped), 9000); }
+    }
     SCOUT_ROSTER = normalizeScouts(data.scouts);
     assignments  = data.assignments  || [];
     reports      = data.reports      || [];

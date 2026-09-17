@@ -92,6 +92,64 @@ function siteBase(event) {
 const ok   = (body) => ({ statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 const fail = (code, error) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) });
 
+
+/* Move everything attached to prospect `from` onto prospect `into`, then
+   delete `from`. Used by the admin merge action and by the one-shot
+   auto-merge below. Nothing a scout or an athlete produced is deleted. */
+async function mergeProspectRecords(sql, from, into) {
+  const [a] = await sql`SELECT id, name FROM prospects WHERE id = ${from}`;
+  const [b] = await sql`SELECT id, name FROM prospects WHERE id = ${into}`;
+  if (!a || !b) return { error: 'One of those records no longer exists' };
+
+  const moved = {};
+  const move = async (label, fn) => { try { const r = await fn(); moved[label] = Array.isArray(r) ? r.length : 0; } catch (e) { moved[label] = 'skipped'; } };
+
+  await move('reports',     () => sql`UPDATE reports           SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('assessments', () => sql`UPDATE assessments       SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('notes',       () => sql`UPDATE prospect_notes    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('invites',     () => sql`UPDATE profile_invites   SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('assignments', () => sql`UPDATE scout_assignments SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('intake',      () => sql`UPDATE intake_requests   SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
+  await move('offers', async () => {
+    await sql`DELETE FROM prospect_offers o WHERE o.prospect_id = ${from}
+              AND EXISTS (SELECT 1 FROM prospect_offers x WHERE x.prospect_id = ${into}
+                          AND COALESCE(x.school_key,'') = COALESCE(o.school_key,'')
+                          AND COALESCE(x.school_other,'') = COALESCE(o.school_other,''))`;
+    return sql`UPDATE prospect_offers SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
+  });
+  await move('boards', async () => {
+    await sql`DELETE FROM program_prospects b WHERE b.prospect_id = ${from}
+              AND EXISTS (SELECT 1 FROM program_prospects x WHERE x.prospect_id = ${into} AND upper(x.program_code) = upper(b.program_code))`;
+    return sql`UPDATE program_prospects SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
+  });
+  try {
+    await sql`UPDATE prospects k SET
+        school = COALESCE(NULLIF(k.school,''), d.school), position = COALESCE(NULLIF(k.position,''), d.position),
+        class_year = COALESCE(NULLIF(k.class_year,''), d.class_year), height = COALESCE(NULLIF(k.height,''), d.height),
+        weight = COALESCE(NULLIF(k.weight,''), d.weight), home_city = COALESCE(NULLIF(k.home_city,''), d.home_city),
+        home_state = COALESCE(NULLIF(k.home_state,''), d.home_state), headshot_key = COALESCE(k.headshot_key, d.headshot_key)
+      FROM prospects d WHERE k.id = ${into} AND d.id = ${from}`;
+  } catch (e) {}
+  await sql`DELETE FROM prospects WHERE id = ${from}`;
+  return { merged: true, from: a.name, into: b.name, fromId: from, intoId: into, moved };
+}
+
+/* One-shot: Carlos Benjamin exists twice, an HS record a scout filed on
+   and a JUCO record the athlete completed his assessment on. Keep the
+   JUCO record, merge the HS one into it. Runs on admin load and is a
+   no-op once there is only one record, so it retires itself. */
+async function autoMergeOnce(sql) {
+  try {
+    const rows = await sql`SELECT id, level, school FROM prospects WHERE name_key = 'carlosbenjamin' ORDER BY id`;
+    if (rows.length < 2) return null;
+    const keep = rows.find(r => String(r.level || '').toUpperCase() === 'JUCO') || rows.find(r => /college|cc|community/i.test(r.school || ''));
+    if (!keep) return { skipped: 'Two Carlos Benjamin records but neither is marked JUCO; merge by hand.' };
+    const results = [];
+    for (const r of rows) { if (r.id !== keep.id) results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
+    return { name: 'Carlos Benjamin', keptId: keep.id, results };
+  } catch (e) { return { error: e.message }; }
+}
+
 /* ---------- HANDLER ---------- */
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') return fail(405, 'Method not allowed');
@@ -178,51 +236,9 @@ exports.handler = async (event) => {
         const from = parseInt(body.from, 10), into = parseInt(body.into, 10);
         if (!from || !into) return fail(400, 'from and into required');
         if (from === into) return fail(400, 'Pick two different records');
-        const [a] = await sql`SELECT id, name FROM prospects WHERE id = ${from}`;
-        const [b] = await sql`SELECT id, name FROM prospects WHERE id = ${into}`;
-        if (!a || !b) return fail(404, 'One of those records no longer exists');
-
-        const moved = {};
-        const move = async (label, fn) => { try { const r = await fn(); moved[label] = Array.isArray(r) ? r.length : (r && r.count) || 0; } catch (e) { moved[label] = 'skipped'; } };
-
-        await move('reports',      () => sql`UPDATE reports            SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        await move('assessments',  () => sql`UPDATE assessments        SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        await move('notes',        () => sql`UPDATE prospect_notes     SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        await move('invites',      () => sql`UPDATE profile_invites    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        await move('assignments',  () => sql`UPDATE scout_assignments  SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        await move('intake',       () => sql`UPDATE intake_requests    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-        /* offers and board entries can collide on a unique pair, so drop
-           the duplicates first and move what is left */
-        await move('offers', async () => {
-          await sql`DELETE FROM prospect_offers o WHERE o.prospect_id = ${from}
-                    AND EXISTS (SELECT 1 FROM prospect_offers x WHERE x.prospect_id = ${into}
-                                AND COALESCE(x.school_key,'') = COALESCE(o.school_key,'')
-                                AND COALESCE(x.school_other,'') = COALESCE(o.school_other,''))`;
-          return sql`UPDATE prospect_offers SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
-        });
-        await move('boards', async () => {
-          await sql`DELETE FROM program_prospects b WHERE b.prospect_id = ${from}
-                    AND EXISTS (SELECT 1 FROM program_prospects x WHERE x.prospect_id = ${into} AND upper(x.program_code) = upper(b.program_code))`;
-          return sql`UPDATE program_prospects SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
-        });
-
-        /* fill any blank on the keeper from the record being retired, so a
-           merge never loses a detail the duplicate happened to have */
-        try {
-          await sql`UPDATE prospects k SET
-              school = COALESCE(NULLIF(k.school,''), d.school),
-              position = COALESCE(NULLIF(k.position,''), d.position),
-              class_year = COALESCE(NULLIF(k.class_year,''), d.class_year),
-              height = COALESCE(NULLIF(k.height,''), d.height),
-              weight = COALESCE(NULLIF(k.weight,''), d.weight),
-              home_city = COALESCE(NULLIF(k.home_city,''), d.home_city),
-              home_state = COALESCE(NULLIF(k.home_state,''), d.home_state),
-              headshot_key = COALESCE(k.headshot_key, d.headshot_key)
-            FROM prospects d WHERE k.id = ${into} AND d.id = ${from}`;
-        } catch (e) {}
-
-        await sql`DELETE FROM prospects WHERE id = ${from}`;
-        return ok({ merged: true, from: a.name, into: b.name, moved });
+        const r = await mergeProspectRecords(sql, from, into);
+        if (r.error) return fail(404, r.error);
+        return ok(r);
       }
 
       case 'loadAll': {
@@ -245,6 +261,8 @@ exports.handler = async (event) => {
           id SERIAL PRIMARY KEY, name TEXT NOT NULL, scout_id TEXT, position TEXT, class_year TEXT,
           level TEXT DEFAULT 'HS', school TEXT, priority TEXT DEFAULT 'normal', source_link TEXT, note TEXT,
           status TEXT NOT NULL DEFAULT 'open', prospect_id INTEGER, assigned_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+
+        const autoMerge = await autoMergeOnce(sql);
 
         const scouts = await sql`SELECT * FROM scouts ORDER BY active DESC, name`;
         const assignments = await sql`
@@ -291,7 +309,7 @@ exports.handler = async (event) => {
           }
         }
 
-        return ok({ scouts, assignments, performances, reports, reportsError });
+        return ok({ autoMerge, scouts, assignments, performances, reports, reportsError });
       }
 
       case 'createAssignment': {

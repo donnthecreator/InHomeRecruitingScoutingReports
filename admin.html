@@ -2106,7 +2106,11 @@ function renderDupes(){
     : MG_DROP === null
       ? 'Now tap <b>Merge this into #' + MG_KEEP + '</b> on the duplicate.'
       : '';
-  let h = (lead ? `<div class="sub" style="margin-bottom:10px;">${lead}</div>` : '') + MG_MATCHES.map(card).join('');
+  const both = MG_KEEP && MG_DROP;
+  const shown = both ? MG_MATCHES.filter(m => m.id === MG_KEEP || m.id === MG_DROP) : MG_MATCHES;
+  const hidden = MG_MATCHES.length - shown.length;
+  let h = (lead ? `<div class="sub" style="margin-bottom:10px;">${lead}</div>` : '') + shown.map(card).join('');
+  if(both && hidden > 0) h += `<div class="sub" style="margin:2px 0 8px;">${hidden} other ${hidden===1?'record':'records'} hidden. <a href="#" onclick="MG_DROP=null; MG_ARMED=false; renderDupes(); return false;" style="color:var(--ink);">Pick a different duplicate</a></div>`;
   if(MG_KEEP && MG_DROP){
     const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
     h += `<div class="mg-confirm" id="mgConfirm">
@@ -2122,6 +2126,8 @@ function renderDupes(){
     </div>`;
   }
   host.innerHTML = h;
+  const cf = document.getElementById('mgConfirm');
+  if(cf && cf.scrollIntoView){ setTimeout(() => cf.scrollIntoView({ behavior:'smooth', block:'center' }), 30); }
 }
 function mgPick(role, id){
   MG_ARMED = false;

@@ -93,35 +93,64 @@ const ok   = (body) => ({ statusCode: 200, headers: { 'Content-Type': 'applicati
 const fail = (code, error) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) });
 
 
+/* Every column in the database that references prospects.id, discovered
+   from the catalog rather than a hand-kept list, so a table added later is
+   still handled. The known tables are unioned in for the ones that link
+   by convention without a declared constraint. */
+async function prospectLinks(sql) {
+  let links = [];
+  try {
+    links = await sql`
+      SELECT kcu.table_name AS tbl, kcu.column_name AS col
+      FROM information_schema.table_constraints tc
+      JOIN information_schema.key_column_usage kcu
+        ON kcu.constraint_name = tc.constraint_name AND kcu.table_schema = tc.table_schema
+      JOIN information_schema.constraint_column_usage ccu
+        ON ccu.constraint_name = tc.constraint_name AND ccu.table_schema = tc.table_schema
+      WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public'
+        AND ccu.table_name = 'prospects' AND ccu.column_name = 'id'`;
+  } catch (e) { links = []; }
+  const known = [['reports','prospect_id'],['assessments','prospect_id'],['prospect_notes','prospect_id'],
+                 ['profile_invites','prospect_id'],['scout_assignments','prospect_id'],['intake_requests','prospect_id'],
+                 ['prospect_offers','prospect_id'],['program_prospects','prospect_id']];
+  const seen = new Set(), out = [];
+  for (const [t, c] of [...links.map(l => [l.tbl, l.col]), ...known]) {
+    if (!/^[a-z_][a-z0-9_]*$/.test(t) || !/^[a-z_][a-z0-9_]*$/.test(c)) continue;
+    const k = t + '.' + c; if (seen.has(k)) continue; seen.add(k); out.push([t, c]);
+  }
+  return out;
+}
+
 /* Move everything attached to prospect `from` onto prospect `into`, then
    delete `from`. Used by the admin merge action and by the one-shot
-   auto-merge below. Nothing a scout or an athlete produced is deleted. */
+   auto-merge. If the keeper already holds an equivalent row (a unique
+   pair such as the same offer or the same board), the duplicate's copy is
+   redundant and is dropped; anything else is moved, never deleted. */
 async function mergeProspectRecords(sql, from, into) {
   const [a] = await sql`SELECT id, name FROM prospects WHERE id = ${from}`;
   const [b] = await sql`SELECT id, name FROM prospects WHERE id = ${into}`;
   if (!a || !b) return { error: 'One of those records no longer exists' };
 
   const moved = {};
-  const move = async (label, fn) => { try { const r = await fn(); moved[label] = Array.isArray(r) ? r.length : 0; } catch (e) { moved[label] = 'skipped'; } };
-
-  await move('reports',     () => sql`UPDATE reports           SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('assessments', () => sql`UPDATE assessments       SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('notes',       () => sql`UPDATE prospect_notes    SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('invites',     () => sql`UPDATE profile_invites   SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('assignments', () => sql`UPDATE scout_assignments SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('intake',      () => sql`UPDATE intake_requests   SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`);
-  await move('offers', async () => {
-    await sql`DELETE FROM prospect_offers o WHERE o.prospect_id = ${from}
-              AND EXISTS (SELECT 1 FROM prospect_offers x WHERE x.prospect_id = ${into}
-                          AND COALESCE(x.school_key,'') = COALESCE(o.school_key,'')
-                          AND COALESCE(x.school_other,'') = COALESCE(o.school_other,''))`;
-    return sql`UPDATE prospect_offers SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
-  });
-  await move('boards', async () => {
-    await sql`DELETE FROM program_prospects b WHERE b.prospect_id = ${from}
-              AND EXISTS (SELECT 1 FROM program_prospects x WHERE x.prospect_id = ${into} AND upper(x.program_code) = upper(b.program_code))`;
-    return sql`UPDATE program_prospects SET prospect_id = ${into} WHERE prospect_id = ${from} RETURNING id`;
-  });
+  for (const [t, c] of await prospectLinks(sql)) {
+    try {
+      const r = await sql(`UPDATE "${t}" SET "${c}" = $1 WHERE "${c}" = $2 RETURNING 1`, [into, from]);
+      moved[t] = Array.isArray(r) ? r.length : 0;
+    } catch (e) {
+      const msg = String(e && e.message || e);
+      if (e && e.code === '23505' || /duplicate key|unique/i.test(msg)) {
+        /* keeper already has this pair; move the ones that can move, drop the rest */
+        try {
+          const r = await sql(`DELETE FROM "${t}" WHERE "${c}" = $1 RETURNING 1`, [from]);
+          moved[t] = (Array.isArray(r) ? r.length : 0) + ' deduplicated';
+        } catch (e2) { moved[t] = 'failed: ' + String(e2 && e2.message || e2); }
+      } else if (/does not exist/i.test(msg)) {
+        moved[t] = 'skipped';
+      } else {
+        moved[t] = 'failed: ' + msg;
+      }
+    }
+  }
   try {
     await sql`UPDATE prospects k SET
         school = COALESCE(NULLIF(k.school,''), d.school), position = COALESCE(NULLIF(k.position,''), d.position),
@@ -130,8 +159,28 @@ async function mergeProspectRecords(sql, from, into) {
         home_state = COALESCE(NULLIF(k.home_state,''), d.home_state), headshot_key = COALESCE(k.headshot_key, d.headshot_key)
       FROM prospects d WHERE k.id = ${into} AND d.id = ${from}`;
   } catch (e) {}
-  await sql`DELETE FROM prospects WHERE id = ${from}`;
+  try {
+    await sql`DELETE FROM prospects WHERE id = ${from}`;
+  } catch (e) {
+    return { error: 'Moved what could be moved, but #' + from + ' could not be deleted: ' + String(e && e.message || e), moved };
+  }
   return { merged: true, from: a.name, into: b.name, fromId: from, intoId: into, moved };
+}
+
+/* Delete a prospect outright, removing every linked row first so the
+   foreign keys never block it. For a junk or test record; for a real
+   duplicate, merge instead so the reports survive. */
+async function deleteProspectRecord(sql, id) {
+  const [p] = await sql`SELECT id, name FROM prospects WHERE id = ${id}`;
+  if (!p) return { error: 'That record no longer exists' };
+  const removed = {};
+  for (const [t, c] of await prospectLinks(sql)) {
+    try { const r = await sql(`DELETE FROM "${t}" WHERE "${c}" = $1 RETURNING 1`, [id]); removed[t] = Array.isArray(r) ? r.length : 0; }
+    catch (e) { removed[t] = /does not exist/i.test(String(e && e.message)) ? 'skipped' : 'failed: ' + String(e && e.message || e); }
+  }
+  try { await sql`DELETE FROM prospects WHERE id = ${id}`; }
+  catch (e) { return { error: 'Linked rows removed but the record could not be deleted: ' + String(e && e.message || e), removed }; }
+  return { deleted: true, id, name: p.name, removed };
 }
 
 /* One-shot: Carlos Benjamin exists twice, an HS record a scout filed on
@@ -232,6 +281,13 @@ exports.handler = async (event) => {
         })) });
       }
 
+      case 'deleteProspect': {
+        const id = parseInt(body.id, 10);
+        if (!id) return fail(400, 'id required');
+        const r = await deleteProspectRecord(sql, id);
+        if (r.error) return fail(500, r.error);
+        return ok(r);
+      }
       case 'mergeProspects': {
         const from = parseInt(body.from, 10), into = parseInt(body.into, 10);
         if (!from || !into) return fail(400, 'from and into required');

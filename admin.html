@@ -2099,7 +2099,7 @@ function renderDupes(){
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
         ${MG_KEEP === null
-          ? `<button type="button" class="mini-btn go" onclick="mgPick('keep',${m.id})">Keep this one</button>`
+          ? `<button type="button" class="mini-btn go" onclick="mgPick('keep',${m.id})">Keep this one</button><button type="button" class="mini-btn" onclick="mgDelete(${m.id})" title="Delete this record and everything attached to it">Delete</button>`
           : MG_KEEP === m.id
             ? `<span class="mg-tag keep">Keeping</span><button type="button" class="mini-btn" onclick="mgPick('keep',${m.id})">Change</button>`
             : MG_DROP === m.id
@@ -2136,6 +2136,43 @@ function renderDupes(){
   const cf = document.getElementById('mgConfirm');
   if(cf && cf.scrollIntoView){ setTimeout(() => cf.scrollIntoView({ behavior:'smooth', block:'center' }), 30); }
 }
+/* Outright delete, for a junk or test record. Confirms on the page with
+   what will be lost; a real duplicate should be merged instead. */
+let MG_DEL = null;
+function mgDelete(id){
+  const m = MG_MATCHES.find(x => x.id === id); if(!m) return;
+  const c = m.counts, lost = [];
+  if(c.reports) lost.push(c.reports + (c.reports===1?' report':' reports'));
+  if(c.assessments) lost.push(c.assessments + (c.assessments===1?' assessment':' assessments'));
+  if(c.offers) lost.push(c.offers + (c.offers===1?' offer':' offers'));
+  if(c.boards) lost.push(c.boards + ' board ' + (c.boards===1?'entry':'entries'));
+  MG_DEL = id;
+  document.getElementById('mgResults').insertAdjacentHTML('beforeend', `
+    <div class="mg-confirm" id="mgDelConfirm">
+      <div style="font-size:13px;line-height:1.55;">Delete <b>${esc(m.name)} #${m.id}</b>${lost.length ? ' and everything attached: <b>' + esc(lost.join(', ')) + '</b>' : ''}. ${lost.length ? 'If this is a duplicate of another record, merge it instead so that work survives. ' : ''}This cannot be undone.</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button type="button" class="mini-btn danger" id="mgDelGo" onclick="doDelete()">Yes, delete #${m.id}</button>
+        <button type="button" class="mini-btn" onclick="MG_DEL=null; renderDupes()">Cancel</button>
+      </div>
+      <div id="mgDelStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
+    </div>`);
+  const cf = document.getElementById('mgDelConfirm'); if(cf && cf.scrollIntoView) setTimeout(()=>cf.scrollIntoView({behavior:'smooth',block:'center'}),30);
+}
+async function doDelete(){
+  const id = MG_DEL; if(!id) return;
+  const go = document.getElementById('mgDelGo'), st = document.getElementById('mgDelStatus');
+  if(go){ go.disabled = true; go.textContent = 'Deleting\u2026'; }
+  try{
+    const d = await api('deleteProspect', { id });
+    const parts = Object.keys(d.removed||{}).filter(k => d.removed[k] && d.removed[k] !== 'skipped').map(k => d.removed[k] + ' ' + k);
+    document.getElementById('mgResults').innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);"><b>Deleted ${esc(d.name)} #${d.id}.</b>${parts.length ? ' Removed ' + esc(parts.join(', ')) + '.' : ''}</div>`;
+    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null; MG_DEL = null; loadAll();
+  }catch(err){
+    if(go){ go.disabled = false; go.textContent = 'Yes, delete #' + id; }
+    if(st){ st.style.color = '#FF7D7D'; st.textContent = 'Delete failed: ' + (err.message || err); }
+  }
+}
+
 function mgPick(role, id){
   MG_ARMED = false;
   if(role === 'keep'){

@@ -367,6 +367,10 @@
   .sh-btn.primary{background:var(--ink); color:#000; border-color:var(--ink); grid-column:1/-1;}
   .sh-btn.ghost{grid-column:1/-1; background:transparent; color:var(--mute); border-color:transparent;}
   .sh-note{font-size:11.5px; color:var(--dim); margin-top:12px; line-height:1.5;}
+  .rc-played{margin-top:3px; font-size:12px; cursor:pointer;}
+  .rc-played-v{color:var(--ink); border-bottom:1px dotted var(--dim);}
+  .rc-played-e{color:var(--dim);}
+  .rc-played:hover .rc-played-e{color:var(--ink);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
@@ -1003,6 +1007,7 @@ function normalizeScouts(rows){
     coverKey: s.cover_key || s.coverKey || null,
     accessCode: s.access_code || s.accessCode || '',
     name: s.name, role: s.role, region: s.region,
+    played: s.played || null,
     active: s.active !== undefined ? s.active : true
   }));
 }
@@ -2017,6 +2022,26 @@ async function toggleScoutActive(pkId, makeActive){
     toast(makeActive ? 'Scout reactivated' : 'Scout deactivated');
   }catch(err){ toast(err.message); }
 }
+/* Inline edit of a scout's playing background. Short, specific, the way a
+   staff reads it: 'WR, Troy (Sun Belt) 2016-19' or 'DB, Alabama and NFL'. */
+function editPlayed(pk, el){
+  const s = SCOUT_ROSTER.find(x => x.pkId === pk); if(!s) return;
+  const cur = s.played || '';
+  el.innerHTML = `<input type="text" id="playedIn_${pk}" value="${esc(cur)}" placeholder="e.g. WR, Troy (Sun Belt) 2016-19" style="width:100%; max-width:320px; padding:6px 9px; border-radius:7px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:12.5px;" onclick="event.stopPropagation()">
+    <div style="display:flex; gap:6px; margin-top:6px;"><button type="button" class="mini-btn go" onclick="event.stopPropagation(); savePlayed(${pk})">Save</button><button type="button" class="mini-btn" onclick="event.stopPropagation(); renderRoster()">Cancel</button></div>`;
+  const inp = document.getElementById('playedIn_' + pk); inp.focus();
+  inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); savePlayed(pk); } if(e.key === 'Escape') renderRoster(); });
+}
+async function savePlayed(pk){
+  const inp = document.getElementById('playedIn_' + pk); if(!inp) return;
+  const val = inp.value.trim();
+  try{
+    if(!demoMode) await api('updateScout', { id: pk, played: val });
+    const s = SCOUT_ROSTER.find(x => x.pkId === pk); if(s) s.played = val || null;
+    renderRoster(); toast(val ? 'Saved' : 'Cleared');
+  }catch(err){ toast(err.message); }
+}
+
 function renderRoster(){
   const el = document.getElementById('rosterList');
   if(!SCOUT_ROSTER.length){
@@ -2032,6 +2057,9 @@ function renderRoster(){
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role||'')} &middot; ${esc(s.region||'')}</div>
+          <div class="rc-played" onclick="event.stopPropagation(); editPlayed(${s.pkId}, this)" title="What he played and where. Shows under his name on every report he files.">
+            ${s.played ? `<span class="rc-played-v">${esc(s.played)}</span>` : `<span class="rc-played-e">+ Add playing background</span>`}
+          </div>
           <span class="scout-status ${s.active?'active':'inactive'}">${s.active?'Active':'Inactive'}</span>
         </div>
         <div class="rc-right">
@@ -2458,32 +2486,9 @@ async function shareProfile(prospectId, name, school){
       <div class="sh-note">The page is live: anything you add to his record, including these offers, shows up for anyone holding this link.</div>
 
       <div style="border:1px solid var(--line); border-radius:11px; padding:12px; margin-top:14px; background:var(--card);">
-        <div class="rc-meta" style="margin-bottom:4px;">Full profile <span style="color:var(--dim)">&mdash; for a college staff</span></div>
-        <div style="font-size:12px; color:var(--dim); line-height:1.5; margin-bottom:9px;">Everything on the basic profile plus the assessment in full: every question, what he answered, what was right, and his written interview answers. Its own private link, not reachable by id.</div>
-        <div id="shFullWrap"><button type="button" class="sh-btn primary" id="shFullMake" style="width:100%;">Send full profile</button></div>
+        <div class="rc-meta" style="margin-bottom:4px;">One link, two profiles</div>
+        <div style="font-size:12px; color:var(--dim); line-height:1.55;">Anyone who opens this link sees the <b style="color:var(--ink)">soft profile</b>: his InHome Score and tier, current offers, and his film. A college staff enters their InHome access code on the page to unlock the <b style="color:var(--ink)">full profile</b>: every scouting report with who filed it and what he played, the Football IQ assessment question by question, his written interview answers, and the personality read. It only opens for a program we have issued a code to.</div>
       </div>`;
-    document.getElementById('shFullMake').addEventListener('click', async () => {
-      const b = document.getElementById('shFullMake'); b.disabled = true; b.textContent = 'Building link\u2026';
-      try{
-        const d = await api('getFullShareToken', { id });
-        const fullUrl = url + '&full=' + encodeURIComponent(d.token);
-        document.getElementById('shFullWrap').innerHTML = `
-          <div class="linkbox" id="shFullLink">${esc(fullUrl)}</div>
-          <div class="sh-grid">
-            <button type="button" class="sh-btn primary" id="shFullCopy">Copy full link</button>
-            <a class="sh-btn" href="sms:?&body=${encodeURIComponent(name + ' \u2014 InHome full profile with assessment: ' + fullUrl)}">Text it</a>
-            <a class="sh-btn" href="mailto:?subject=${encodeURIComponent('InHome full profile: ' + name)}&body=${encodeURIComponent(name + ' \u2014 InHome full profile with assessment detail: ' + fullUrl)}">Email it</a>
-            <a class="sh-btn" href="${esc(fullUrl)}" target="_blank" rel="noopener">Open it myself</a>
-          </div>
-          <div class="sh-note">Contains his written answers. Send it to a staff, not to a group.</div>`;
-        document.getElementById('shFullCopy').addEventListener('click', async () => {
-          const c = document.getElementById('shFullCopy');
-          try{ await navigator.clipboard.writeText(fullUrl); c.textContent = 'Copied \u2713'; }
-          catch(e){ c.textContent = 'Select the link and copy'; }
-          setTimeout(()=>{ c.textContent = 'Copy full link'; }, 2200);
-        });
-      }catch(err){ b.disabled = false; b.textContent = 'Send full profile'; toast(err.message); }
-    });
     const nat = document.getElementById('shNative');
     if(nat) nat.addEventListener('click', async () => { try{ await navigator.share({ title:'InHome prospect profile', text: name, url }); }catch(e){} });
     document.getElementById('shCopy').addEventListener('click', async () => {

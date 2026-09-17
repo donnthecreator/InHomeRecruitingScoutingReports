@@ -129,6 +129,13 @@ exports.handler = async (event) => {
       case 'updateScout': {
         const { id, active, role, region } = body;
         if (!id) return fail(400, 'id required');
+        /* Playing background, shown under the scout's name on every report
+           he files. A college staff does not care about the scout's name;
+           it cares that he played D1 WR in the Sun Belt. */
+        if (body.played !== undefined) {
+          await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS played TEXT`;
+          await sql`UPDATE scouts SET played = ${String(body.played || '').trim() || null} WHERE id = ${id}`;
+        }
         if (active !== undefined) {
           await sql`UPDATE scouts SET active = ${active} WHERE id = ${id}`;
         }
@@ -141,22 +148,6 @@ exports.handler = async (event) => {
         return ok({ success: true });
       }
 
-      /* Mint or return the prospect's full-profile token. Random, 24 chars,
-         stored once and reused so the link stays stable. Revoke by
-         clearing it; the next click mints a new one and old links die. */
-      case 'getFullShareToken': {
-        const id = parseInt(body.id, 10);
-        if (!id) return fail(400, 'id required');
-        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS share_token TEXT`;
-        let [row] = await sql`SELECT share_token FROM prospects WHERE id = ${id}`;
-        if (!row) return fail(404, 'prospect not found');
-        let token = row.share_token;
-        if (!token || body.rotate) {
-          token = require('crypto').randomBytes(18).toString('base64url');
-          await sql`UPDATE prospects SET share_token = ${token} WHERE id = ${id}`;
-        }
-        return ok({ token });
-      }
       case 'loadAll': {
         /* Self-healing schema. The admin used to drop into demo mode with a
            banner pointing at scouts-schema.sql if any one of these was
@@ -172,6 +163,7 @@ exports.handler = async (event) => {
         try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS headshot_key TEXT`; } catch (e) {}
         try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS cover_key TEXT`; } catch (e) {}
         try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now()`; } catch (e) {}
+        try { await sql`ALTER TABLE scouts ADD COLUMN IF NOT EXISTS played TEXT`; } catch (e) {}
         await sql`CREATE TABLE IF NOT EXISTS scout_assignments (
           id SERIAL PRIMARY KEY, name TEXT NOT NULL, scout_id TEXT, position TEXT, class_year TEXT,
           level TEXT DEFAULT 'HS', school TEXT, priority TEXT DEFAULT 'normal', source_link TEXT, note TEXT,

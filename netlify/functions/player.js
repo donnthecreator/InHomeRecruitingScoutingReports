@@ -39,22 +39,28 @@ exports.handler = async (event) => {
     if (!p) return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: 'Player not found' }) };
 
     const logos = await logoMap(sql, base);
-    const reports = await sql`SELECT id, scout_name, scout_role, inhome_score, recommendation_tier, archetype, position, date_evaluated, created_at, narrative
+    const reports = await sql`SELECT id, scout_name, scout_role, scout_id, inhome_score, recommendation_tier, archetype, position, date_evaluated, created_at, narrative,
+                 (SELECT sc.played FROM scouts sc WHERE sc.scout_id = reports.scout_id LIMIT 1) AS scout_played
                               FROM reports WHERE prospect_id = ${p.id} ORDER BY created_at DESC`;
     let games = [];
     try {
       games = await sql`SELECT to_char(performance_date,'YYYY-MM-DD') AS date, stat_line, grade, source_link, school, level
                         FROM player_performances WHERE lower(regexp_replace(name,'[^A-Za-z]','','g')) = ${p.name_key} ORDER BY performance_date DESC NULLS LAST LIMIT 30`;
     } catch (e) {}
-    /* Full profile: the written interview answers and the per-question
-       results. Only with the prospect's share token, which admin generates
-       when you click Send full profile, so it is never reachable by id. */
-    let full = false;
-    if (qs.full) {
+    /* Two profiles from one link.
+       Soft: identity, InHome Score and tier, offers, commitment, film. What
+       a link can carry when anyone might open it.
+       Full: the scouting reports, the assessment question by question, his
+       written answers and the personality read. Unlocked only with a live
+       program access code, the same one a staff uses for the portal, so
+       it opens for a program we issued a code to and nobody else, and we
+       know which program opened it. */
+    let full = false, viewer = null;
+    if (qs.code) {
       try {
-        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS share_token TEXT`;
-        const [row] = await sql`SELECT share_token FROM prospects WHERE id = ${p.id}`;
-        full = !!(row && row.share_token && String(row.share_token) === String(qs.full));
+        const code = String(qs.code).trim().toUpperCase();
+        const [pg] = await sql`SELECT short_name, name, division FROM programs WHERE upper(access_code) = ${code} AND COALESCE(active, true) LIMIT 1`;
+        if (pg) { full = true; viewer = { program: pg.short_name || pg.name, division: pg.division || null }; }
       } catch (e) { full = false; }
     }
 
@@ -123,16 +129,26 @@ exports.handler = async (event) => {
       headshotUrl: p.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}` : null,
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,
       logoUrl: logos[schoolKey(p.school)] || null,
-      boards, offers, notes, fullProfile: full,
+      boards, offers, fullProfile: full,
       commitment: p.commit_status ? { status: p.commit_status,
         to: (commitProg && commitProg.short_name) || p.committed_to || p.committed_to_other || null,
         date: p.commit_date || null,
         logoUrl: (commitProg && commitProg.espn_logo_id) ? `https://a.espncdn.com/i/teamlogos/ncaa/500/${commitProg.espn_logo_id}.png` : null,
         color: (commitProg && commitProg.primary_color) || null } : null,
-      reports: reports.map(r => ({ id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, score: r.inhome_score != null ? Number(r.inhome_score) : null,
-        tier: r.recommendation_tier, archetype: r.archetype, position: r.position, date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative })),
-      games: games.map(g => ({ date: g.date, statLine: g.stat_line, grade: g.grade != null ? Number(g.grade) : null, link: g.source_link })),
-      assessments
+      /* Soft profile gets one anonymous row carrying the best score and
+         tier; the full profile gets every report with the scout's name,
+         role and playing background. */
+      reports: full
+        ? reports.map(r => ({ id: r.id, scoutName: r.scout_name, scoutRole: r.scout_role, scoutPlayed: r.scout_played || null, score: r.inhome_score != null ? Number(r.inhome_score) : null,
+        tier: r.recommendation_tier, archetype: r.archetype, position: r.position, date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative }))
+        : (() => {
+            const best = reports.reduce((a, r) => (Number(r.inhome_score) || 0) > (Number(a && a.inhome_score) || 0) ? r : a, null);
+            return best ? [{ score: best.inhome_score != null ? Number(best.inhome_score) : null, tier: best.recommendation_tier }] : [];
+          })(),
+      games: full ? games.map(g => ({ date: g.date, statLine: g.stat_line, grade: g.grade != null ? Number(g.grade) : null, link: g.source_link })) : [],
+      notes: full ? notes : [],
+      assessments: full ? assessments : [],
+      viewer
     }) };
   } catch (err) {
     console.error('player error:', err);

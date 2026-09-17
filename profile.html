@@ -54,6 +54,20 @@
   @media(min-width:640px){ .pt-cols{grid-template-columns:1fr 1fr 1fr;} }
   .pt-cols ul{margin:0; padding-left:16px;}
   .pt-cols li{font-size:12.5px; line-height:1.45; color:#DADADA; margin-bottom:4px;}
+  .played{font-size:12px; color:#C4C4C4; margin-top:2px;}
+  .unlock{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card); margin-top:18px;}
+  .iq{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card);}
+  .iq-top{display:flex; gap:16px; align-items:center; margin-bottom:12px;}
+  .iq-big{font-family:'Anton',sans-serif; font-size:34px; line-height:1;}
+  .iq-track{flex:1; height:8px; background:#2A2A2A; border-radius:5px; overflow:hidden;}
+  .iq-fill{height:100%; background:#F5F5F5;}
+  .iq-cats{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;}
+  .iq-cat{border:1px solid var(--line); border-radius:7px; padding:5px 9px; font-size:11.5px; display:flex; gap:7px; align-items:baseline;}
+  .iq-cat b{font-weight:600;} .iq-cat span{color:var(--dim); font-weight:700;}
+  .iq-cat.hi{border-color:var(--good);} .iq-cat.lo{border-color:#FF4D4D;}
+  .iq-p{font-size:13.5px; line-height:1.55; color:#DADADA; margin:0 0 8px;}
+  .iq-about{border-top:1px solid var(--line); padding-top:10px; margin-top:6px;}
+  .iq-about p{font-size:12.5px; line-height:1.55; color:#9A9A9A; margin:0 0 7px;}
   /* full assessment */
   .fq{border:1px solid var(--line); border-left-width:3px; border-radius:10px; padding:11px 13px; margin-bottom:8px; background:var(--card);}
   .fq.ok{border-left-color:var(--good);} .fq.no{border-left-color:#FF4D4D;}
@@ -205,9 +219,25 @@ function render(p){
       `<a class="rlink" href="${esc(l[1])}" target="_blank" rel="noopener"><img src="${icon(l[2])}" alt="" onerror="this.remove()"><span>${l[0]}</span></a>`).join('') + `</div>`;
   }
 
-  if((p.reports||[]).length){
+  /* Soft profile: invite a staff to unlock the rest with their access code.
+     The code is remembered for the session so a coach opening several
+     profiles enters it once. */
+  if(!p.fullProfile){
+    h += `<div class="unlock" id="unlock">
+      <div class="pt-k">College staff</div>
+      <div style="font-size:13.5px;line-height:1.55;color:#DADADA;margin-bottom:10px;">Enter your InHome access code to see the full profile: scouting reports, the Football IQ assessment question by question, his written interview answers, and the personality read.</div>
+      <form id="unlockForm" style="display:flex;gap:8px;">
+        <input type="text" id="unlockCode" placeholder="ACCESS CODE" autocomplete="off" spellcheck="false" style="flex:1;min-width:0;padding:12px 13px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:15px;letter-spacing:.14em;text-transform:uppercase;">
+        <button type="submit" style="padding:12px 16px;border-radius:9px;border:none;background:#F5F5F5;color:#0A0A0A;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;">Unlock</button>
+      </form>
+      <div id="unlockErr" style="color:#FF7D7D;font-size:12.5px;min-height:16px;margin-top:6px;">${p.viewer===null && QS.get('code') ? 'That code was not recognized.' : ''}</div>
+    </div>`;
+  }
+
+  if(p.fullProfile && (p.reports||[]).length){
     h += `<h2>Scouting reports (${p.reports.length})</h2>` + p.reports.map(r => `
       <div class="row"><div style="flex:1;"><b>${esc(r.scoutName||'InHome Scout')}</b>${r.scoutRole?` <span class="sub">\u00b7 ${esc(r.scoutRole)}</span>`:''}
+        ${r.scoutPlayed?`<div class="played">${esc(r.scoutPlayed)}</div>`:''}
         <div class="sub">${esc(r.date||'')}${r.archetype?' \u00b7 '+esc(r.archetype):''}</div></div>
         <div style="text-align:right;"><div style="font-family:'Anton',sans-serif;font-size:19px;">${r.score!=null?r.score.toFixed(1):'\u2014'}</div>
         <div class="sub" style="font-size:10.5px;">${esc(r.tier||'')}</div></div></div>`).join('');
@@ -241,15 +271,31 @@ function render(p){
         </div>`;
     }
 
-    /* Full assessment: only present when the page was opened with the
-       prospect's share token. Every scored question with his answer, the
-       right answer and the reason, then his written answers verbatim. */
+    /* Full assessment. Every scored question with his answer, the right
+       answer and the reason, then his written answers verbatim. */
     if(p.fullProfile){
       p.assessments.filter(a => (a.detail && a.detail.length) || (a.written && a.written.length)).forEach(a => {
         const scored = a.detail || [];
         if(scored.length){
           const right = scored.filter(d=>d.correct).length;
-          h += `<h2>Football IQ, question by question <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400;">${right} of ${scored.length} right</span></h2>`;
+          const dg = a.diagnosis || {};
+          const cats = dg.categories || [];
+          h += `<h2>Football IQ</h2>
+            <div class="iq">
+              <div class="iq-top">
+                <div><div class="iq-big">${a.pct!=null?a.pct+'%':'\u2014'}</div><div class="sub">${right} of ${scored.length} scored questions${dg.band?' \u00b7 '+esc(dg.band):''}</div></div>
+                <div class="iq-track"><div class="iq-fill" style="width:${a.pct||0}%"></div></div>
+              </div>
+              ${cats.length ? `<div class="iq-cats">${cats.map(c=>`<div class="iq-cat ${c.pct>=80?'hi':c.pct<60?'lo':''}"><b>${esc(c.name)}</b><span>${c.correct}/${c.total}</span></div>`).join('')}</div>` : ''}
+              ${dg.summary ? `<p class="iq-p">${esc(dg.summary)}</p>` : ''}
+              ${dg.profile ? `<p class="iq-p">${esc(dg.profile)}</p>` : ''}
+              <div class="iq-about">
+                <div class="pt-k">What this grade is</div>
+                <p>The athlete completed this himself. He watched real film clips and diagnosed them, answered written football questions on formations, coverages and run fits, and read live plays on a field diagram. Film and multiple-choice items are auto-scored against a key he never sees. It is a measure of what he can recognize and explain right now, not a projection.</p>
+                <p>It is separate from the Football IQ gauge on the scouting report, which is the scout's read from tape. When the two agree you have a confident number. When they disagree, the question by question below usually shows why.</p>
+              </div>
+            </div>`;
+          h += `<h2>Question by question <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400;">${right} of ${scored.length} right</span></h2>`;
           h += scored.map((d,i) => `
             <div class="fq ${d.correct?'ok':'no'}">
               <div class="fq-top"><span class="fq-n">${i+1}</span><span class="fq-q">${esc(d.q)}</span><span class="fq-mark">${d.correct?'\u2713 Right':'\u2717 Missed'}</span></div>
@@ -268,7 +314,7 @@ function render(p){
           });
         }
       });
-      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">This full profile was shared privately by InHome with the athlete's consent. Please do not forward it beyond your staff.</div>`;
+      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">Full profile unlocked${p.viewer&&p.viewer.program?' for '+esc(p.viewer.program):''}. Shared with the athlete's consent for recruiting evaluation. Please keep it within your staff.</div>`;
     }
   }
 
@@ -291,6 +337,14 @@ function render(p){
         A blue check means InHome confirmed that measurable at the source. This page is private and was shared with you directly.</footer>`;
 
   document.getElementById('app').innerHTML = h;
+  const uf = document.getElementById('unlockForm');
+  if(uf) uf.addEventListener('submit', e => {
+    e.preventDefault();
+    const code = (document.getElementById('unlockCode').value || '').trim().toUpperCase();
+    if(!code){ document.getElementById('unlockErr').textContent = 'Enter your access code.'; return; }
+    try{ sessionStorage.setItem('ih_prog_code', code); }catch(err){}
+    const u = new URL(location.href); u.searchParams.set('code', code); location.href = u.toString();
+  });
   document.title = p.name + ' | InHome Prospect Profile';
 }
 
@@ -299,7 +353,9 @@ function render(p){
   if(!id && !name){ document.getElementById('app').innerHTML = '<div class="empty"><div class="big">No player specified</div></div>'; return; }
   try{
     const q = id ? 'id=' + encodeURIComponent(id) : 'name=' + encodeURIComponent(name) + '&school=' + encodeURIComponent(QS.get('school')||'');
-    const full = QS.get('full'); const qf = full ? q + '&full=' + encodeURIComponent(full) : q;
+    let code = QS.get('code');
+    if(!code){ try{ code = sessionStorage.getItem('ih_prog_code'); }catch(err){} }
+    const qf = code ? q + '&code=' + encodeURIComponent(code) : q;
     const res = await fetch('/.netlify/functions/player?' + qf, { cache:'no-store' });
     const p = await res.json();
     if(!res.ok) throw new Error(p.error || 'Not found');

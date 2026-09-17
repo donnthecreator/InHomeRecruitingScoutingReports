@@ -217,8 +217,7 @@ async function loadSynopsis(id, code){
     const d = await res.json();
     if(!res.ok) throw new Error(d.error || 'Synopsis unavailable');
     if(!d.text){ host.innerHTML = `<div class="sub">${esc(d.reason || 'Nothing to summarize yet.')}</div>`; return; }
-    host.innerHTML = `<div class="syn">${d.text.split(/\n{2,}/).map(par => `<p>${esc(par.trim())}</p>`).join('')}</div>
-      <div class="sub" style="margin-top:8px;color:var(--dim);">Written by AI from this file only: the scouting report, the assessment and the offers above. Nothing outside it. ${d.generatedAt ? 'Generated ' + esc(String(d.generatedAt).slice(0,10)) + '.' : ''}</div>`;
+    host.innerHTML = `<div class="syn">${d.text.split(/\n{2,}/).map(par => `<p>${esc(par.trim())}</p>`).join('')}</div>`;
   }catch(err){ host.innerHTML = `<div class="sub" style="color:#FF7D7D;">${esc(err.message)}</div>`; }
 }
 

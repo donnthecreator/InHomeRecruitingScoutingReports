@@ -2058,7 +2058,7 @@ async function savePlayed(pk){
 }
 
 /* ---- merge duplicates ---- */
-let MG_MATCHES = [], MG_KEEP = null, MG_DROP = null;
+let MG_MATCHES = [], MG_KEEP = null, MG_DROP = null, MG_ARMED = false;
 async function findDupes(){
   const q = (document.getElementById('mgSearch').value || '').trim();
   const host = document.getElementById('mgResults');
@@ -2066,7 +2066,7 @@ async function findDupes(){
   host.innerHTML = '<div class="sub">Searching\u2026</div>';
   try{
     const d = await api('findDuplicates', { q });
-    MG_MATCHES = d.matches || []; MG_KEEP = null; MG_DROP = null;
+    MG_MATCHES = d.matches || []; MG_KEEP = null; MG_DROP = null; MG_ARMED = false;
     if(!MG_MATCHES.length){ host.innerHTML = '<div class="sub">No records match that name.</div>'; return; }
     if(MG_MATCHES.length === 1){ host.innerHTML = '<div class="sub">Only one record for that name, nothing to merge.</div>'; return; }
     renderDupes();
@@ -2096,9 +2096,16 @@ function renderDupes(){
   let h = MG_MATCHES.map(card).join('');
   if(MG_KEEP && MG_DROP){
     const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
-    h += `<div class="mg-confirm">
+    h += `<div class="mg-confirm" id="mgConfirm">
       <div style="font-size:13px;line-height:1.55;">Everything attached to <b>${esc(drop.name)} #${drop.id}</b> moves to <b>${esc(keep.name)} #${keep.id}</b>, then record #${drop.id} is deleted. Any blank on the record you keep gets filled from the one being retired.</div>
-      <button type="button" class="mini-btn danger" style="margin-top:10px;" onclick="doMerge()">Merge and delete #${drop.id}</button>
+      ${MG_ARMED
+        ? `<div style="margin-top:10px;font-size:13px;color:#FF7D7D;font-weight:700;">This cannot be undone.</div>
+           <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+             <button type="button" class="mini-btn danger" id="mgGo" onclick="doMerge()">Yes, merge and delete #${drop.id}</button>
+             <button type="button" class="mini-btn" onclick="MG_ARMED=false; renderDupes()">Cancel</button>
+           </div>`
+        : `<button type="button" class="mini-btn danger" style="margin-top:10px;" onclick="MG_ARMED=true; renderDupes()">Merge and delete #${drop.id}</button>`}
+      <div id="mgStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
     </div>`;
   } else if(MG_KEEP || MG_DROP){
     h += `<div class="sub" style="margin-top:8px;">Now pick the other one.</div>`;
@@ -2106,22 +2113,31 @@ function renderDupes(){
   host.innerHTML = h;
 }
 function mgPick(role, id){
+  MG_ARMED = false;
   if(role === 'keep'){ MG_KEEP = MG_KEEP === id ? null : id; if(MG_DROP === MG_KEEP) MG_DROP = null; }
   else { MG_DROP = MG_DROP === id ? null : id; if(MG_KEEP === MG_DROP) MG_KEEP = null; }
   renderDupes();
 }
 async function doMerge(){
   const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
+  const st = document.getElementById('mgStatus'), go = document.getElementById('mgGo');
   if(!keep || !drop) return;
-  if(!confirm(`Merge ${drop.name} #${drop.id} into ${keep.name} #${keep.id}?\n\nRecord #${drop.id} will be deleted. This cannot be undone.`)) return;
+  if(go){ go.disabled = true; go.textContent = 'Merging\u2026'; }
+  if(st){ st.style.color = 'var(--dim)'; st.textContent = 'Moving records\u2026'; }
   try{
     const d = await api('mergeProspects', { from: drop.id, into: keep.id });
     const parts = Object.keys(d.moved || {}).filter(k => d.moved[k] && d.moved[k] !== 'skipped').map(k => d.moved[k] + ' ' + k);
-    toast('Merged' + (parts.length ? ': ' + parts.join(', ') + ' moved' : ''));
-    document.getElementById('mgResults').innerHTML = `<div class="sub">Merged into <b>${esc(keep.name)} #${keep.id}</b>.${parts.length?' Moved '+esc(parts.join(', '))+'.':''} Record #${drop.id} deleted.</div>`;
-    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null;
+    const skipped = Object.keys(d.moved || {}).filter(k => d.moved[k] === 'skipped');
+    document.getElementById('mgResults').innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);">
+      <div style="font-size:13.5px;line-height:1.6;"><b>Merged into ${esc(keep.name)} #${keep.id}.</b>${parts.length?' Moved '+esc(parts.join(', '))+'.':' Nothing was attached to the duplicate.'} Record #${drop.id} deleted.</div>
+      ${skipped.length?`<div class="sub" style="margin-top:6px;">Not moved (table missing or empty): ${esc(skipped.join(', '))}.</div>`:''}
+    </div>`;
+    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null; MG_ARMED = false;
     loadAll();
-  }catch(err){ toast(err.message); }
+  }catch(err){
+    if(go){ go.disabled = false; go.textContent = 'Yes, merge and delete #' + drop.id; }
+    if(st){ st.style.color = '#FF7D7D'; st.textContent = 'Merge failed: ' + (err.message || err); }
+  }
 }
 
 function renderRoster(){

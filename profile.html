@@ -224,7 +224,7 @@ function render(p){
      profiles enters it once. */
   if(!p.fullProfile){
     h += `<div class="unlock" id="unlock">
-      <div class="pt-k">College staff</div>
+      <div class="pt-k">College staff and InHome scouts</div>
       <div style="font-size:13.5px;line-height:1.55;color:#DADADA;margin-bottom:10px;">Enter your InHome access code to see the full profile: scouting reports, the Football IQ assessment question by question, his written interview answers, and the personality read.</div>
       <form id="unlockForm" style="display:flex;gap:8px;">
         <input type="text" id="unlockCode" placeholder="ACCESS CODE" autocomplete="off" spellcheck="false" style="flex:1;min-width:0;padding:12px 13px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:15px;letter-spacing:.14em;text-transform:uppercase;">
@@ -314,7 +314,8 @@ function render(p){
           });
         }
       });
-      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">Full profile unlocked${p.viewer&&p.viewer.program?' for '+esc(p.viewer.program):''}. Shared with the athlete's consent for recruiting evaluation. Please keep it within your staff.</div>`;
+      const who = p.viewer ? (p.viewer.program ? ' for ' + esc(p.viewer.program) : p.viewer.scout ? ' for ' + esc(p.viewer.scout) + ' (InHome)' : '') : '';
+      h += `<div class="sub" style="margin-top:14px;color:var(--dim);">Full profile unlocked${who}. Shared with the athlete's consent for recruiting evaluation. Please keep it within your staff.</div>`;
     }
   }
 

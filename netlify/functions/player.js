@@ -57,11 +57,19 @@ exports.handler = async (event) => {
        know which program opened it. */
     let full = false, viewer = null;
     if (qs.code) {
+      const code = String(qs.code).trim().toUpperCase();
+      /* a program's code, or an InHome scout's own code: both open the full
+         profile, and viewer says which so the page can name it */
       try {
-        const code = String(qs.code).trim().toUpperCase();
         const [pg] = await sql`SELECT short_name, name, division FROM programs WHERE upper(access_code) = ${code} AND COALESCE(active, true) LIMIT 1`;
-        if (pg) { full = true; viewer = { program: pg.short_name || pg.name, division: pg.division || null }; }
-      } catch (e) { full = false; }
+        if (pg) { full = true; viewer = { kind: 'program', program: pg.short_name || pg.name, division: pg.division || null }; }
+      } catch (e) {}
+      if (!full) {
+        try {
+          const [sc] = await sql`SELECT name, role FROM scouts WHERE upper(access_code) = ${code} AND COALESCE(active, true) LIMIT 1`;
+          if (sc) { full = true; viewer = { kind: 'scout', scout: sc.name, role: sc.role || null }; }
+        } catch (e) {}
+      }
     }
 
     let assessments = [];

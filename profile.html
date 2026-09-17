@@ -319,6 +319,17 @@ function render(p){
       `<a class="rlink" href="${esc(l[1])}" target="_blank" rel="noopener"><img src="${icon(l[2])}" alt="" onerror="this.remove()"><span>${l[0]}</span></a>`).join('') + `</div>`;
   }
 
+  /* Production and the lookup rail sit up top with the offers: a coach
+     wants the recent tape and the outside record before the detail. */
+  if(graded.length){
+    h += `<h2>Production (${graded.length} graded game${graded.length===1?'':'s'})</h2>` + graded.slice(0,10).map(g => `
+      <div class="row"><span style="min-width:58px;color:var(--dim)">${esc(g.date||'')}</span>
+      <span style="min-width:40px;font-family:'Anton',sans-serif;font-size:16px;">${g.grade.toFixed(1)}</span>
+      <span style="flex:1;color:#C4C4C4;">${esc(g.statLine||'')}</span></div>`).join('');
+  }
+
+  h += `<h2>Look him up</h2>${railHTML(p.name)}`;
+
   /* Soft profile: invite a staff to unlock the rest with their access code.
      The code is remembered for the session so a coach opening several
      profiles enters it once. */
@@ -448,14 +459,7 @@ function render(p){
         <div style="font-size:13.5px;color:#D6D6D6;white-space:pre-wrap;margin-top:3px;">${esc(n.body)}</div></div>`).join('');
   }
 
-  if(graded.length){
-    h += `<h2>Production (${graded.length} graded game${graded.length===1?'':'s'})</h2>` + graded.slice(0,10).map(g => `
-      <div class="row"><span style="min-width:58px;color:var(--dim)">${esc(g.date||'')}</span>
-      <span style="min-width:40px;font-family:'Anton',sans-serif;font-size:16px;">${g.grade.toFixed(1)}</span>
-      <span style="flex:1;color:#C4C4C4;">${esc(g.statLine||'')}</span></div>`).join('');
-  }
 
-  h += `<h2>Look him up</h2>${railHTML(p.name)}`;
   h += `<footer>Built by InHome Recruiting Intelligence. Grades come from evaluators watching film, not from a paid ranking.
         A blue check means InHome confirmed that measurable at the source. This page is private and was shared with you directly.</footer>`;
 

@@ -10,7 +10,39 @@
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
 const { explain: explainType } = require('./lib/mbti-locker');
-const { bank } = require('./lib/assessment-banks');
+const { bank, scenariosFor, groupFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+
+/* Defender codes from the field-diagram reads, in words a coach reads
+   without decoding. Unknown codes fall through unchanged. */
+const DEF_WORDS = { NB: 'Nickel', SS: 'Strong safety', FS: 'Free safety', M: 'Mike', W: 'Will', S: 'Sam',
+  CB: 'Corner', LCB: 'Left corner', RCB: 'Right corner', WE: 'Weak end', SE: 'Strong end', NT: 'Nose',
+  DT: 'Tackle', DT3: 'Three-tech', DE: 'End', J: 'Jack', R: 'Rover', D: 'Dime' };
+const defWord = (v) => { const k = String(v || '').toUpperCase(); return DEF_WORDS[k] || v; };
+
+/* A stored result row may predate the scorer saving option text next to
+   the index. Rebuild a lookup of every question's options from the live
+   bank, the field reads and the clip table, keyed the way the scorer keys
+   them, so an old row still renders as words. */
+async function optionLookup(kind, position) {
+  const map = {};
+  try { bank(kind, position).forEach(sec => (sec.items || []).forEach(it => { if (it.options) map[it.id] = it.options; })); } catch (e) {}
+  try { scenariosFor(groupFor(position)).forEach(sc => { if (sc.mode === 'choice' && sc.options) map['dot_' + sc.id] = sc.options; }); } catch (e) {}
+  try {
+    const rows = await sql`SELECT id, options FROM iq_clips`;
+    rows.forEach(c => { map['clip_' + c.id] = (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT; });
+  } catch (e) {}
+  return map;
+}
+/* Turn a stored value into what the coach should read. */
+function showValue(v, options, isTap) {
+  if (v === null || v === undefined || v === '') return 'No answer';
+  if (isTap) return defWord(String(v).replace(/^tapped\s+/i, ''));
+  if (Array.isArray(options)) {
+    const i = Number(v);
+    if (Number.isInteger(i) && options[i] !== undefined) return options[i];
+  }
+  return String(v);
+}
 const { logoMap, schoolKey } = require('./lib/logos');
 const sql = neon(process.env.DATABASE_URL);
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -75,6 +107,7 @@ exports.handler = async (event) => {
     let assessments = [];
     try {
       const rows = await sql`SELECT kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed FROM assessments WHERE prospect_id = ${p.id} AND status = 'complete' ORDER BY completed_at DESC`;
+      const lookup = full ? await optionLookup('full', p.position) : {};
       assessments = rows.map(a => {
         const sd = a.score_detail || {};
         const mbti = sd.mbti ? sd.mbti.type : null;
@@ -83,11 +116,12 @@ exports.handler = async (event) => {
           /* the type explained for a coach, on every profile that has one */
           personality: mbti ? explainType(mbti) : null };
         if (full) {
-          out.detail = Array.isArray(sd.detail) ? sd.detail.map(d => ({
-            id: d.id, q: d.q, correct: !!d.correct, why: d.why || null, clip: !!d.clip, dots: !!d.dots,
-            given: d.options ? ((d.options[d.given] !== undefined) ? d.options[d.given] : (d.shown || d.given)) : (d.shown || d.given),
-            answer: d.options ? ((d.options[d.answer] !== undefined) ? d.options[d.answer] : d.answer) : d.answer
-          })) : [];
+          out.detail = Array.isArray(sd.detail) ? sd.detail.map(d => {
+            const opts = d.options || lookup[d.id] || null;
+            const isTap = !!d.dots && !opts;
+            return { id: d.id, q: d.q, correct: !!d.correct, why: d.why || null, clip: !!d.clip, dots: !!d.dots,
+                     given: showValue(d.given, opts, isTap), answer: showValue(d.answer, opts, isTap) };
+          }) : [];
           out.correct = sd.correct != null ? sd.correct : null;
           out.total = sd.total != null ? sd.total : null;
           /* written answers: anything the athlete typed, keyed by question id */

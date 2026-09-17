@@ -2025,9 +2025,9 @@ async function toggleScoutActive(pkId, makeActive){
 /* Inline edit of a scout's playing background. Short, specific, the way a
    staff reads it: 'WR, Troy (Sun Belt) 2016-19' or 'DB, Alabama and NFL'. */
 function editPlayed(pk, el){
-  const s = SCOUT_ROSTER.find(x => x.pkId === pk); if(!s) return;
+  const s = SCOUT_ROSTER.find(x => String(x.pkId) === String(pk)); if(!s) return;
   const cur = s.played || '';
-  el.innerHTML = `<input type="text" id="playedIn_${pk}" value="${esc(cur)}" placeholder="e.g. WR, Troy (Sun Belt) 2016-19" style="width:100%; max-width:320px; padding:6px 9px; border-radius:7px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:12.5px;" onclick="event.stopPropagation()">
+  el.innerHTML = `<input type="text" id="playedIn_${esc(String(pk))}" value="${esc(cur)}" placeholder="e.g. WR, Troy (Sun Belt) 2016-19" style="width:100%; max-width:320px; padding:6px 9px; border-radius:7px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:12.5px;" onclick="event.stopPropagation()">
     <div style="display:flex; gap:6px; margin-top:6px;"><button type="button" class="mini-btn go" onclick="event.stopPropagation(); savePlayed(${pk})">Save</button><button type="button" class="mini-btn" onclick="event.stopPropagation(); renderRoster()">Cancel</button></div>`;
   const inp = document.getElementById('playedIn_' + pk); inp.focus();
   inp.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); savePlayed(pk); } if(e.key === 'Escape') renderRoster(); });
@@ -2037,7 +2037,7 @@ async function savePlayed(pk){
   const val = inp.value.trim();
   try{
     if(!demoMode) await api('updateScout', { id: pk, played: val });
-    const s = SCOUT_ROSTER.find(x => x.pkId === pk); if(s) s.played = val || null;
+    const s = SCOUT_ROSTER.find(x => String(x.pkId) === String(pk)); if(s) s.played = val || null;
     renderRoster(); toast(val ? 'Saved' : 'Cleared');
   }catch(err){ toast(err.message); }
 }
@@ -2057,7 +2057,7 @@ function renderRoster(){
         <div class="rc-mid">
           <div class="rc-name">${esc(s.name)}</div>
           <div class="rc-meta">${esc(s.role||'')} &middot; ${esc(s.region||'')}</div>
-          <div class="rc-played" onclick="event.stopPropagation(); editPlayed(${s.pkId}, this)" title="What he played and where. Shows under his name on every report he files.">
+          <div class="rc-played" onclick="event.stopPropagation(); editPlayed('${esc(String(s.pkId))}', this)" title="What he played and where. Shows under his name on every report he files.">
             ${s.played ? `<span class="rc-played-v">${esc(s.played)}</span>` : `<span class="rc-played-e">+ Add playing background</span>`}
           </div>
           <span class="scout-status ${s.active?'active':'inactive'}">${s.active?'Active':'Inactive'}</span>

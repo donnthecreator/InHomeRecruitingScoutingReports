@@ -948,6 +948,62 @@ exports.handler = async (event) => {
         return ok({ prospects: rows, pending });
       }
 
+      /* ---- access codes ----
+         The code a staff types to unlock a full profile, and the code that
+         opens the coach portal. Lives on the programs row. One per person
+         where you want to know who opened what; one per program where you
+         do not care. */
+      case 'listAccessCodes': {
+        await sql`ALTER TABLE programs ADD COLUMN IF NOT EXISTS holder TEXT`;
+        const rows = await sql`SELECT school_key, name, short_name, division, access_code, holder, COALESCE(active,true) AS active
+                               FROM programs WHERE access_code IS NOT NULL AND access_code <> '' ORDER BY short_name NULLS LAST, name`;
+        return ok({ codes: rows });
+      }
+      case 'issueAccessCode': {
+        const school = String(body.school || '').trim();
+        const code = String(body.code || '').trim().toUpperCase();
+        const holder = String(body.holder || '').trim() || null;
+        if (!school || !code) return fail(400, 'school and code required');
+        if (!/^[A-Z0-9]{4,20}$/.test(code)) return fail(400, 'Code must be 4 to 20 letters and numbers, no spaces');
+        await sql`ALTER TABLE programs ADD COLUMN IF NOT EXISTS holder TEXT`;
+
+        const [clash] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${code} LIMIT 1`;
+        if (clash && String(clash.school_key) !== String(body.school_key || '')) return fail(409, 'That code is already in use by ' + (clash.name || clash.school_key));
+
+        /* Attach to the existing program row when one matches, so the code
+           inherits its conference, division, colour and logo. */
+        const [existing] = await sql`SELECT school_key, name, short_name, division FROM programs
+          WHERE lower(regexp_replace(COALESCE(short_name,name),'[^A-Za-z0-9]','','g')) = lower(regexp_replace(${school},'[^A-Za-z0-9]','','g'))
+             OR lower(school_key) = lower(${school}) LIMIT 1`;
+
+        if (existing) {
+          /* A second person at the same program needs their own row, since
+             the code sits on the row. Clone it under a derived key. */
+          if (existing.access_code && existing.access_code.toUpperCase() !== code) {
+            const key = (existing.school_key + '_' + code).toLowerCase().slice(0, 60);
+            await sql`INSERT INTO programs (school_key, name, short_name, conference, division, espn_logo_id, primary_color, is_client, active, access_code, holder)
+              SELECT ${key}, name, short_name, conference, division, espn_logo_id, primary_color, is_client, true, ${code}, ${holder}
+              FROM programs WHERE school_key = ${existing.school_key}
+              ON CONFLICT (school_key) DO UPDATE SET access_code = ${code}, holder = ${holder}, active = true`;
+            return ok({ issued: true, code, holder, program: existing.short_name || existing.name, schoolKey: key, cloned: true });
+          }
+          await sql`UPDATE programs SET access_code = ${code}, holder = ${holder}, active = true WHERE school_key = ${existing.school_key}`;
+          return ok({ issued: true, code, holder, program: existing.short_name || existing.name, schoolKey: existing.school_key });
+        }
+
+        const key = school.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 60) || code.toLowerCase();
+        await sql`INSERT INTO programs (school_key, name, short_name, division, active, access_code, holder)
+          VALUES (${key}, ${school}, ${school}, ${String(body.division || '').trim() || null}, true, ${code}, ${holder})
+          ON CONFLICT (school_key) DO UPDATE SET access_code = ${code}, holder = ${holder}, active = true`;
+        return ok({ issued: true, code, holder, program: school, schoolKey: key, created: true });
+      }
+      case 'revokeAccessCode': {
+        const key = String(body.school_key || '').trim();
+        if (!key) return fail(400, 'school_key required');
+        await sql`UPDATE programs SET active = false WHERE school_key = ${key}`;
+        return ok({ revoked: true, schoolKey: key });
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

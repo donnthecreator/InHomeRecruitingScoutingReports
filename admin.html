@@ -748,6 +748,19 @@
 
   <div class="pane" id="paneBoard">
     <div class="panel">
+      <h3>Access codes</h3>
+      <div class="sub">The code a staff types to unlock a full profile, and to open the coach portal. Issue one per person when you want to know who opened what; the profile footer names whoever's code was used.</div>
+      <div class="tools" style="margin-top:12px; flex-wrap:wrap;">
+        <input type="text" id="acSchool" placeholder="Program, e.g. Georgia" style="min-width:160px;">
+        <input type="text" id="acHolder" placeholder="Person (optional), e.g. Jalen Harris" style="min-width:180px;">
+        <input type="text" id="acCode" placeholder="CODE" style="max-width:140px; text-transform:uppercase; letter-spacing:.12em;">
+        <button type="button" class="mini-btn go" onclick="issueCode()">Issue code</button>
+      </div>
+      <div id="acStatus" style="margin-top:10px; font-size:13px; min-height:18px;"></div>
+      <div id="acList" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="panel">
       <h3 id="boardTitle">Recruiting Boards</h3>
       <div class="sub" id="boardSub">Every list a program has handed us, plus the Samford receiver board. Pick a board, check guys off as you work them, assign any player or the whole board to a scout.</div>
       <div class="tools" style="margin-top:12px;">
@@ -1178,6 +1191,7 @@ function switchTab(t){
     if(pane) pane.classList.toggle('on', k===t);
   });
   focusPane(t);
+  if(t==='board') loadCodes();
   if(t==='players') renderPlayers();
   if(t==='intake'){ renderIntake(); renderScoutRequests(); }
   if(t==='assess'){ renderAssessments(); renderClips(); }
@@ -2224,6 +2238,43 @@ async function doMerge(){
     if(go){ go.disabled = false; go.textContent = 'Yes, merge and delete #' + drop.id; }
     if(st){ st.style.color = '#FF7D7D'; st.textContent = 'Merge failed: ' + (err.message || err); }
   }
+}
+
+/* ---- access codes ---- */
+async function issueCode(){
+  const school = (document.getElementById('acSchool').value||'').trim();
+  const holder = (document.getElementById('acHolder').value||'').trim();
+  const code   = (document.getElementById('acCode').value||'').trim().toUpperCase();
+  const st = document.getElementById('acStatus');
+  if(!school || !code){ st.style.color='#FF7D7D'; st.textContent='Program and code are both required.'; return; }
+  st.style.color='var(--dim)'; st.textContent='Issuing\u2026';
+  try{
+    const d = await api('issueAccessCode', { school, holder, code });
+    st.style.color='var(--good)';
+    st.innerHTML = `<b>${esc(d.code)}</b> issued to ${esc(d.holder || d.program)}${d.holder?' at '+esc(d.program):''}.`
+      + `<div class="sub" style="margin-top:6px;">Full profile link: <span style="font-family:ui-monospace,monospace;">inhomecollegescouts.com/profile.html?id=<b>ID</b>&code=${esc(d.code)}</span></div>`;
+    document.getElementById('acCode').value=''; document.getElementById('acHolder').value='';
+    loadCodes();
+  }catch(err){ st.style.color='#FF7D7D'; st.textContent = err.message; }
+}
+async function loadCodes(){
+  const host = document.getElementById('acList'); if(!host) return;
+  try{
+    const d = await api('listAccessCodes', {});
+    host.innerHTML = (d.codes||[]).length ? (d.codes||[]).map(c => `
+      <div class="mg-card" style="${c.active?'':'opacity:.5;'}">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;">${esc(c.holder || c.short_name || c.name)}${c.holder?` <span class="rc-meta">\u00b7 ${esc(c.short_name||c.name)}</span>`:''}</div>
+          <div class="rc-meta">${esc(c.division||'')}${c.active?'':' \u00b7 revoked'}</div>
+        </div>
+        <div style="font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;">${esc(c.access_code)}</div>
+        ${c.active?`<button type="button" class="mini-btn" onclick="revokeCode('${esc(c.school_key)}')">Revoke</button>`:''}
+      </div>`).join('') : '<div class="sub">No codes issued yet.</div>';
+  }catch(err){ host.innerHTML = '<div class="sub">'+esc(err.message)+'</div>'; }
+}
+async function revokeCode(key){
+  try{ await api('revokeAccessCode', { school_key: key }); loadCodes(); toast('Revoked'); }
+  catch(err){ toast(err.message); }
 }
 
 function renderRoster(){

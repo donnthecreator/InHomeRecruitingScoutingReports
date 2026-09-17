@@ -88,7 +88,7 @@ exports.handler = async (event) => {
 
     const logos = await logoMap(sql, base);
     const reports = await sql`SELECT id, scout_name, scout_role, scout_id, inhome_score, recommendation_tier, archetype, position, date_evaluated, created_at, narrative,
-                 raw, film_grades, athletic_grades, athletic_raw, production_grades, production_raw, gates, interview_data, track, football_iq, height, weight, film_link, eval_camp, wingspan, verifications,
+                 raw, film_grades, athletic_grades, athletic_raw, production_grades, production_raw, gates, interview_data, track, football_iq, height, weight, film_link, eval_camp,
                  (SELECT sc.played FROM scouts sc WHERE sc.scout_id = reports.scout_id LIMIT 1) AS scout_played
                               FROM reports WHERE prospect_id = ${p.id} ORDER BY created_at DESC`;
     let games = [];
@@ -212,7 +212,7 @@ exports.handler = async (event) => {
               tier: r.recommendation_tier, archetype: r.archetype, position: r.position,
               date: r.date_evaluated || (r.created_at ? String(r.created_at).slice(0, 10) : null), narrative: r.narrative,
               footballIQ: r.football_iq != null ? Number(r.football_iq) : null, height: r.height, weight: r.weight, filmLink: r.film_link,
-              evalCamp: r.eval_camp, wingspan: r.wingspan, verifications: r.verifications || {},
+              evalCamp: r.eval_camp,
               breakdown: { film: sc.filmScore, athletic: sc.athScore, character: sc.cScore, production: sc.prodScore, ti: sc.ti, estimated: sc.estimated },
               raw, config: POSITIONS[r.position] || null, gradeLabels: GRADE_LABELS };
           })

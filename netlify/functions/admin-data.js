@@ -1034,8 +1034,9 @@ exports.handler = async (event) => {
         const rows = Array.isArray(body.rows) ? body.rows.slice(0, 1000) : [];
         if (!program) return fail(400, 'program code required');
         if (!rows.length) return fail(400, 'no rows');
+        /* The portal keys boards by code, so a code without a programs
+           row still gets a board. The name is only for the message. */
         const [prog] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${program} LIMIT 1`;
-        if (!prog) return fail(404, `No program has the portal code ${program}. Issue it under Access codes first.`);
         const WR = { X: 'X', Z: 'Z', H: 'H', SLOT: 'H' };
         let created = 0, linked = 0, already = 0, skipped = 0;
         for (const r of rows) {
@@ -1070,7 +1071,7 @@ exports.handler = async (event) => {
           if (ins.length) linked++; else already++;
         }
         const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;
-        return ok({ program, school: prog.name, created, linked, already, skipped, onBoard: c.n });
+        return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, onBoard: c.n });
       }
 
       case 'listProgramBoards': {

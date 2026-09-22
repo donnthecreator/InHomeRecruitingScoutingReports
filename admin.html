@@ -381,6 +381,7 @@
   .rc-played:hover .rc-played-e{color:var(--ink);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <!-- INHOME INTRO: black screen, logo, one line, fades out. Shown once per
@@ -770,6 +771,8 @@
         <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign to scout</button>
         <button type="button" class="mini-btn danger" id="boardUnassignAll" onclick="unassignWholeBoard()" style="display:none;">Remove board from scout lists</button>
         <button type="button" class="mini-btn" id="boardPushPortal" onclick="pushStaticBoardToPortal()">Load this board onto Samford's portal</button>
+        <button type="button" class="mini-btn" onclick="document.getElementById('boardXlsx').click()">Upload a program's board (Excel)</button>
+        <input type="file" id="boardXlsx" accept=".xlsx,.xls,.csv" style="display:none;" onchange="uploadBoardFile(this)">
       </div>
       <div class="board-progress">
         <div class="bp-row">
@@ -1155,6 +1158,69 @@ async function pushStaticBoardToPortal(){
     if([...sel.options].some(o=>o.value===code)){ sel.value = code; switchBoard(code); }
   }catch(err){ alert('Could not load the board: ' + err.message); }
   finally{ if(btn){ btn.disabled = false; btn.textContent = "Load this board onto Samford's portal"; } }
+}
+/* Upload a board a program sent us (Excel or CSV) and put it on their
+   portal. Two layouts are understood:
+     1. Position columns: row 1 holds position labels (X, Z, H, QB...),
+        each player is a 3-row block under it: NAME / SCHOOL (ST) / HT, WT.
+        This is the Samford offense board layout.
+     2. A plain table with a header row: Name, Position, School, State,
+        Height, Weight (any order, extra columns ignored). */
+function parseBoardSheet(rows){
+  const str = v => (v === null || v === undefined) ? '' : String(v).trim();
+  const out = [];
+  const hdr = (rows[0]||[]).map(str);
+  const lower = hdr.map(h => h.toLowerCase());
+  const col = (...names) => lower.findIndex(h => names.some(n => h === n || h.startsWith(n)));
+  const cName = col('name','player','prospect');
+  if(cName >= 0){
+    const cPos = col('pos'), cSch = col('school','high school','hs'), cSt = col('state','st'), cHt = col('ht','height'), cWt = col('wt','weight');
+    rows.slice(1).forEach(r => {
+      const name = str(r[cName]); if(!name) return;
+      out.push([name, cPos>=0?str(r[cPos]):'', cSch>=0?str(r[cSch]):'', cSt>=0?str(r[cSt]).toUpperCase():'', cHt>=0?str(r[cHt]):'', cWt>=0?str(r[cWt]):'']);
+    });
+    return out;
+  }
+  hdr.forEach((label, c) => {
+    if(!label || label.length > 6) return;
+    const nc = c + 1; let i = 3;
+    while(i < rows.length){
+      const name = str((rows[i]||[])[nc]);
+      if(name && !/^HT:/i.test(name) && !/^WT:/i.test(name)){
+        const sch = str((rows[i+1]||[])[nc]);
+        const ht = str((rows[i+2]||[])[nc]), wt = str((rows[i+2]||[])[nc+1]);
+        const m = sch.match(/^(.*?)\s*\(([A-Za-z]{2})\)\s*$/);
+        const school = (m ? m[1] : sch).trim().toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase()).replace(/\bHs\b/g,'HS');
+        const nm = name.replace(/\s*""\s*/g,' ').trim().toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
+        out.push([nm, label.toUpperCase(), school, m ? m[2].toUpperCase() : '', ht.replace(/^HT:\s*/i,''), wt.replace(/^WT:\s*/i,'')]);
+        i += 4;
+      } else i++;
+    }
+  });
+  return out;
+}
+async function uploadBoardFile(input){
+  const file = input.files && input.files[0]; input.value = '';
+  if(!file) return;
+  if(typeof XLSX === 'undefined'){ alert('Spreadsheet reader did not load. Refresh and try again.'); return; }
+  let rows;
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type:'array' });
+    rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:false, defval:'' });
+  }catch(err){ alert('Could not read that file: ' + err.message); return; }
+  const parsed = parseBoardSheet(rows);
+  if(!parsed.length){ alert('No players found. Row 1 needs position labels (X, Z, H...) with NAME / SCHOOL (ST) / HT WT blocks under them, or a header row with Name, Position, School, State, Height, Weight.'); return; }
+  let code = (prompt(`${parsed.length} players read from ${file.name}.\n\nWhich program's portal code should they go on? (e.g. SAMFORD26)`, LIVE_BOARD_CODE || '') || '').trim().toUpperCase();
+  if(!code) return;
+  if(!confirm(`Put ${parsed.length} players on the ${code} portal board?\n\nFirst three: ${parsed.slice(0,3).map(r=>r[0]+' ('+r[1]+', '+r[2]+')').join('; ')}`)) return;
+  try{
+    const res = await api('importProgramBoard', { program: code, rows: parsed });
+    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
+    await loadProgramBoards();
+    const sel = document.getElementById('boardProgram');
+    if([...sel.options].some(o=>o.value===code)){ sel.value = code; switchBoard(code); }
+  }catch(err){ alert('Could not load the board: ' + err.message); }
 }
 function initBoard(){
   loadBoardStatus();

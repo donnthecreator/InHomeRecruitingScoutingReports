@@ -475,8 +475,8 @@
       <h3>Merge duplicate records</h3>
       <div class="sub">Two records for the same athlete, usually from an intake and an invite landing under different spellings or levels. Merging moves every report, assessment, offer, note and board entry onto the record you keep, then deletes the empty one. Nothing a scout or an athlete produced is thrown away.</div>
       <div class="tools" style="margin-top:12px;">
-        <input type="text" id="mgSearch" placeholder="Search a name, e.g. Carlos Benjamin" onkeydown="if(event.key==='Enter')findDupes()">
-        <button type="button" class="mini-btn go" onclick="findDupes()">Find records</button>
+        <input type="text" id="mgSearch" placeholder="Search a name, e.g. Latrell Pogue" onkeydown="if(event.key==='Enter'){event.preventDefault();findDupes();}">
+        <button type="button" class="mini-btn go" data-mg="find">Find records</button>
       </div>
       <div id="mgResults" style="margin-top:12px;"></div>
     </div>
@@ -2099,30 +2099,57 @@ async function savePlayed(pk){
   }catch(err){ toast(err.message); }
 }
 
-/* ---- merge duplicates ---- */
-let MG_MATCHES = [], MG_KEEP = null, MG_DROP = null, MG_ARMED = false;
+/* ---- merge duplicates ----
+   Every control in this panel is a data-mg button handled by ONE listener
+   on document, bound once. No inline onclick, no per-render binding, no
+   native dialogs. The panel keeps a visible log of every tap and every
+   server reply, so when something does not happen we can read why. */
+const MG_BUILD = 'merge panel build 2026-09-22-A';
+let MG_MATCHES = [], MG_KEEP = null, MG_DROP = null, MG_ARMED = false, MG_DEL = null, MG_LOG = [];
+
+function mgLog(line){
+  MG_LOG.push(new Date().toTimeString().slice(0,8) + '  ' + line);
+  if(MG_LOG.length > 12) MG_LOG.shift();
+  const el = document.getElementById('mgLog');
+  if(el) el.textContent = MG_LOG.join('\n');
+}
+function mgSetStatus(msg, bad){
+  const st = document.getElementById('mgStatus'); if(!st) return;
+  st.style.color = bad ? '#FF7D7D' : 'var(--dim)'; st.textContent = msg || '';
+}
+
 async function findDupes(){
-  const q = (document.getElementById('mgSearch').value || '').trim();
-  const host = document.getElementById('mgResults');
+  const q = ((document.getElementById('mgSearch')||{}).value || '').trim();
+  const host = document.getElementById('mgResults'); if(!host) return;
+  mgLog('search: "' + q + '"');
   if(q.length < 2){ host.innerHTML = '<div class="sub">Type at least two letters.</div>'; return; }
   host.innerHTML = '<div class="sub">Searching\u2026</div>';
   try{
     const d = await api('findDuplicates', { q });
-    MG_MATCHES = d.matches || []; MG_KEEP = null; MG_DROP = null; MG_ARMED = false;
+    MG_MATCHES = d.matches || []; MG_KEEP = null; MG_DROP = null; MG_ARMED = false; MG_DEL = null;
+    mgLog('server: ' + MG_MATCHES.length + ' record(s) ' + MG_MATCHES.map(m=>'#'+m.id).join(' '));
     if(!MG_MATCHES.length){ host.innerHTML = '<div class="sub">No records match that name.</div>'; return; }
-    if(MG_MATCHES.length === 1){ host.innerHTML = '<div class="sub">Only one record for that name, nothing to merge.</div>'; return; }
     renderDupes();
-  }catch(err){ host.innerHTML = '<div class="sub">' + esc(err.message) + '</div>'; }
+  }catch(err){ mgLog('ERROR search: ' + err.message); host.innerHTML = '<div class="sub" style="color:#FF7D7D;">' + esc(err.message) + '</div>'; }
 }
+
 function renderDupes(){
-  const host = document.getElementById('mgResults');
+  const host = document.getElementById('mgResults'); if(!host) return;
+  const both = MG_KEEP !== null && MG_DROP !== null;
+  const shown = both ? MG_MATCHES.filter(m => m.id === MG_KEEP || m.id === MG_DROP) : MG_MATCHES;
+  const hidden = MG_MATCHES.length - shown.length;
   const card = (m) => {
-    const c = m.counts, has = [];
+    const c = m.counts || {}, has = [];
     if(c.reports) has.push(c.reports + (c.reports===1?' report':' reports'));
     if(c.assessments) has.push(c.assessments + (c.assessments===1?' assessment':' assessments'));
     if(c.offers) has.push(c.offers + (c.offers===1?' offer':' offers'));
     if(c.boards) has.push('on ' + c.boards + (c.boards===1?' board':' boards'));
     const role = MG_KEEP === m.id ? 'keep' : MG_DROP === m.id ? 'drop' : '';
+    let controls;
+    if(MG_KEEP === null) controls = `<button type="button" class="mini-btn go" data-mg="keep" data-id="${m.id}">Keep this one</button><button type="button" class="mini-btn" data-mg="delete" data-id="${m.id}">Delete</button>`;
+    else if(MG_KEEP === m.id) controls = `<span class="mg-tag keep">Keeping</span><button type="button" class="mini-btn" data-mg="reset">Change</button>`;
+    else if(MG_DROP === m.id) controls = `<span class="mg-tag drop">Merging into #${MG_KEEP}</span>`;
+    else controls = `<button type="button" class="mini-btn danger" data-mg="drop" data-id="${m.id}">Merge this into #${MG_KEEP}</button>`;
     return `<div class="mg-card ${role}">
       <div style="flex:1;min-width:0;">
         <div style="font-weight:700;">${esc(m.name)} <span class="rc-meta">#${m.id}</span></div>
@@ -2131,153 +2158,119 @@ function renderDupes(){
         ${m.scoutNames ? `<div class="rc-meta">Scouted by ${esc(m.scoutNames)}</div>` : ''}
         ${m.boardCodes ? `<div class="rc-meta">On boards: ${esc(m.boardCodes)}</div>` : ''}
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;">
-        ${MG_KEEP === null
-          ? `<button type="button" class="mini-btn go" onclick="mgPick('keep',${m.id})">Keep this one</button><button type="button" class="mini-btn" onclick="mgDelete(${m.id})" title="Delete this record and everything attached to it">Delete</button>`
-          : MG_KEEP === m.id
-            ? `<span class="mg-tag keep">Keeping</span><button type="button" class="mini-btn" onclick="mgPick('keep',${m.id})">Change</button>`
-            : MG_DROP === m.id
-              ? `<span class="mg-tag drop">Merging into #${MG_KEEP}</span>`
-              : `<button type="button" class="mini-btn danger" onclick="mgPick('drop',${m.id})">Merge this into #${MG_KEEP}</button>`}
-      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;">${controls}</div>
     </div>`;
   };
-  const lead = MG_KEEP === null
-    ? 'Which record is the right one? Tap <b>Keep this one</b> on it.'
-    : MG_DROP === null
-      ? 'Now tap <b>Merge this into #' + MG_KEEP + '</b> on the duplicate.'
-      : '';
-  const both = MG_KEEP && MG_DROP;
-  const shown = both ? MG_MATCHES.filter(m => m.id === MG_KEEP || m.id === MG_DROP) : MG_MATCHES;
-  const hidden = MG_MATCHES.length - shown.length;
+  const lead = MG_KEEP === null ? 'Which record is the right one? Tap <b>Keep this one</b> on it.'
+             : MG_DROP === null ? 'Now tap <b>Merge this into #' + MG_KEEP + '</b> on the duplicate.' : '';
   let h = (lead ? `<div class="sub" style="margin-bottom:10px;">${lead}</div>` : '') + shown.map(card).join('');
-  if(both && hidden > 0) h += `<div class="sub" style="margin:2px 0 8px;">${hidden} other ${hidden===1?'record':'records'} hidden. <a href="#" onclick="MG_DROP=null; MG_ARMED=false; renderDupes(); return false;" style="color:var(--ink);">Pick a different duplicate</a></div>`;
-  if(MG_KEEP && MG_DROP){
+  if(both && hidden > 0) h += `<div class="sub" style="margin:2px 0 8px;">${hidden} other ${hidden===1?'record':'records'} hidden. <button type="button" class="mini-btn" data-mg="undrop">Pick a different duplicate</button></div>`;
+  if(both){
     const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
     h += `<div class="mg-confirm" id="mgConfirm">
       <div style="font-size:13px;line-height:1.55;">Everything attached to <b>${esc(drop.name)} #${drop.id}</b> moves to <b>${esc(keep.name)} #${keep.id}</b>, then record #${drop.id} is deleted. Any blank on the record you keep gets filled from the one being retired.</div>
       ${MG_ARMED
         ? `<div style="margin-top:10px;font-size:13px;color:#FF7D7D;font-weight:700;">This cannot be undone.</div>
            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-             <button type="button" class="mini-btn danger" id="mgGo" onclick="doMerge()">Yes, merge and delete #${drop.id}</button>
-             <button type="button" class="mini-btn" onclick="MG_ARMED=false; renderDupes()">Cancel</button>
+             <button type="button" class="mini-btn danger" id="mgGo" data-mg="merge">Yes, merge and delete #${drop.id}</button>
+             <button type="button" class="mini-btn" data-mg="disarm">Cancel</button>
            </div>`
-        : `<button type="button" class="mini-btn danger" style="margin-top:10px;" onclick="MG_ARMED=true; renderDupes()">Merge and delete #${drop.id}</button>`}
+        : `<button type="button" class="mini-btn danger" style="margin-top:10px;" data-mg="arm">Merge and delete #${drop.id}</button>`}
       <div id="mgStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
     </div>`;
   }
-  host.innerHTML = h;
-  const cf = document.getElementById('mgConfirm');
-  if(cf && cf.scrollIntoView){ setTimeout(() => cf.scrollIntoView({ behavior:'smooth', block:'center' }), 30); }
-}
-/* Outright delete, for a junk or test record. Confirms on the page with
-   what will be lost; a real duplicate should be merged instead. */
-let MG_DEL = null;
-function mgDelete(id){
-  const m = MG_MATCHES.find(x => x.id === id); if(!m) return;
-  const c = m.counts, lost = [];
-  if(c.reports) lost.push(c.reports + (c.reports===1?' report':' reports'));
-  if(c.assessments) lost.push(c.assessments + (c.assessments===1?' assessment':' assessments'));
-  if(c.offers) lost.push(c.offers + (c.offers===1?' offer':' offers'));
-  if(c.boards) lost.push(c.boards + ' board ' + (c.boards===1?'entry':'entries'));
-  MG_DEL = id;
-  document.getElementById('mgResults').insertAdjacentHTML('beforeend', `
-    <div class="mg-confirm" id="mgDelConfirm">
-      <div style="font-size:13px;line-height:1.55;">Delete <b>${esc(m.name)} #${m.id}</b>${lost.length ? ' and everything attached: <b>' + esc(lost.join(', ')) + '</b>' : ''}. ${lost.length ? 'If this is a duplicate of another record, merge it instead so that work survives. ' : ''}This cannot be undone.</div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <button type="button" class="mini-btn danger" id="mgDelGo" onclick="doDelete()">Yes, delete #${m.id}</button>
-        <button type="button" class="mini-btn" onclick="MG_DEL=null; renderDupes()">Cancel</button>
-      </div>
-      <div id="mgDelStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
-    </div>`);
-  const cf = document.getElementById('mgDelConfirm'); if(cf && cf.scrollIntoView) setTimeout(()=>cf.scrollIntoView({behavior:'smooth',block:'center'}),30);
-}
-async function doDelete(){
-  const id = MG_DEL; if(!id) return;
-  const go = document.getElementById('mgDelGo'), st = document.getElementById('mgDelStatus');
-  if(go){ go.disabled = true; go.textContent = 'Deleting\u2026'; }
-  try{
-    const d = await api('deleteProspect', { id });
-    const parts = Object.keys(d.removed||{}).filter(k => d.removed[k] && d.removed[k] !== 'skipped').map(k => d.removed[k] + ' ' + k);
-    document.getElementById('mgResults').innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);"><b>Deleted ${esc(d.name)} #${d.id}.</b>${parts.length ? ' Removed ' + esc(parts.join(', ')) + '.' : ''}</div>`;
-    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null; MG_DEL = null; loadAll();
-  }catch(err){
-    if(go){ go.disabled = false; go.textContent = 'Yes, delete #' + id; }
-    if(st){ st.style.color = '#FF7D7D'; st.textContent = 'Delete failed: ' + (err.message || err); }
+  if(MG_DEL !== null){
+    const m = MG_MATCHES.find(x => x.id === MG_DEL);
+    if(m){
+      const c = m.counts || {}, lost = [];
+      if(c.reports) lost.push(c.reports + (c.reports===1?' report':' reports'));
+      if(c.assessments) lost.push(c.assessments + (c.assessments===1?' assessment':' assessments'));
+      if(c.offers) lost.push(c.offers + (c.offers===1?' offer':' offers'));
+      if(c.boards) lost.push(c.boards + ' board ' + (c.boards===1?'entry':'entries'));
+      h += `<div class="mg-confirm" id="mgDelConfirm">
+        <div style="font-size:13px;line-height:1.55;">Delete <b>${esc(m.name)} #${m.id}</b>${lost.length ? ' and everything attached: <b>' + esc(lost.join(', ')) + '</b>' : ''}. ${lost.length ? 'If this is a duplicate of another record, merge it instead so that work survives. ' : ''}This cannot be undone.</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button type="button" class="mini-btn danger" id="mgDelGo" data-mg="delete-go">Yes, delete #${m.id}</button>
+          <button type="button" class="mini-btn" data-mg="delete-cancel">Cancel</button>
+        </div>
+        <div id="mgStatus" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
+      </div>`;
+    }
   }
+  h += `<pre id="mgLog" style="margin-top:14px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:9px;font-size:11px;line-height:1.5;color:var(--dim);white-space:pre-wrap;">${esc(MG_LOG.join('\n'))}</pre>
+        <div class="sub" style="font-size:10.5px;color:#666;">${MG_BUILD}</div>`;
+  host.innerHTML = h;
+  const cf = document.getElementById('mgConfirm') || document.getElementById('mgDelConfirm');
+  if(cf && cf.scrollIntoView){ setTimeout(() => { try{ cf.scrollIntoView({ behavior:'smooth', block:'center' }); }catch(e){} }, 30); }
 }
 
-function mgPick(role, id){
-  MG_ARMED = false;
-  if(role === 'keep'){
-    if(MG_KEEP === id){ MG_KEEP = null; MG_DROP = null; }   // Change: start over
-    else {
-      MG_KEEP = id;
-      const others = MG_MATCHES.filter(m => m.id !== id);
-      MG_DROP = others.length === 1 ? others[0].id : null;  // two records: the other is the duplicate
-    }
-  } else {
-    MG_DROP = id;
+/* the one listener */
+document.addEventListener('click', function(e){
+  const b = e.target && e.target.closest ? e.target.closest('[data-mg]') : null;
+  if(!b) return;
+  e.preventDefault();
+  const act = b.getAttribute('data-mg'), id = b.hasAttribute('data-id') ? Number(b.getAttribute('data-id')) : null;
+  mgLog('tap: ' + act + (id !== null ? ' #' + id : ''));
+  if(act === 'find'){ findDupes(); return; }
+  if(act === 'keep'){
+    MG_ARMED = false; MG_DEL = null;
+    if(MG_KEEP === id){ MG_KEEP = null; MG_DROP = null; }
+    else { MG_KEEP = id; const others = MG_MATCHES.filter(m => m.id !== id); MG_DROP = others.length === 1 ? others[0].id : null; }
+    renderDupes(); return;
   }
-  renderDupes();
-}
+  if(act === 'drop'){ MG_ARMED = false; MG_DROP = id; renderDupes(); return; }
+  if(act === 'reset'){ MG_KEEP = null; MG_DROP = null; MG_ARMED = false; renderDupes(); return; }
+  if(act === 'undrop'){ MG_DROP = null; MG_ARMED = false; renderDupes(); return; }
+  if(act === 'arm'){ MG_ARMED = true; renderDupes(); return; }
+  if(act === 'disarm'){ MG_ARMED = false; renderDupes(); return; }
+  if(act === 'merge'){ doMerge(); return; }
+  if(act === 'delete'){ MG_DEL = id; renderDupes(); return; }
+  if(act === 'delete-cancel'){ MG_DEL = null; renderDupes(); return; }
+  if(act === 'delete-go'){ doDelete(); return; }
+});
+
 async function doMerge(){
   const keep = MG_MATCHES.find(m=>m.id===MG_KEEP), drop = MG_MATCHES.find(m=>m.id===MG_DROP);
-  const st = document.getElementById('mgStatus'), go = document.getElementById('mgGo');
-  if(!keep || !drop) return;
+  if(!keep || !drop){ mgLog('merge: no keep/drop pair'); return; }
+  const go = document.getElementById('mgGo');
   if(go){ go.disabled = true; go.textContent = 'Merging\u2026'; }
-  if(st){ st.style.color = 'var(--dim)'; st.textContent = 'Moving records\u2026'; }
+  mgSetStatus('Moving records\u2026');
+  mgLog('api: mergeProspects from #' + drop.id + ' into #' + keep.id);
   try{
     const d = await api('mergeProspects', { from: drop.id, into: keep.id });
     const parts = Object.keys(d.moved || {}).filter(k => d.moved[k] && d.moved[k] !== 'skipped').map(k => d.moved[k] + ' ' + k);
-    const skipped = Object.keys(d.moved || {}).filter(k => d.moved[k] === 'skipped');
-    document.getElementById('mgResults').innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);">
-      <div style="font-size:13.5px;line-height:1.6;"><b>Merged into ${esc(keep.name)} #${keep.id}.</b>${parts.length?' Moved '+esc(parts.join(', '))+'.':' Nothing was attached to the duplicate.'} Record #${drop.id} deleted.</div>
-      ${skipped.length?`<div class="sub" style="margin-top:6px;">Not moved (table missing or empty): ${esc(skipped.join(', '))}.</div>`:''}
-    </div>`;
+    mgLog('server: merged. ' + (parts.join(', ') || 'nothing attached'));
     MG_MATCHES = []; MG_KEEP = null; MG_DROP = null; MG_ARMED = false;
+    const host = document.getElementById('mgResults');
+    if(host) host.innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);"><div style="font-size:13.5px;line-height:1.6;"><b>Merged into ${esc(keep.name)} #${keep.id}.</b>${parts.length?' Moved '+esc(parts.join(', '))+'.':' Nothing was attached to the duplicate.'} Record #${drop.id} deleted.</div></div>
+      <pre id="mgLog" style="margin-top:14px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:9px;font-size:11px;line-height:1.5;color:var(--dim);white-space:pre-wrap;">${esc(MG_LOG.join('\n'))}</pre>`;
     loadAll();
   }catch(err){
+    mgLog('ERROR merge: ' + err.message);
     if(go){ go.disabled = false; go.textContent = 'Yes, merge and delete #' + drop.id; }
-    if(st){ st.style.color = '#FF7D7D'; st.textContent = 'Merge failed: ' + (err.message || err); }
+    mgSetStatus('Merge failed: ' + (err.message || err), true);
   }
 }
 
-/* ---- access codes ---- */
-async function issueCode(){
-  const school = (document.getElementById('acSchool').value||'').trim();
-  const holder = (document.getElementById('acHolder').value||'').trim();
-  const code   = (document.getElementById('acCode').value||'').trim().toUpperCase();
-  const st = document.getElementById('acStatus');
-  if(!school || !code){ st.style.color='#FF7D7D'; st.textContent='Program and code are both required.'; return; }
-  st.style.color='var(--dim)'; st.textContent='Issuing\u2026';
+async function doDelete(){
+  const id = MG_DEL; if(id === null) return;
+  const m = MG_MATCHES.find(x=>x.id===id) || { name:'record' };
+  const go = document.getElementById('mgDelGo');
+  if(go){ go.disabled = true; go.textContent = 'Deleting\u2026'; }
+  mgLog('api: deleteProspect #' + id);
   try{
-    const d = await api('issueAccessCode', { school, holder, code });
-    st.style.color='var(--good)';
-    st.innerHTML = `<b>${esc(d.code)}</b> issued to ${esc(d.holder || d.program)}${d.holder?' at '+esc(d.program):''}.`
-      + `<div class="sub" style="margin-top:6px;">Full profile link: <span style="font-family:ui-monospace,monospace;">inhomecollegescouts.com/profile.html?id=<b>ID</b>&code=${esc(d.code)}</span></div>`;
-    document.getElementById('acCode').value=''; document.getElementById('acHolder').value='';
-    loadCodes();
-  }catch(err){ st.style.color='#FF7D7D'; st.textContent = err.message; }
-}
-async function loadCodes(){
-  const host = document.getElementById('acList'); if(!host) return;
-  try{
-    const d = await api('listAccessCodes', {});
-    host.innerHTML = (d.codes||[]).length ? (d.codes||[]).map(c => `
-      <div class="mg-card" style="${c.active?'':'opacity:.5;'}">
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;">${esc(c.holder || c.short_name || c.name)}${c.holder?` <span class="rc-meta">\u00b7 ${esc(c.short_name||c.name)}</span>`:''}</div>
-          <div class="rc-meta">${esc(c.division||'')}${c.active?'':' \u00b7 revoked'}</div>
-        </div>
-        <div style="font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.06em;">${esc(c.access_code)}</div>
-        ${c.active?`<button type="button" class="mini-btn" onclick="revokeCode('${esc(c.school_key)}')">Revoke</button>`:''}
-      </div>`).join('') : '<div class="sub">No codes issued yet.</div>';
-  }catch(err){ host.innerHTML = '<div class="sub">'+esc(err.message)+'</div>'; }
-}
-async function revokeCode(key){
-  try{ await api('revokeAccessCode', { school_key: key }); loadCodes(); toast('Revoked'); }
-  catch(err){ toast(err.message); }
+    const d = await api('deleteProspect', { id });
+    const parts = Object.keys(d.removed||{}).filter(k => d.removed[k] && d.removed[k] !== 'skipped').map(k => d.removed[k] + ' ' + k);
+    mgLog('server: deleted. ' + (parts.join(', ') || 'nothing attached'));
+    MG_MATCHES = []; MG_KEEP = null; MG_DROP = null; MG_DEL = null;
+    const host = document.getElementById('mgResults');
+    if(host) host.innerHTML = `<div class="mg-confirm" style="border-left-color:var(--good);"><b>Deleted ${esc(d.name || m.name)} #${d.id || id}.</b>${parts.length ? ' Removed ' + esc(parts.join(', ')) + '.' : ''}</div>`;
+    loadAll();
+  }catch(err){
+    mgLog('ERROR delete: ' + err.message);
+    if(go){ go.disabled = false; go.textContent = 'Yes, delete #' + id; }
+    mgSetStatus('Delete failed: ' + (err.message || err), true);
+  }
 }
 
 function renderRoster(){

@@ -14,6 +14,11 @@
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# admin: never keep a copy at all. A home-screen web app on iOS has been
+# serving stale admin.html despite must-revalidate.
+/admin.html
+  Cache-Control: no-store, max-age=0
+
 # Root and any clean URLs (e.g. yoursite.com/ or /scout-home)
 /
   Cache-Control: public, max-age=0, must-revalidate

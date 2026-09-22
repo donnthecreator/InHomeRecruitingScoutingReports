@@ -16,44 +16,46 @@
 const INTERVIEW = [
   { section: 'Background', items: [
     { id: 'why_football', type: 'text', q: 'Why do you play football? Not the answer you think a coach wants. The real one.' },
-    { id: 'household', type: 'text', q: 'Who is in your corner day to day, and who do you call when it goes bad?' },
-    { id: 'jobs', type: 'text', q: 'Do you work, help raise siblings, or carry anything outside of school and ball?' },
-    { id: 'school_hard', type: 'text', q: 'What class has been hardest for you and what did you do about it?' }
+    { id: 'household', retired: true, type: 'text', q: 'Who is in your corner day to day, and who do you call when it goes bad?' },
+    { id: 'jobs', retired: true, type: 'text', q: 'Do you work, help raise siblings, or carry anything outside of school and ball?' },
+    { id: 'school_hard', retired: true, type: 'text', q: 'What class has been hardest for you and what did you do about it?' }
   ]},
   { section: 'Coachability', items: [
     { id: 'hard_coach', type: 'text', q: 'Tell me about a coach who got on you hard. What did he say and what did you do next?' },
     { id: 'criticism', type: 'scale', q: 'How do you take criticism in front of your teammates?', low: 'It gets to me', high: 'I want it', max: 5 },
-    { id: 'correction', type: 'text', q: 'What is the last thing a coach corrected in your technique, and where are you with it now?' },
+    { id: 'correction', retired: true, type: 'text', q: 'What is the last thing a coach corrected in your technique, and where are you with it now?' },
     { id: 'film_habits', type: 'single', q: 'How often do you watch film on your own, not as a team?',
       options: ['Rarely or never', 'Once in a while', 'Weekly', 'Several times a week in season'] },
-    { id: 'film_what', type: 'text', q: 'When you watch your own film, what are you actually looking for?' }
+    { id: 'film_what', retired: true, type: 'text', q: 'When you watch your own film, what are you actually looking for?' }
   ]},
   { section: 'Adversity', items: [
     { id: 'worst_game', type: 'text', q: 'Walk me through your worst game. What happened, and what did you do that week after?' },
-    { id: 'injury', type: 'text', q: 'Have you been hurt? What was it, how long, and how did you handle being out?' },
-    { id: 'benched', type: 'text', q: 'Have you ever lost a starting job or a role? What was that like and how did it end?' },
-    { id: 'conflict', type: 'text', q: 'Tell me about a time you had a problem with a teammate or a coach and how it got resolved.' }
+    { id: 'injury', retired: true, type: 'text', q: 'Have you been hurt? What was it, how long, and how did you handle being out?' },
+    { id: 'injury_games', type: 'single', q: 'Games missed to injury in the last two years?',
+      options: ['None', 'One or two', 'Three to five', 'Six or more, or a full season'] },
+    { id: 'benched', retired: true, type: 'text', q: 'Have you ever lost a starting job or a role? What was that like and how did it end?' },
+    { id: 'conflict', retired: true, type: 'text', q: 'Tell me about a time you had a problem with a teammate or a coach and how it got resolved.' }
   ]},
   { section: 'Leadership', items: [
     { id: 'lead_style', type: 'single', q: 'How do you lead?',
       options: ['By example, I am not loud', 'Vocal, I get on people when it is needed',
                 'Both, depends on the teammate', 'I am not a leader on this team yet and I know it'] },
-    { id: 'lead_example', type: 'text', q: 'Give me one specific time you led when it cost you something.' },
+    { id: 'lead_example', retired: true, type: 'text', q: 'Give me one specific time you led when it cost you something.' },
     { id: 'teammate_say', type: 'text', q: 'What would the teammate who likes you least say about you?' }
   ]},
   { section: 'Self-awareness', items: [
-    { id: 'strength', type: 'text', q: 'What is the one thing on your film a coach should trust?' },
+    { id: 'strength', retired: true, type: 'text', q: 'What is the one thing on your film a coach should trust?' },
     { id: 'weakness', type: 'text', q: 'What do you wish coaches would not see on your film?' },
-    { id: 'two_years', type: 'text', q: 'Where are you as a player in two years? Be realistic.' },
-    { id: 'why_you', type: 'text', q: 'A coach has one scholarship and you and a kid with better numbers. Why you?' }
+    { id: 'two_years', retired: true, type: 'text', q: 'Where are you as a player in two years? Be realistic.' },
+    { id: 'why_you', retired: true, type: 'text', q: 'A coach has one scholarship and you and a kid with better numbers. Why you?' }
   ]},
   { section: 'Academics and eligibility', items: [
     { id: 'gpa', type: 'short', q: 'Current GPA' },
-    { id: 'core_gpa', type: 'short', q: 'Core-course GPA if you know it' },
-    { id: 'test', type: 'short', q: 'ACT or SAT if you have taken it' },
+    { id: 'core_gpa', retired: true, type: 'short', q: 'Core-course GPA if you know it' },
+    { id: 'test', retired: true, type: 'short', q: 'ACT or SAT if you have taken it' },
     { id: 'ncaa_id', type: 'single', q: 'Are you registered with the NCAA Eligibility Center?',
       options: ['Yes, registered and my transcript is uploaded', 'Yes, registered', 'No, not yet', 'I do not know what that is'] },
-    { id: 'major', type: 'text', q: 'What do you want to study, and what happens if football ends tomorrow?' }
+    { id: 'major', retired: true, type: 'text', q: 'What do you want to study, and what happens if football ends tomorrow?' }
   ]},
   { section: 'How you are wired', items: [
     { id: 'mb_ei', type: 'single', q: 'After a hard practice, what actually recharges you?',
@@ -82,7 +84,7 @@ const INTERVIEW = [
                 'I can feel it out and react', 'It is completely off script and I just play'], mb: 'JP' },
     { id: 'learn_style', type: 'single', q: 'You learn a new install fastest by',
       options: ['Seeing it drawn up', 'Hearing it explained', 'Walking through it on the field', 'Watching someone else rep it first'] },
-    { id: 'pressure', type: 'text', q: 'Describe how you actually feel in the last two minutes of a one-score game. Not the answer you think we want.' }
+    { id: 'pressure', retired: true, type: 'text', q: 'Describe how you actually feel in the last two minutes of a one-score game. Not the answer you think we want.' }
   ]},
 
   { section: 'What drives you', items: [
@@ -94,24 +96,24 @@ const INTERVIEW = [
       options: ['Playing time as early as possible', 'The best coaching and development I can get',
                 'Winning at the highest level', 'NIL and what I can earn',
                 'Being close enough that my people can watch me play', 'A degree and what comes after ball'] },
-    { id: 'nil_open', type: 'text', q: 'NIL is part of this now, so we ask everybody the same thing straight: how big a factor is money in your decision, and who is helping you think it through?' },
+    { id: 'nil_open', retired: true, type: 'text', q: 'NIL is part of this now, so we ask everybody the same thing straight: how big a factor is money in your decision, and who is helping you think it through?' },
     { id: 'nil_tradeoff', type: 'single', q: 'Two schools want you. One offers real money and you sit two years. One offers less and you compete right away. Today, which way do you lean?',
       options: ['Take the money, I will get my shot eventually', 'Take the field, the money follows the tape',
                 'Depends on the school and the position coach', 'I honestly do not know yet'] },
-    { id: 'money_advice', type: 'text', q: 'What has your family told you about the money side of this?' },
-    { id: 'after_ball', type: 'text', q: 'If football ended after college, what would you want to be doing at 30?' }
+    { id: 'money_advice', retired: true, type: 'text', q: 'What has your family told you about the money side of this?' },
+    { id: 'after_ball', retired: true, type: 'text', q: 'If football ended after college, what would you want to be doing at 30?' }
   ]},
 
   { section: 'Recruitment', items: [
-    { id: 'offers', type: 'text', q: 'Who has offered, and who is actually still talking to you every week?' },
-    { id: 'priorities', type: 'text', q: 'What matters most to you in a school? Rank your top three and say why.' },
+    { id: 'offers', retired: true, type: 'text', q: 'Who has offered, and who is actually still talking to you every week?' },
+    { id: 'priorities', retired: true, type: 'text', q: 'What matters most to you in a school? Rank your top three and say why.' },
     { id: 'distance', type: 'single', q: 'How far from home are you willing to go?',
       options: ['Anywhere in the country', 'Same region of the country', 'Within a few hours drive', 'Close enough to come home weekly'] },
     { id: 'agent_has', type: 'single', q: 'Do you have an agent, an NIL rep, or an advisor working on your behalf?',
       options: ['No, nobody', 'A family member handles it', 'Yes, a certified agent or NIL rep', 'Yes, a marketing or collective advisor'] },
     { id: 'agent_who', type: 'short', q: 'If yes, who is it and what agency or group are they with?' },
-    { id: 'agent_role', type: 'text', q: 'What do they handle for you, and who has the final say on where you go?' },
-    { id: 'anything_else', type: 'text', q: 'Anything about your game, your situation, or your story a coach should know that we did not ask?' }
+    { id: 'agent_role', retired: true, type: 'text', q: 'What do they handle for you, and who has the final say on where you go?' },
+    { id: 'anything_else', retired: true, type: 'text', q: 'Anything about your game, your situation, or your story a coach should know that we did not ask?' }
   ]}
 ];
 
@@ -194,11 +196,17 @@ function mbtiType(answers) {
    back to back. Sections keep their own order so a kid warms up on
    himself before he gets to the film. */
 const { iqSections, groupFor } = require('./iq-positions');
-function bank(kind, position) {
+/* Retired questions are no longer asked, but stay in the bank so an
+   athlete who already answered them still reads as words on his profile.
+   The athlete and the scorer get the live set; display code passes
+   { all: true }. */
+function live(sections) {
+  return sections.map(s => ({ ...s, items: s.items.filter(i => !i.retired) })).filter(s => s.items.length);
+}
+function bank(kind, position, opts) {
   const iq = iqSections(position);
-  if (kind === 'iq') return iq;
-  if (kind === 'full') return INTERVIEW.concat(iq);
-  return INTERVIEW;
+  const full = kind === 'iq' ? iq : kind === 'full' ? INTERVIEW.concat(iq) : INTERVIEW;
+  return opts && opts.all ? full : live(full);
 }
 function usesClips(kind) { return kind === 'iq' || kind === 'full'; }
 /* Auto-scored questions only: single-select with a defined answer. */

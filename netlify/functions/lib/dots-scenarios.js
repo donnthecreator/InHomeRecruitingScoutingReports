@@ -546,11 +546,27 @@ const POS_MOTION = [
     why: 'Nobody traveled. The defense bumped its landmarks. That is zone.' }
 ];
 
-function scenariosFor(group) {
+/* The looks an athlete actually gets: twelve per position group, picked
+   to cover fronts, coverage, pressure and keys without asking the same
+   thing twice. Everything else stays defined so older answers still
+   render; display code passes { all: true }. */
+const LIVE = {
+  QB: ['d_front_over','d_shell_two','d_shell_single','d_qb_mike43','d_qb_hot','d_qb_leverage','d_qb_rpo','q_trips_three','q_boundary_corner','m_sky','m_spin','m_blitz_real'],
+  RB: ['d_front_over','d_shell_two','d_qb_mike43','d_rb_will','d_rb_scan','d_qb_rpo','r_power_hole','r_draw_read','r_checkdown','r_pro_bear','m_blitz_real','mr_a_blitz'],
+  WR: ['d_shell_two','d_shell_single','q_trips_three','q_field_bound','sp_why_wide','sp_leverage','w_release','w_two_help','w_cover3_seam','w_hot_side','m_sky','mw_press_bail'],
+  TE: ['d_shell_two','d_shell_single','r_split_zone','sp_why_nasty','w_release','w_over_slot','w_cover3_seam','t_cgap','t_climb','t_lb_lev','t_flex','m_sky'],
+  OL: ['d_front_over','d_front_odd','d_front_bear','d_tap_3tech','d_qb_mike43','d_ol_slide','d_ol_combo','o_5tech','o_bear_cover','o_mug_tap','mo_twist','mr_a_blitz'],
+  DL: ['d_front_over','d_front_under','d_tap_3tech','d_dl_gap','d_gapA','d_gapC','d_backside_end','d_twist_first','d_over_first','m_lb_pull','md_screen','md_down_pull'],
+  LB: ['d_front_over','d_front_bear','d_shell_two','d_lb_puller','q_trips_three','l_trips3','l_fit_shoulder','l_gap_bear','b_flat_who','ml_high_hat','ml_pa','mb_motion_man'],
+  DB: ['d_shell_two','d_shell_single','d_db_two','d_db_no2','q_trips_three','sp_leverage','b_zero_man','b_cover3_third','b_force_dir','b_trips_roll','m_sky','mb_motion_man']
+};
+function scenariosFor(group, opts) {
   const pick = (list) => list.filter(s => s.groups.includes('ALL') || (group && s.groups.includes(group)))
     .map(s => ({ ...s, offense: OFF[s.off], defense: DEF[s.def] }));
   /* static looks first, then the ones that move */
-  return pick(SCENARIOS).concat(pick(POS_STATIC)).concat(pick(MOTION)).concat(pick(POS_MOTION));
+  const all = pick(SCENARIOS).concat(pick(POS_STATIC)).concat(pick(MOTION)).concat(pick(POS_MOTION));
+  if ((opts && opts.all) || !LIVE[group]) return all;
+  return all.filter(s => LIVE[group].includes(s.id));
 }
 
 module.exports = { OFF, DEF, SCENARIOS, MOTION, POS_STATIC, POS_MOTION, scenariosFor };

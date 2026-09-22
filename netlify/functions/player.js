@@ -41,8 +41,8 @@ const defWord = (v) => { const k = String(v || '').toUpperCase(); return DEF_WOR
    them, so an old row still renders as words. */
 async function optionLookup(kind, position) {
   const map = {};
-  try { bank(kind, position).forEach(sec => (sec.items || []).forEach(it => { if (it.options) map[it.id] = it.options; })); } catch (e) {}
-  try { scenariosFor(groupFor(position)).forEach(sc => { if (sc.mode === 'choice' && sc.options) map['dot_' + sc.id] = sc.options; }); } catch (e) {}
+  try { bank(kind, position, { all: true }).forEach(sec => (sec.items || []).forEach(it => { if (it.options) map[it.id] = it.options; })); } catch (e) {}
+  try { scenariosFor(groupFor(position), { all: true }).forEach(sc => { if (sc.mode === 'choice' && sc.options) map['dot_' + sc.id] = sc.options; }); } catch (e) {}
   try {
     const rows = await sql`SELECT id, options FROM iq_clips`;
     rows.forEach(c => { map['clip_' + c.id] = (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT; });
@@ -144,7 +144,7 @@ exports.handler = async (event) => {
           /* written answers: anything the athlete typed, keyed by question id */
           const ans = a.answers || {};
           const qtext = {}, qsec = {}, qopts = {};
-          try { bank(a.kind, p.position).forEach(sec => (sec.items || []).forEach(it => {
+          try { bank(a.kind, p.position, { all: true }).forEach(sec => (sec.items || []).forEach(it => {
             qtext[it.id] = it.q; qsec[it.id] = sec.section || sec.title || null; if (it.options) qopts[it.id] = it.options;
           })); } catch (e) {}
           /* Seventeen interview items offer choices but have no right answer,

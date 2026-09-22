@@ -282,13 +282,16 @@ exports.handler = async (event) => {
                  (SELECT COUNT(*) FROM reports r WHERE r.prospect_id = p.id) AS reports,
                  (SELECT COUNT(*) FROM assessments a WHERE a.prospect_id = p.id AND a.status = 'complete') AS assessments,
                  (SELECT COUNT(*) FROM prospect_offers o WHERE o.prospect_id = p.id) AS offers,
-                 (SELECT COUNT(*) FROM program_prospects b WHERE b.prospect_id = p.id) AS boards
+                 (SELECT COUNT(*) FROM program_prospects b WHERE b.prospect_id = p.id) AS boards,
+                 (SELECT string_agg(DISTINCT b.program_code, ', ') FROM program_prospects b WHERE b.prospect_id = p.id) AS board_codes,
+                 (SELECT string_agg(DISTINCT r.scout_name, ', ') FROM reports r WHERE r.prospect_id = p.id) AS scout_names
           FROM prospects p
           WHERE p.name_key = ${nk} OR p.name_key LIKE ${'%' + nk + '%'} OR lower(p.name) LIKE ${'%' + q.toLowerCase() + '%'}
           ORDER BY p.id`;
         return ok({ matches: rows.map(r => ({
           id: r.id, name: r.name, school: r.school, position: r.position, classYear: r.class_year,
           level: r.level, headshotKey: r.headshot_key,
+          boardCodes: r.board_codes || null, scoutNames: r.scout_names || null,
           counts: { reports: Number(r.reports), assessments: Number(r.assessments), offers: Number(r.offers), boards: Number(r.boards) }
         })) });
       }

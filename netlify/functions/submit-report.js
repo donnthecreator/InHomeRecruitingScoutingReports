@@ -69,10 +69,26 @@ async function resolveScout(accessCode) {
 /* Returns the canonical prospect id, creating the row if this is the
    first time anyone has filed on him. Also returns cached coordinates
    so we can skip the Nominatim call on repeat prospects. */
+/* A school typed "Callaway High School" on a program's list and "Callaway
+   HS" by the scout is the same school. Matching on the exact string made
+   a second prospect record, which left the report on one record and the
+   program's board entry on the other, so the board read Not yet scouted.
+   Same normalizer the performance log uses. */
+const SCHOOL_SQL = `lower(regexp_replace(regexp_replace(regexp_replace(regexp_replace(coalesce(school,''),
+  '(?i)community college', 'cc', 'g'), '(?i)junior college', 'jc', 'g'), '(?i)high school', 'hs', 'g'),
+  '[^A-Za-z0-9]', '', 'g'))`;
+const schoolKey = (s) => String(s || '').toLowerCase()
+  .replace(/^no\.?\s*\d+\s*/, '')
+  .replace(/community college/g, 'cc').replace(/junior college/g, 'jc')
+  .replace(/high school/g, 'hs')
+  .replace(/[^a-z0-9]/g, '');
+
 async function findOrCreateProspect(p) {
   const key = nameKey(p.prospect);
   if (!key) return null;
+  const sKey = schoolKey(p.school);
 
+  /* exact first, so an existing correct match is never disturbed */
   const [found] = await sql`
     SELECT id, latitude, longitude FROM prospects
     WHERE name_key = ${key}
@@ -81,6 +97,18 @@ async function findOrCreateProspect(p) {
     LIMIT 1`;
 
   if (found) return found;
+
+  /* then the same player and school with the school spelled differently */
+  const [loose] = await sql(
+    `SELECT id, latitude, longitude FROM prospects
+     WHERE name_key = $1 AND ${SCHOOL_SQL} = $2
+       AND (coalesce(class_year,'') = $3 OR coalesce(class_year,'') = '')
+     ORDER BY (coalesce(class_year,'') = $3) DESC, id LIMIT 1`,
+    [key, sKey, p.classYear || '']);
+  if (loose) {
+    if (p.classYear) { try { await sql`UPDATE prospects SET class_year = ${p.classYear}, updated_at = now() WHERE id = ${loose.id} AND coalesce(class_year,'') = ''`; } catch (e) {} }
+    return loose;
+  }
 
   /* Imported program lists (e.g. a school's spreadsheet) often arrive
      without a class year. If the same player at the same school exists

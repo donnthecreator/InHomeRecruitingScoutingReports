@@ -2127,6 +2127,8 @@ function renderDupes(){
         <div style="font-weight:700;">${esc(m.name)} <span class="rc-meta">#${m.id}</span></div>
         <div class="rc-meta">${[m.position, m.level, m.classYear?'Class of '+m.classYear:null, m.school].filter(Boolean).map(esc).join(' &middot; ')}</div>
         <div class="rc-meta" style="margin-top:3px;color:${has.length?'var(--ink)':'var(--dim)'}">${has.length ? has.join(' &middot; ') : 'nothing attached'}</div>
+        ${m.scoutNames ? `<div class="rc-meta">Scouted by ${esc(m.scoutNames)}</div>` : ''}
+        ${m.boardCodes ? `<div class="rc-meta">On boards: ${esc(m.boardCodes)}</div>` : ''}
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
         ${MG_KEEP === null

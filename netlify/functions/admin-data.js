@@ -1024,6 +1024,55 @@ exports.handler = async (event) => {
         return ok({ revoked: true, schoolKey: key });
       }
 
+      /* Put a program's list on its portal board. Rows come from the
+         admin page (today: the static Samford receiver board). Each row
+         is matched to an existing prospect by name and school, created
+         if there is none, then linked in program_prospects under the
+         program's portal code. Safe to run twice: nothing is doubled. */
+      case 'importProgramBoard': {
+        const program = String(body.program || '').trim().toUpperCase();
+        const rows = Array.isArray(body.rows) ? body.rows.slice(0, 1000) : [];
+        if (!program) return fail(400, 'program code required');
+        if (!rows.length) return fail(400, 'no rows');
+        const [prog] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${program} LIMIT 1`;
+        if (!prog) return fail(404, `No program has the portal code ${program}. Issue it under Access codes first.`);
+        const WR = { X: 'X', Z: 'Z', H: 'H', SLOT: 'H' };
+        let created = 0, linked = 0, already = 0, skipped = 0;
+        for (const r of rows) {
+          const [name, posRaw, school, state, height, weight] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight];
+          const nm = String(name || '').trim();
+          const nameKey = nm.toLowerCase().replace(/[^a-z]/g, '');
+          if (!nameKey) { skipped++; continue; }
+          const pr = String(posRaw || '').trim().toUpperCase();
+          const position = WR[pr] ? 'WR' : (pr || null);
+          const positionLabel = WR[pr] || null;
+          const sch = String(school || '').trim() || null;
+          let prospectId = null;
+          const [exact] = await sql`SELECT id FROM prospects WHERE name_key = ${nameKey} AND COALESCE(school,'') = ${sch || ''} LIMIT 1`;
+          if (exact) prospectId = exact.id;
+          else {
+            const same = await sql`SELECT id FROM prospects WHERE name_key = ${nameKey} LIMIT 2`;
+            if (same.length === 1) prospectId = same[0].id;
+          }
+          if (!prospectId) {
+            const [c] = await sql`
+              INSERT INTO prospects (name, name_key, school, position, position_label, level, home_state, height, weight)
+              VALUES (${nm}, ${nameKey}, ${sch}, ${position}, ${positionLabel}, 'HS', ${String(state || '').trim() || null},
+                      ${String(height || '').trim() || null}, ${String(weight || '').trim() || null})
+              RETURNING id`;
+            prospectId = c.id; created++;
+          }
+          const ins = await sql`
+            INSERT INTO program_prospects (program_code, prospect_id, source)
+            SELECT ${program}, ${prospectId}, ${'admin board import'}
+            WHERE NOT EXISTS (SELECT 1 FROM program_prospects x WHERE upper(x.program_code) = ${program} AND x.prospect_id = ${prospectId})
+            RETURNING id`;
+          if (ins.length) linked++; else already++;
+        }
+        const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;
+        return ok({ program, school: prog.name, created, linked, already, skipped, onBoard: c.n });
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

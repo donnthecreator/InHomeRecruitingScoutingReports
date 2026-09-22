@@ -769,6 +769,7 @@
         <span id="boardPosPick" class="chip-row" style="display:none; gap:4px;"></span>
         <button type="button" class="mini-btn" id="boardAssignAll" onclick="assignWholeBoard()" style="display:none;">Assign to scout</button>
         <button type="button" class="mini-btn danger" id="boardUnassignAll" onclick="unassignWholeBoard()" style="display:none;">Remove board from scout lists</button>
+        <button type="button" class="mini-btn" id="boardPushPortal" onclick="pushStaticBoardToPortal()">Load this board onto Samford's portal</button>
       </div>
       <div class="board-progress">
         <div class="bp-row">
@@ -1129,6 +1130,31 @@ function renderAll(){
   if(document.getElementById('panePlayers').classList.contains('on')) renderPlayers();
   if(!KNOWN_PROSPECTS.length) loadKnownProspects().then(()=>renderPerf());
   loadLogos().then(()=>renderPerf());
+}
+/* The static Samford board lives only in this file, so the portal's
+   Prospect Board tab had nothing to show. This writes it to the database
+   under Samford's portal code. Running it again adds nothing twice. */
+async function pushStaticBoardToPortal(){
+  if(demoMode){ alert('Not in demo mode.'); return; }
+  let code = '';
+  try{
+    const d = await api('listAccessCodes', {});
+    const hit = (d.codes||[]).find(c => /samford/i.test(c.name||'') || /samford/i.test(c.short_name||''));
+    if(hit) code = hit.access_code;
+  }catch(e){}
+  code = (prompt('Samford portal access code (the code their staff signs into the portal with):', code||'') || '').trim().toUpperCase();
+  if(!code) return;
+  if(!confirm(`Put all ${BOARD_DATA.length} players from the Samford WR board onto the ${code} portal board?`)) return;
+  const btn = document.getElementById('boardPushPortal'); if(btn){ btn.disabled = true; btn.textContent = 'Loading...'; }
+  try{
+    const rows = BOARD_DATA.map(r => r.slice(0,6));
+    const res = await api('importProgramBoard', { program: code, rows });
+    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
+    await loadProgramBoards();
+    const sel = document.getElementById('boardProgram');
+    if([...sel.options].some(o=>o.value===code)){ sel.value = code; switchBoard(code); }
+  }catch(err){ alert('Could not load the board: ' + err.message); }
+  finally{ if(btn){ btn.disabled = false; btn.textContent = "Load this board onto Samford's portal"; } }
 }
 function initBoard(){
   loadBoardStatus();
@@ -1664,9 +1690,11 @@ async function switchBoard(code){
     document.getElementById('boardAssignAll').style.display = 'none';
     document.getElementById('boardUnassignAll').style.display = 'none';
     document.getElementById('boardPosPick').style.display = 'none';
+    const pp = document.getElementById('boardPushPortal'); if(pp) pp.style.display = '';
     initBoard(); return;
   }
   LIVE_BOARD_CODE = code;
+  { const pp = document.getElementById('boardPushPortal'); if(pp) pp.style.display = 'none'; }
   document.getElementById('boardTitle').textContent = code + ' Prospect Board';
   document.getElementById('boardList').innerHTML = '<div class="b-empty"><div class="t">Loading...</div></div>';
   try{

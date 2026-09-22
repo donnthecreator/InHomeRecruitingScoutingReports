@@ -935,7 +935,8 @@ let perfLevelFilter = 'All';
 function showAutoMerge(am){
   let host = document.getElementById('amBanner');
   if(!host){ host = document.createElement('div'); host.id = 'amBanner'; document.body.insertBefore(host, document.body.firstChild); }
-  const rec = (r) => `<div style="padding:6px 0;border-top:1px solid rgba(255,255,255,.12);">#${r.id} &middot; ${esc(r.name)} &middot; ${esc(r.level||'no level')} &middot; ${esc(r.school||'no school')} &middot; ${r.reports} report${r.reports===1?'':'s'}, ${r.assessments} assessment${r.assessments===1?'':'s'}${am.keptId===r.id?' &middot; <b>KEPT</b>':''}</div>`;
+  const slot = document.createElement('div'); host.appendChild(slot);
+  const rec = (r) => `<div style="padding:6px 0;border-top:1px solid rgba(255,255,255,.12);">#${r.id} &middot; ${esc(r.name)} &middot; ${esc(r.school||'no school')} &middot; ${r.reports} report${r.reports===1?'':'s'}, ${r.assessments} assessment${r.assessments===1?'':'s'}${r.boardCodes?' &middot; boards: '+esc(r.boardCodes):''}${r.scouts?' &middot; scouted by '+esc(r.scouts):''}${am.keptId===r.id?' &middot; <b>KEPT</b>':''}</div>`;
   let body = '';
   if(am.error) body = `<div style="color:#FF7D7D;font-weight:700;">Merge stopped with an error:</div><div style="font-family:ui-monospace,monospace;font-size:12px;margin-top:4px;">${esc(am.error)}</div>`;
   else if(am.skipped) body = `<div style="color:#E0A419;font-weight:700;">${esc(am.skipped)}</div>`;
@@ -945,8 +946,8 @@ function showAutoMerge(am){
       ? `<div style="color:#FF7D7D;margin-top:4px;">#${r.fromId}: ${esc(r.error)}</div>`
       : `<div style="margin-top:4px;">#${r.fromId} deleted. Moved: ${esc(Object.keys(r.moved||{}).filter(k=>r.moved[k]&&r.moved[k]!=='skipped').map(k=>r.moved[k]+' '+k).join(', ') || 'nothing was attached')}</div>`).join('');
   }
-  host.innerHTML = `<div style="background:#111;border-bottom:2px solid #CC0000;padding:14px 18px;font-size:13px;color:#F5F5F5;position:relative;">
-    <button type="button" onclick="document.getElementById('amBanner').remove()" style="position:absolute;top:10px;right:12px;background:none;border:1px solid #444;color:#aaa;border-radius:6px;padding:3px 9px;cursor:pointer;">Close</button>
+  slot.innerHTML = `<div style="background:#111;border-bottom:2px solid #CC0000;padding:14px 18px;font-size:13px;color:#F5F5F5;position:relative;">
+    <button type="button" onclick="this.closest('div').parentElement.remove()" style="position:absolute;top:10px;right:12px;background:none;border:1px solid #444;color:#aaa;border-radius:6px;padding:3px 9px;cursor:pointer;">Close</button>
     <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8A8A8A;font-weight:700;margin-bottom:6px;">Auto-merge: ${esc(am.name)}</div>
     ${body}
     ${(am.found||[]).length ? `<div style="margin-top:10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A8A8A;font-weight:700;">Records found</div>${am.found.map(rec).join('')}` : ''}
@@ -1074,7 +1075,7 @@ async function loadAll(){
   if(demoMode){ loadDemo(); return; }
   try{
     const data = await api('loadAll', {});
-    if(data.autoMerge) showAutoMerge(data.autoMerge);
+    if(data.autoMerge) (Array.isArray(data.autoMerge) ? data.autoMerge : [data.autoMerge]).forEach(showAutoMerge);
     SCOUT_ROSTER = normalizeScouts(data.scouts);
     assignments  = data.assignments  || [];
     reports      = data.reports      || [];

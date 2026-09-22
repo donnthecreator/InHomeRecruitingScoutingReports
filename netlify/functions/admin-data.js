@@ -183,32 +183,46 @@ async function deleteProspectRecord(sql, id) {
   return { deleted: true, id, name: p.name, removed };
 }
 
-/* One-shot: Carlos Benjamin exists twice, an HS record a scout filed on
-   and a JUCO record the athlete completed his assessment on. Keep the
-   record that has the completed assessment (that is the fact we were
-   given), fall back to the one marked JUCO, and merge every other match
-   into it. Runs on admin load, reports everything it saw, and is a no-op
-   once one record remains. */
+/* One-shot merges that run on admin load, for duplicates the merge panel
+   has not been able to clear. Each is a no-op once a single record
+   remains, so they retire themselves. Keeper is chosen by a fact about
+   the records, never by id order: the record a program actually has on
+   its board, or the one holding the completed assessment. */
+const AUTO_MERGES = [
+  { label: 'Carlos Benjamin', match: `p.name_key LIKE '%benjamin%' AND lower(p.name) LIKE '%carlos%'`, prefer: 'assessment' },
+  { label: 'Latrell Pogue',   match: `p.name_key LIKE '%pogue%'   AND lower(p.name) LIKE '%latrell%'`,  prefer: 'board' }
+];
+
 async function autoMergeOnce(sql) {
-  const report = { name: 'Carlos Benjamin', found: [], keptId: null, results: [] };
-  try {
-    const rows = await sql`
-      SELECT p.id, p.name, p.level, p.school,
-             (SELECT COUNT(*) FROM reports r WHERE r.prospect_id = p.id) AS reports,
-             (SELECT COUNT(*) FROM assessments a WHERE a.prospect_id = p.id AND a.status = 'complete') AS assessments
-      FROM prospects p
-      WHERE p.name_key LIKE '%benjamin%' AND lower(p.name) LIKE '%carlos%'
-      ORDER BY p.id`;
-    report.found = rows.map(r => ({ id: r.id, name: r.name, level: r.level, school: r.school, reports: Number(r.reports), assessments: Number(r.assessments) }));
-    if (rows.length < 2) return rows.length ? Object.assign(report, { note: 'Only one Carlos Benjamin record exists; nothing to merge.' }) : null;
-    const keep = rows.find(r => Number(r.assessments) > 0)
-              || rows.find(r => String(r.level || '').toUpperCase() === 'JUCO')
-              || null;
-    if (!keep) return Object.assign(report, { skipped: 'Found ' + rows.length + ' records but none has a completed assessment or a JUCO level, so I could not tell which to keep.' });
-    report.keptId = keep.id;
-    for (const r of rows) { if (r.id !== keep.id) report.results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
-    return report;
-  } catch (e) { return Object.assign(report, { error: String(e && e.message || e) }); }
+  const out = [];
+  for (const job of AUTO_MERGES) {
+    const report = { name: job.label, found: [], keptId: null, results: [] };
+    try {
+      const rows = await sql(`
+        SELECT p.id, p.name, p.level, p.school,
+               (SELECT COUNT(*) FROM reports r WHERE r.prospect_id = p.id) AS reports,
+               (SELECT COUNT(*) FROM assessments a WHERE a.prospect_id = p.id AND a.status = 'complete') AS assessments,
+               (SELECT COUNT(*) FROM program_prospects b WHERE b.prospect_id = p.id) AS boards,
+               (SELECT string_agg(DISTINCT b.program_code, ', ') FROM program_prospects b WHERE b.prospect_id = p.id) AS board_codes,
+               (SELECT string_agg(DISTINCT r.scout_name, ', ') FROM reports r WHERE r.prospect_id = p.id) AS scouts
+        FROM prospects p WHERE ${job.match} ORDER BY p.id`, []);
+      report.found = rows.map(r => ({ id: r.id, name: r.name, level: r.level, school: r.school,
+        reports: Number(r.reports), assessments: Number(r.assessments), boards: Number(r.boards),
+        boardCodes: r.board_codes, scouts: r.scouts }));
+      if (rows.length < 2) { if (rows.length) { report.note = 'One record only; nothing to merge.'; out.push(report); } continue; }
+
+      /* Keep the record the program is actually looking at, so its board
+         entry is never the thing that moves. */
+      const keep = job.prefer === 'board'
+        ? (rows.find(r => Number(r.boards) > 0) || rows.find(r => Number(r.assessments) > 0) || rows.find(r => Number(r.reports) > 0))
+        : (rows.find(r => Number(r.assessments) > 0) || rows.find(r => String(r.level || '').toUpperCase() === 'JUCO') || rows.find(r => Number(r.boards) > 0));
+      if (!keep) { report.skipped = 'Found ' + rows.length + ' records but none is on a board or holds an assessment, so I could not tell which to keep.'; out.push(report); continue; }
+      report.keptId = keep.id;
+      for (const r of rows) { if (r.id !== keep.id) report.results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
+    } catch (e) { report.error = String(e && e.message || e); }
+    out.push(report);
+  }
+  return out.length ? out : null;
 }
 
 /* ---------- HANDLER ---------- */

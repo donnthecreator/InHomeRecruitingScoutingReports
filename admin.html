@@ -459,6 +459,7 @@
     <button type="button" class="tab-btn on" id="tbPlayers" onclick="switchTab('players')">Prospects<span class="cnt" id="cntPlayers">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbAssign" onclick="switchTab('assign')">Assignments<span class="cnt" id="cntAssign">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbRoster" onclick="switchTab('roster')">Scouts<span class="cnt" id="cntRoster">&mdash;</span></button>
+    <button type="button" class="tab-btn" id="tbCoaches" onclick="switchTab('coaches')">Coaches<span class="cnt" id="cntCoaches">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbScouts" onclick="switchTab('scouts')">Load<span class="cnt" id="cntScouts">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbReports" onclick="switchTab('reports')">All Reports<span class="cnt" id="cntReports">&mdash;</span></button>
     <button type="button" class="tab-btn" id="tbPerf" onclick="switchTab('perf')">Performance<span class="cnt" id="cntPerf">&mdash;</span></button>
@@ -655,6 +656,15 @@
       <div id="inList" style="margin-top:10px;"></div>
     </div>
     <div class="panel">
+      <h3>Coach Requests</h3>
+      <div class="sub">Sent by college coaches from the portal (film, contact, more on a prospect). Each one is emailed to you when the mail key is set; every one lands here either way.</div>
+      <div class="tools" style="margin-top:12px;">
+        <select id="pxStatus" onchange="renderPortalRequests(true)"><option value="open">New + working</option><option value="new">New only</option><option value="done">Done</option><option value="">Everything</option></select>
+        <button type="button" class="mini-btn" onclick="PX=null; renderPortalRequests()">Refresh</button>
+      </div>
+      <div id="pxList" style="margin-top:10px;"></div>
+    </div>
+    <div class="panel">
       <h3>Scout Contact Requests</h3>
       <div class="sub">A scout asking to be connected with a program. Nothing reaches the school until you approve it and make the introduction. Your note goes back to the scout.</div>
       <div id="sxList" style="margin-top:10px;"></div>
@@ -794,6 +804,36 @@
   </div>
 
   <!-- ============ MAP ============ -->
+  <div class="pane" id="paneCoaches">
+    <div class="panel">
+      <h3>Add a College Coach</h3>
+      <div class="sub">A personal portal code for one person on a staff. He signs into the coach portal with it, sees his program's prospect board and reports, and every profile he opens is logged under his name. Codes work the moment you save them.</div>
+      <div class="grid2">
+        <div><label class="fl">Full Name</label><input type="text" id="cName" placeholder="First Last" oninput="suggestCoachCode()"></div>
+        <div><label class="fl">Title</label><input type="text" id="cTitle" placeholder="e.g. WR Coach, Director of Player Personnel"></div>
+      </div>
+      <div class="grid2">
+        <div><label class="fl">School</label><input type="text" id="cSchool" placeholder="e.g. Samford" list="cSchoolList"><datalist id="cSchoolList"></datalist></div>
+        <div><label class="fl">Portal code</label><input type="text" id="cCode" placeholder="e.g. SWINNEY26" style="text-transform:uppercase;"></div>
+      </div>
+      <div class="grid2">
+        <div><label class="fl">Email (optional)</label><input type="text" id="cEmail" placeholder="coach@school.edu"></div>
+        <div><label class="fl">Phone (optional)</label><input type="text" id="cPhone" placeholder=""></div>
+      </div>
+      <button type="button" class="btn" id="cBtn" onclick="saveCoach()">Add Coach</button>
+      <button type="button" class="mini-btn" id="cCancel" onclick="resetCoachForm()" style="display:none;margin-left:8px;">Cancel edit</button>
+      <div id="cResult"></div>
+    </div>
+    <div class="panel">
+      <h3>College Coaches</h3>
+      <div class="sub" id="cSub">Everyone with a personal portal code. Tap Activity to see which prospects a coach has opened and when.</div>
+      <div class="tools" style="margin-top:12px;">
+        <input type="text" id="cSearch" placeholder="Search name, school, code" oninput="renderCoaches(true)">
+        <button type="button" class="mini-btn" onclick="COACHES=null; renderCoaches()">Refresh</button>
+      </div>
+      <div id="cList" style="margin-top:10px;"></div>
+    </div>
+  </div>
   <div class="pane" id="paneMap">
     <div id="mapKeyWarn" class="banner" style="display:none !important;" hidden>
       Map unavailable.
@@ -1278,7 +1318,7 @@ function switchTab(t){
      label here meant it looked for paneProspects and paneAssignments, which
      do not exist, so those two panes never had .on removed: Prospects stayed
      rendered above whatever tab you opened. */
-  [['players','Players'],['assign','Assign'],['roster','Roster'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
+  [['players','Players'],['assign','Assign'],['roster','Roster'],['coaches','Coaches'],['scouts','Scouts'],['reports','Reports'],['perf','Perf'],['intake','Intake'],['assess','Assess'],['market','Market'],['board','Board'],['map','Map']].forEach(([k,cap])=>{
     const tb = document.getElementById('tb'+cap), pane = document.getElementById('pane'+cap);
     if(tb) tb.classList.toggle('on', k===t);
     if(pane) pane.classList.toggle('on', k===t);
@@ -1286,7 +1326,8 @@ function switchTab(t){
   focusPane(t);
   if(t==='board') loadCodes();
   if(t==='players') renderPlayers();
-  if(t==='intake'){ renderIntake(); renderScoutRequests(); }
+  if(t==='intake'){ renderIntake(); renderScoutRequests(); renderPortalRequests(); }
+  if(t==='coaches') renderCoaches();
   if(t==='assess'){ renderAssessments(); renderClips(); }
   if(t==='market') renderMarket();
   /* A map initialized while hidden renders at zero size: nudge it on show. */
@@ -3091,6 +3132,178 @@ async function uploadScoutPhotoAdmin(file){
     renderRoster(); renderScouts(); toast(_scoutPhotoKind==='scoutcover' ? 'Cover photo saved' : 'Scout photo saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
 }
+
+/* ---------------- COLLEGE COACHES (portal users) ---------------- */
+let COACHES = null, COACH_EDIT = null, PX = null;
+const fmtWhen = (d) => { if(!d) return ''; const x = new Date(d); if(isNaN(x)) return ''; const diff = (Date.now() - x.getTime())/60000;
+  if(diff < 1) return 'just now'; if(diff < 60) return Math.round(diff) + ' min ago'; if(diff < 60*24) return Math.round(diff/60) + ' hr ago';
+  if(diff < 60*24*14) return Math.round(diff/1440) + ' days ago'; return x.toLocaleDateString(); };
+function suggestCoachCode(){
+  const code = document.getElementById('cCode'); if(COACH_EDIT || code.value) return;
+  const n = document.getElementById('cName').value.trim().split(/\s+/); const last = n.length > 1 ? n[n.length-1] : n[0] || '';
+  code.placeholder = last ? last.toUpperCase().replace(/[^A-Z]/g,'') + '26' : 'e.g. SWINNEY26';
+}
+function resetCoachForm(){
+  COACH_EDIT = null;
+  ['cName','cTitle','cSchool','cCode','cEmail','cPhone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cBtn').textContent = 'Add Coach'; document.getElementById('cCancel').style.display = 'none';
+  document.getElementById('cResult').innerHTML = '';
+}
+async function saveCoach(){
+  const v = id => document.getElementById(id).value.trim();
+  let code = v('cCode') || document.getElementById('cCode').placeholder;
+  if(!v('cName')){ alert('Name first.'); return; }
+  if(!code || /^e\.g\./.test(code)){ alert('Give him a portal code.'); return; }
+  const btn = document.getElementById('cBtn'); btn.disabled = true;
+  try{
+    const d = await api('savePortalUser', { id: COACH_EDIT, name: v('cName'), title: v('cTitle'), school: v('cSchool'), code, email: v('cEmail'), phone: v('cPhone') });
+    document.getElementById('cResult').innerHTML = `<div class="sub" style="margin-top:10px;">${esc(d.user.name)} can sign into the portal now with <b style="font-family:'Anton',sans-serif;letter-spacing:.06em;color:var(--ink)">${esc(d.user.code)}</b>.</div>`;
+    toast(COACH_EDIT ? 'Coach updated' : 'Coach added');
+    COACH_EDIT = null; ['cName','cTitle','cSchool','cCode','cEmail','cPhone'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('cBtn').textContent = 'Add Coach'; document.getElementById('cCancel').style.display = 'none';
+    COACHES = null; renderCoaches();
+  }catch(err){ alert(err.message); }
+  finally{ btn.disabled = false; }
+}
+function editCoach(id){
+  const u = (COACHES||[]).find(x => x.id === id); if(!u) return;
+  COACH_EDIT = id;
+  document.getElementById('cName').value = u.name || ''; document.getElementById('cTitle').value = u.title || '';
+  document.getElementById('cSchool').value = u.school || ''; document.getElementById('cCode').value = u.code || '';
+  document.getElementById('cEmail').value = u.email || ''; document.getElementById('cPhone').value = u.phone || '';
+  document.getElementById('cBtn').textContent = 'Save changes'; document.getElementById('cCancel').style.display = '';
+  document.getElementById('paneCoaches').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+async function renderCoaches(keep){
+  const el = document.getElementById('cList'); if(!el) return;
+  if(COACHES === null){
+    el.innerHTML = '<div class="empty"><div class="t">Loading...</div></div>';
+    try{ const d = await api('listPortalUsers', {}); COACHES = d.users || []; }catch(err){ el.innerHTML = esc(err.message); return; }
+    try{ const dl = document.getElementById('cSchoolList'); if(dl && !dl.children.length){ const d = await api('listAccessCodes', {}); dl.innerHTML = (d.codes||[]).map(c => `<option value="${esc(c.short_name || c.name)}">`).join(''); } }catch(e){}
+  }
+  document.getElementById('cntCoaches').textContent = COACHES.filter(u => u.active).length;
+  const q = (document.getElementById('cSearch').value || '').toLowerCase();
+  const list = COACHES.filter(u => !q || [u.name,u.school,u.code,u.title].some(x => (x||'').toLowerCase().includes(q)));
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No coaches yet</div><div class="s">Add one above. He gets his own code and everything he opens is logged.</div></div>'; return; }
+  el.innerHTML = list.map(u => `
+    <div class="row-card" id="coach-${u.id}">
+      <div class="rc-top">
+        <div class="rc-avatar" style="cursor:pointer;" title="Tap to set this coach's photo" onclick="coachPhotoPick('${esc(u.code)}')">${u.headshot_key?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(u.headshot_key)}" alt="" onerror="this.remove()">`:initials(u.name)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(u.name)}</div>
+          <div class="rc-meta">${esc(u.title||'Coach')} &middot; ${esc(u.school||'No school set')}</div>
+          <div class="rc-meta">${u.last_seen ? 'Signed in ' + fmtWhen(u.last_seen) + ' &middot; ' + u.sign_ins + ' sign-in' + (u.sign_ins===1?'':'s') : 'Has not signed in yet'}${u.players_viewed ? ' &middot; ' + u.players_viewed + ' player' + (u.players_viewed===1?'':'s') + ' viewed' : ''}${u.requests ? ' &middot; ' + u.requests + ' request' + (u.requests===1?'':'s') : ''}</div>
+          <span class="scout-status ${u.active?'active':'inactive'}">${u.active?'Active':'Inactive'}</span>
+        </div>
+        <div class="rc-right">
+          <div class="rc-sub" style="font-family:'Anton',sans-serif; font-size:15px; color:var(--ink); letter-spacing:.04em;">${esc(u.code)}</div>
+          <div class="rc-sub">portal code</div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="mini-btn" onclick="copyCode('${esc(u.code)}')">Copy Code</button>
+        <button type="button" class="mini-btn" onclick="toggleCoachActivity(${u.id},'${esc(u.code)}')">Activity</button>
+        <button type="button" class="mini-btn" onclick="coachPhotoPick('${esc(u.code)}')">Photo</button>
+        <button type="button" class="mini-btn" onclick="editCoach(${u.id})">Edit</button>
+        ${u.active ? `<button type="button" class="mini-btn danger" onclick="setCoachActive(${u.id}, false)">Deactivate</button>` : `<button type="button" class="mini-btn go" onclick="setCoachActive(${u.id}, true)">Reactivate</button>`}
+        <button type="button" class="mini-btn danger" onclick="deleteCoach(${u.id}, '${esc(u.name)}')">Delete</button>
+      </div>
+      <div class="coach-activity" id="coachAct-${u.id}" style="display:none;margin-top:10px;"></div>
+    </div>`).join('');
+}
+async function toggleCoachActivity(id, code){
+  const box = document.getElementById('coachAct-' + id); if(!box) return;
+  if(box.style.display !== 'none'){ box.style.display = 'none'; return; }
+  box.style.display = ''; box.innerHTML = '<div class="sub">Loading...</div>';
+  try{
+    const d = await api('portalUserActivity', { code });
+    const views = d.views || [];
+    box.innerHTML = (views.length ? `<div class="sub" style="margin-bottom:6px;">${views.length} prospect${views.length===1?'':'s'} opened</div>` +
+      views.map(v => `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);">
+          <div class="rc-avatar" style="width:32px;height:32px;border-radius:8px;font-size:11px;">${v.headshot_key?`<img src="/.netlify/functions/frame?key=${encodeURIComponent(v.headshot_key)}" alt="" onerror="this.remove()">`:initials(v.prospect_name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div><span class="plink" data-pid="${v.prospect_id||''}" data-pname="${esc(v.prospect_name)}" data-pschool="${esc(v.prospect_school||'')}" style="cursor:pointer;">${esc(v.prospect_name)}</span> <span class="rc-meta">${esc(v.position||'')}${v.class_year?' \u00b7 '+esc(v.class_year):''}${v.prospect_school?' \u00b7 '+esc(v.prospect_school):''}</span></div>
+            <div class="rc-meta">Opened ${v.times} time${v.times===1?'':'s'} &middot; last ${fmtWhen(v.last_at)}</div>
+          </div></div>`).join('')
+      : '<div class="sub">He has not opened a prospect profile yet.</div>')
+      + ((d.requests||[]).length ? `<div class="sub" style="margin:10px 0 4px;">Requests</div>` + d.requests.map(r => `<div class="rc-meta" style="padding:5px 0;border-top:1px solid var(--line);">${esc(r.kind)}${r.prospect?' \u00b7 '+esc(r.prospect):''} &middot; ${esc(r.status)} &middot; ${fmtWhen(r.created_at)}</div>`).join('') : '');
+  }catch(err){ box.innerHTML = esc(err.message); }
+}
+async function setCoachActive(id, active){
+  try{ await api('setPortalUserActive', { id, active }); COACHES = null; renderCoaches(); toast(active ? 'Reactivated' : 'Deactivated'); }catch(err){ alert(err.message); }
+}
+async function deleteCoach(id, name){
+  if(!confirm(`Delete ${name}? His code stops working and his card goes away. His view history stays in the log.`)) return;
+  try{ await api('deletePortalUser', { id }); COACHES = null; renderCoaches(); toast('Deleted'); }catch(err){ alert(err.message); }
+}
+let _coachPhotoCode = '';
+function coachPhotoPick(code){
+  _coachPhotoCode = code;
+  let input = document.getElementById('coachPhotoInput');
+  if(!input){ input = document.createElement('input'); input.type='file'; input.accept='image/*'; input.id='coachPhotoInput'; input.style.display='none';
+    input.onchange = async () => { if(input.files && input.files[0]) await uploadCoachPhoto(input.files[0]); input.value=''; }; document.body.appendChild(input); }
+  input.click();
+}
+async function uploadCoachPhoto(file){
+  const img = await resizeImage(file, 1000);
+  if(!img){ alert('Could not read that image.'); return; }
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ kind:'coachphoto', code:_coachPhotoCode, dataBase64: img.base64, contentType: img.contentType }) });
+    const d = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(d.error || ('HTTP '+res.status));
+    (COACHES||[]).forEach(u => { if(u.code===_coachPhotoCode) u.headshot_key = d.key; });
+    renderCoaches(true); toast('Photo saved');
+  }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+/* Coach requests from the portal, in the Inbox */
+async function renderPortalRequests(){
+  const el = document.getElementById('pxList'); if(!el) return;
+  if(PX === null){ try{ const d = await api('listPortalRequests', {}); PX = d.requests || []; }catch(err){ el.innerHTML = esc(err.message); return; } }
+  const f = (document.getElementById('pxStatus')||{}).value || 'open';
+  const list = PX.filter(x => f === '' || (f === 'open' ? x.status !== 'done' : x.status === f));
+  bumpInboxCount();
+  if(!list.length){ el.innerHTML = '<div class="empty"><div class="t">No coach requests</div><div class="s">Coaches send these from the portal: film, contact, more on a player.</div></div>'; return; }
+  el.innerHTML = list.map(x => {
+    const col = { new:'var(--warn)', working:'var(--ink)', done:'var(--good)' }[x.status] || 'var(--dim)';
+    const who = x.coach_name || x.from_name || x.viewer_name || 'Unknown';
+    return `<div class="row-card">
+      <div class="rc-top">
+        <div class="rc-avatar">${initials(who)}</div>
+        <div class="rc-mid">
+          <div class="rc-name">${esc(x.kind)}${x.prospect?` &middot; ${esc(x.prospect)}`:''}</div>
+          <div class="rc-meta">${esc(x.program||'')} &middot; ${esc(who)}${x.coach_title?', '+esc(x.coach_title):''}${x.code?' &middot; '+esc(x.code):''}${x.from_name && x.from_name !== who ? ' &middot; signed "' + esc(x.from_name) + '"' : ''}</div>
+          <div style="font-size:13px;color:#D6D6D6;margin-top:6px;line-height:1.5;white-space:pre-wrap;">${esc(x.details||'')}</div>
+          <span class="pill" style="border-color:${col};color:${col};font-weight:800;margin-top:6px;">${esc(x.status)}</span>
+          ${x.emailed ? '' : '<span class="pill" style="margin-top:6px;margin-left:6px;">not emailed</span>'}
+          ${x.admin_note?`<div class="rc-meta" style="margin-top:4px;">Your note: ${esc(x.admin_note)}</div>`:''}
+        </div>
+        <div class="rc-right"><div class="rc-sub">${fmtWhen(x.created_at)}</div>${x.ncaa_period?`<div class="rc-sub">${esc(x.ncaa_period)}</div>`:''}</div>
+      </div>
+      <div class="rc-actions">
+        ${x.status !== 'working' ? `<button type="button" class="mini-btn" onclick="setPortalRequest(${x.id},'working')">Working on it</button>` : ''}
+        ${x.status !== 'done' ? `<button type="button" class="mini-btn go" onclick="setPortalRequest(${x.id},'done')">Done</button>` : `<button type="button" class="mini-btn" onclick="setPortalRequest(${x.id},'new')">Reopen</button>`}
+        <button type="button" class="mini-btn" onclick="notePortalRequest(${x.id})">Note</button>
+        ${x.prospect ? `<button type="button" class="mini-btn plink" data-pname="${esc(x.prospect)}" data-pschool="">Open player</button>` : ''}
+      </div></div>`; }).join('');
+}
+function bumpInboxCount(){
+  const el = document.getElementById('cntIntake'); if(!el) return;
+  const base = (INTAKE||[]).filter(r=>r.status==='new').length;
+  const px = (PX||[]).filter(r=>r.status==='new').length;
+  el.textContent = (base + px) || ((INTAKE||[]).length + (PX||[]).length) || '\u2014';
+}
+async function setPortalRequest(id, status){
+  try{ const d = await api('updatePortalRequest', { id, status }); const i = PX.findIndex(x=>x.id===id); if(i>=0) PX[i] = { ...PX[i], ...d.request }; renderPortalRequests(); toast('Marked ' + status); }catch(err){ alert(err.message); }
+}
+async function notePortalRequest(id){
+  const x = PX.find(r=>r.id===id); const note = prompt('Your note on this request:', x && x.admin_note || '');
+  if(note === null) return;
+  try{ const d = await api('updatePortalRequest', { id, note }); const i = PX.findIndex(r=>r.id===id); if(i>=0) PX[i] = { ...PX[i], ...d.request }; renderPortalRequests(); }catch(err){ alert(err.message); }
+}
+/* Pull the coach request count on load so the Inbox badge is right before the tab is opened. */
+setTimeout(() => { if(!demoMode && typeof api === 'function' && TOKEN){ api('listPortalRequests', {}).then(d => { PX = d.requests || []; bumpInboxCount(); }).catch(()=>{}); } }, 2500);
 
 /* ---------------- PLAYER PROFILE (edit any prospect from anywhere) ---------------- */
 document.addEventListener('click', (e) => {

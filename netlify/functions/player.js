@@ -86,6 +86,19 @@ exports.handler = async (event) => {
     }
     if (!p) return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: 'Player not found' }) };
 
+    /* A coach on the portal sends his code as `viewer`; log what he opened
+       so admin can see it. Best effort, never blocks the profile. */
+    if (qs.viewer) {
+      try {
+        const pu = require('./lib/portal-users');
+        const code = pu.cleanCode(qs.viewer);
+        if (code) {
+          await pu.ensure();
+          await pu.sql`INSERT INTO portal_views (code, prospect_id, prospect_name, prospect_school) VALUES (${code}, ${p.id}, ${p.name}, ${p.school || null})`;
+        }
+      } catch (e) { console.error('portal view log:', e.message); }
+    }
+
     const logos = await logoMap(sql, base);
     const reports = await sql`SELECT id, scout_name, scout_role, scout_id, inhome_score, recommendation_tier, archetype, position, date_evaluated, created_at, narrative,
                  raw, film_grades, athletic_grades, athletic_raw, production_grades, production_raw, gates, interview_data, track, football_iq, height, weight, film_link, eval_camp,

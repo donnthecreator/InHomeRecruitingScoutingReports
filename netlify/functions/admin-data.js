@@ -1074,6 +1074,93 @@ exports.handler = async (event) => {
         return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, onBoard: c.n });
       }
 
+      /* ---------- college coaches (portal users) ---------- */
+      case 'listPortalUsers': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const users = await sql`
+          SELECT u.*,
+                 (SELECT count(*)::int FROM portal_views v WHERE v.code = u.code) AS views,
+                 (SELECT count(DISTINCT v.prospect_id)::int FROM portal_views v WHERE v.code = u.code) AS players_viewed,
+                 (SELECT max(v.viewed_at) FROM portal_views v WHERE v.code = u.code) AS last_view,
+                 (SELECT count(*)::int FROM portal_requests r WHERE r.code = u.code) AS requests
+          FROM portal_users u ORDER BY u.active DESC, u.school, u.name`;
+        return ok({ users });
+      }
+      case 'savePortalUser': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const id = body.id ? parseInt(body.id, 10) : null;
+        const code = pu.cleanCode(body.code);
+        const name = String(body.name || '').trim().slice(0, 120);
+        if (!name) return fail(400, 'name required');
+        if (!code) return fail(400, 'code required (letters and numbers)');
+        const title = String(body.title || '').trim().slice(0, 120) || null;
+        const school = String(body.school || '').trim().slice(0, 120) || null;
+        const email = String(body.email || '').trim().slice(0, 200) || null;
+        const phone = String(body.phone || '').trim().slice(0, 40) || null;
+        const note = String(body.note || '').trim().slice(0, 2000) || null;
+        const [clash] = await sql`SELECT id FROM portal_users WHERE code = ${code} AND id <> ${id || 0}`;
+        if (clash) return fail(409, `Code ${code} is already used by another coach`);
+        const [sc] = await sql`SELECT 1 FROM scouts WHERE upper(access_code) = ${code} LIMIT 1`;
+        if (sc) return fail(409, `Code ${code} is a scout's access code`);
+        const rows = id
+          ? await sql`UPDATE portal_users SET code = ${code}, name = ${name}, title = ${title}, school = ${school}, email = ${email}, phone = ${phone}, note = ${note}
+                      WHERE id = ${id} RETURNING *`
+          : await sql`INSERT INTO portal_users (code, name, title, school, email, phone, note) VALUES (${code}, ${name}, ${title}, ${school}, ${email}, ${phone}, ${note}) RETURNING *`;
+        return ok({ user: rows[0] });
+      }
+      case 'setPortalUserActive': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const rows = await sql`UPDATE portal_users SET active = ${!!body.active} WHERE id = ${id} RETURNING *`;
+        return ok({ user: rows[0] || null });
+      }
+      case 'deletePortalUser': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const [u] = await sql`DELETE FROM portal_users WHERE id = ${id} RETURNING code, headshot_key`;
+        if (u && u.headshot_key) { try { await require('./lib/blobs').frameStore().delete(u.headshot_key); } catch (e) {} }
+        return ok({ deleted: !!u });
+      }
+      case 'portalUserActivity': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const code = pu.cleanCode(body.code); if (!code) return fail(400, 'code required');
+        const views = await sql`
+          SELECT v.prospect_id, v.prospect_name, v.prospect_school, count(*)::int AS times, max(v.viewed_at) AS last_at, min(v.viewed_at) AS first_at,
+                 p.position, p.class_year, p.headshot_key
+          FROM portal_views v LEFT JOIN prospects p ON p.id = v.prospect_id
+          WHERE v.code = ${code}
+          GROUP BY v.prospect_id, v.prospect_name, v.prospect_school, p.position, p.class_year, p.headshot_key
+          ORDER BY max(v.viewed_at) DESC LIMIT 300`;
+        const recent = await sql`SELECT prospect_id, prospect_name, viewed_at FROM portal_views WHERE code = ${code} ORDER BY viewed_at DESC LIMIT 60`;
+        const requests = await sql`SELECT * FROM portal_requests WHERE code = ${code} ORDER BY created_at DESC LIMIT 50`;
+        return ok({ views, recent, requests });
+      }
+      case 'listPortalRequests': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const rows = await sql`
+          SELECT r.*, u.name AS coach_name, u.title AS coach_title, u.school AS coach_school
+          FROM portal_requests r LEFT JOIN portal_users u ON u.code = r.code
+          ORDER BY CASE r.status WHEN 'new' THEN 0 WHEN 'working' THEN 1 ELSE 2 END, r.created_at DESC LIMIT 300`;
+        return ok({ requests: rows });
+      }
+      case 'updatePortalRequest': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const status = ['new', 'working', 'done'].includes(body.status) ? body.status : null;
+        const rows = await sql`
+          UPDATE portal_requests SET status = COALESCE(${status}, status),
+            admin_note = COALESCE(${body.note !== undefined ? String(body.note).slice(0, 2000) : null}, admin_note), updated_at = now()
+          WHERE id = ${id} RETURNING *`;
+        return ok({ request: rows[0] || null });
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

@@ -63,8 +63,8 @@ exports.handler = async (event) => {
   catch { return fail(400, 'Bad request'); }
 
   const kind = payload.kind;
-  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto', 'scoutcover'].includes(kind)) {
-    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, scoutphoto, or scoutcover');
+  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto', 'scoutcover', 'coachphoto'].includes(kind)) {
+    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, scoutphoto, scoutcover, or coachphoto');
   }
 
   let scout = await resolveScout(payload.accessCode);
@@ -94,6 +94,30 @@ exports.handler = async (event) => {
       if (prev) { try { await store.delete(prev); } catch (e) {} }
       return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
     } catch (err) { console.error('scout photo error:', err); return fail(500, err.message); }
+  }
+
+  /* ------- college coach's photo (admin) ------- */
+  if (kind === 'coachphoto') {
+    if (scout.scout_id !== 'admin') return fail(403, 'Admin only');
+    const pu = require('./lib/portal-users');
+    const code = pu.cleanCode(payload.code);
+    if (!code) return fail(400, 'code required');
+    const contentType = payload.contentType || 'image/jpeg';
+    if (!ALLOWED_TYPES.includes(contentType)) return fail(400, 'Only JPEG, PNG, or WebP images');
+    if (!payload.dataBase64) return fail(400, 'dataBase64 required');
+    let buf; try { buf = Buffer.from(payload.dataBase64, 'base64'); } catch { return fail(400, 'Bad image data'); }
+    if (!buf.length || buf.length > MAX_BYTES) return fail(413, 'Image too large');
+    try {
+      await pu.ensure();
+      const store = frameStore();
+      const key = `coach_${code}_${Date.now()}`;
+      await store.set(key, buf, { metadata: { contentType } });
+      const [old] = await pu.sql`SELECT headshot_key FROM portal_users WHERE code = ${code}`;
+      if (!old) return fail(404, 'No coach with that code');
+      await pu.sql`UPDATE portal_users SET headshot_key = ${key} WHERE code = ${code}`;
+      if (old.headshot_key) { try { await store.delete(old.headshot_key); } catch (e) {} }
+      return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
+    } catch (err) { console.error('coach photo error:', err); return fail(500, err.message); }
   }
 
   /* ------- school logo (admin) ------- */

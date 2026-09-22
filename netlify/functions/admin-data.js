@@ -190,7 +190,10 @@ async function deleteProspectRecord(sql, id) {
    its board, or the one holding the completed assessment. */
 const AUTO_MERGES = [
   { label: 'Carlos Benjamin', match: `p.name_key LIKE '%benjamin%' AND lower(p.name) LIKE '%carlos%'`, prefer: 'assessment' },
-  { label: 'Latrell Pogue',   match: `p.name_key LIKE '%pogue%'   AND lower(p.name) LIKE '%latrell%'`,  prefer: 'board' }
+  /* Two spellings of the surname, Pogue on the Miss State board and Pouge
+     on the record Damien filed the report against. Keep the board record;
+     the misspelled one merges into it and its report comes along. */
+  { label: 'Latrell Pogue',   match: `lower(p.name) LIKE '%latrell%' AND (p.name_key LIKE '%pogue%' OR p.name_key LIKE '%pouge%')`, prefer: 'board' }
 ];
 
 async function autoMergeOnce(sql) {

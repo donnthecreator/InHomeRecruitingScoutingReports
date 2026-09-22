@@ -3193,6 +3193,7 @@ async function renderCoaches(keep){
           <div class="rc-name">${esc(u.name)}</div>
           <div class="rc-meta">${esc(u.title||'Coach')} &middot; ${esc(u.school||'No school set')}</div>
           <div class="rc-meta">${u.last_seen ? 'Signed in ' + fmtWhen(u.last_seen) + ' &middot; ' + u.sign_ins + ' sign-in' + (u.sign_ins===1?'':'s') : 'Has not signed in yet'}${u.players_viewed ? ' &middot; ' + u.players_viewed + ' player' + (u.players_viewed===1?'':'s') + ' viewed' : ''}${u.requests ? ' &middot; ' + u.requests + ' request' + (u.requests===1?'':'s') : ''}</div>
+          <div class="rc-meta">${u.phone ? esc(u.phone) + ' &middot; ' : ''}${u.sms_opt_in ? `<span style="color:var(--good)">Texts on</span> &middot; consent ${fmtWhen(u.sms_opt_in_at)}${u.sms_opt_in_how?' ('+esc(u.sms_opt_in_how)+')':''}` : 'Texts off'}</div>
           <span class="scout-status ${u.active?'active':'inactive'}">${u.active?'Active':'Inactive'}</span>
         </div>
         <div class="rc-right">
@@ -3205,6 +3206,7 @@ async function renderCoaches(keep){
         <button type="button" class="mini-btn" onclick="toggleCoachActivity(${u.id},'${esc(u.code)}')">Activity</button>
         <button type="button" class="mini-btn" onclick="coachPhotoPick('${esc(u.code)}')">Photo</button>
         <button type="button" class="mini-btn" onclick="editCoach(${u.id})">Edit</button>
+        ${u.sms_opt_in ? `<button type="button" class="mini-btn go" onclick="textCoach([${u.id}])">Text</button><button type="button" class="mini-btn" onclick="setCoachSms(${u.id}, false)">Texts off</button>` : `<button type="button" class="mini-btn" onclick="setCoachSms(${u.id}, true)">Allow texts</button>`}
         ${u.active ? `<button type="button" class="mini-btn danger" onclick="setCoachActive(${u.id}, false)">Deactivate</button>` : `<button type="button" class="mini-btn go" onclick="setCoachActive(${u.id}, true)">Reactivate</button>`}
         <button type="button" class="mini-btn danger" onclick="deleteCoach(${u.id}, '${esc(u.name)}')">Delete</button>
       </div>
@@ -3255,6 +3257,47 @@ async function uploadCoachPhoto(file){
     (COACHES||[]).forEach(u => { if(u.code===_coachPhotoCode) u.headshot_key = d.key; });
     renderCoaches(true); toast('Photo saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+/* Texts. A coach is only ever texted after you record that he said yes. */
+async function setCoachSms(id, on){
+  const u = (COACHES||[]).find(x => x.id === id); if(!u) return;
+  let how = '';
+  if(on){
+    if(!u.phone){ alert('Add his phone number first (Edit).'); return; }
+    how = prompt(`${u.name} agreed to get texts from InHome about players? Say how he told you (in person, text, email, on a call). This is kept as the consent record.`, '');
+    if(how === null) return;
+    if(!how.trim()){ alert('Write down how he agreed. That is the record.'); return; }
+  } else if(!confirm(`Stop texting ${u.name}?`)) return;
+  try{ await api('setCoachSms', { id, optIn: on, how }); COACHES = null; renderCoaches(); toast(on ? 'Texts on' : 'Texts off'); }catch(err){ alert(err.message); }
+}
+async function textCoach(ids, prospect){
+  const list = (COACHES||[]).filter(u => ids.includes(u.id));
+  if(!list.length) return;
+  const who = list.map(u => u.name).join(', ');
+  const pName = prospect && prospect.name ? prospect.name : (prompt('Which player is this about? (leave blank if none)', '') || '').trim();
+  const def = pName
+    ? `InHome: ${pName}${prospect && prospect.position ? ' ('+prospect.position+')' : ''} is ready on your portal. inhomecollegeprospects.com. Reply STOP to opt out.`
+    : `InHome: new on your portal at inhomecollegeprospects.com. Reply STOP to opt out.`;
+  const body = prompt(`Text to ${who}:`, def);
+  if(body === null || !body.trim()) return;
+  try{
+    const d = await api('sendCoachText', { ids, body: body.trim(), prospectId: prospect && prospect.id || null, prospectName: pName || null });
+    const bad = d.results.filter(r => !r.sent);
+    alert(`${d.sent} sent.` + (bad.length ? '\n\nNot sent:\n' + bad.map(r => (r.name||r.id) + ': ' + r.error).join('\n') : ''));
+  }catch(err){ alert(err.message); }
+}
+/* From a player's profile card: pick the opted-in coaches to text. */
+async function textCoachesAbout(){
+  if(!PP) return;
+  if(COACHES === null){ try{ const d = await api('listPortalUsers', {}); COACHES = d.users || []; }catch(err){ alert(err.message); return; } }
+  const ok = COACHES.filter(u => u.active && u.sms_opt_in && u.phone);
+  if(!ok.length){ alert('No coach has texts turned on yet. Coaches tab, Allow texts, once he says yes.'); return; }
+  const pick = prompt('Text which coaches about ' + PP.name + '? Type the numbers, comma separated:\n\n' + ok.map((u,i) => `${i+1}. ${u.name}${u.school?' ('+u.school+')':''}`).join('\n'), '1');
+  if(pick === null) return;
+  const ids = pick.split(/[,\s]+/).map(n => ok[parseInt(n,10)-1]).filter(Boolean).map(u => u.id);
+  if(!ids.length) return;
+  textCoach(ids, { id: PP.id, name: PP.name, position: PP.position });
 }
 
 /* Coach requests from the portal, in the Inbox */
@@ -3345,7 +3388,7 @@ function renderProfile(){
     <div class="pp-head">
       <div class="pp-photo">${photo}<button type="button" onclick="ppPhoto()">Photo</button><input type="file" id="ppFile" accept="image/*" style="display:none" onchange="ppUpload(this.files[0])"></div>
       <div style="flex:1;min-width:0;">
-        <div class="pp-name">${esc(p.name)}</div>
+        <div class="pp-name">${esc(p.name)} <button type="button" class="mini-btn" style="margin-left:8px;vertical-align:middle;" onclick="textCoachesAbout()">Text a coach</button></div>
         <div class="pp-sub">${esc(p.position||'')}${p.school?' \u00b7 '+esc(p.school):''}${p.class_year?' \u00b7 Class of '+esc(p.class_year):''} \u00b7 prospect #${p.id}${p.boards?' \u00b7 '+esc(p.boards):''}</div>
       </div>
       <button type="button" class="mini-btn" onclick="closeProfile()">Close</button>

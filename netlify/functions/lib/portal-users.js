@@ -28,6 +28,21 @@ async function ensure() {
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_seen TIMESTAMPTZ,
     sign_ins INTEGER NOT NULL DEFAULT 0)`;
+  await sql`ALTER TABLE portal_users ADD COLUMN IF NOT EXISTS sms_opt_in BOOLEAN NOT NULL DEFAULT false`;
+  await sql`ALTER TABLE portal_users ADD COLUMN IF NOT EXISTS sms_opt_in_at TIMESTAMPTZ`;
+  await sql`ALTER TABLE portal_users ADD COLUMN IF NOT EXISTS sms_opt_in_how TEXT`;
+  await sql`CREATE TABLE IF NOT EXISTS portal_texts (
+    id SERIAL PRIMARY KEY,
+    code TEXT,
+    coach_name TEXT,
+    to_phone TEXT,
+    body TEXT,
+    prospect_id INTEGER,
+    prospect_name TEXT,
+    sent BOOLEAN NOT NULL DEFAULT false,
+    twilio_sid TEXT,
+    error TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
   await sql`CREATE TABLE IF NOT EXISTS portal_views (
     id SERIAL PRIMARY KEY,
     code TEXT NOT NULL,

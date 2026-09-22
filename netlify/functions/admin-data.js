@@ -1161,6 +1161,53 @@ exports.handler = async (event) => {
         return ok({ request: rows[0] || null });
       }
 
+      /* Texting a coach. Consent is recorded on the coach row (who gave it,
+         how, when) and nothing is ever sent to a coach without it. */
+      case 'setCoachSms': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const on = !!body.optIn;
+        const how = on ? (String(body.how || '').trim().slice(0, 300) || 'Confirmed by Don') : null;
+        const rows = on
+          ? await sql`UPDATE portal_users SET sms_opt_in = true, sms_opt_in_at = now(), sms_opt_in_how = ${how} WHERE id = ${id} RETURNING *`
+          : await sql`UPDATE portal_users SET sms_opt_in = false, sms_opt_in_at = NULL, sms_opt_in_how = NULL WHERE id = ${id} RETURNING *`;
+        return ok({ user: rows[0] || null });
+      }
+      case 'sendCoachText': {
+        const pu = require('./lib/portal-users');
+        const { sendSms, normalizePhone } = require('./lib/sms');
+        await pu.ensure();
+        const ids = (Array.isArray(body.ids) ? body.ids : [body.id]).map(x => parseInt(x, 10)).filter(Boolean).slice(0, 25);
+        const text = String(body.body || '').trim().slice(0, 600);
+        if (!ids.length) return fail(400, 'pick at least one coach');
+        if (!text) return fail(400, 'message required');
+        const prospectId = body.prospectId ? parseInt(body.prospectId, 10) : null;
+        const prospectName = String(body.prospectName || '').trim().slice(0, 120) || null;
+        const results = [];
+        for (const id of ids) {
+          const [u] = await sql`SELECT * FROM portal_users WHERE id = ${id}`;
+          if (!u) { results.push({ id, sent: false, error: 'no such coach' }); continue; }
+          if (!u.sms_opt_in) { results.push({ id, name: u.name, sent: false, error: 'has not opted in to texts' }); continue; }
+          const phone = normalizePhone(u.phone);
+          if (!phone) { results.push({ id, name: u.name, sent: false, error: 'no usable phone number on file' }); continue; }
+          const r = await sendSms(phone, text);
+          await sql`INSERT INTO portal_texts (code, coach_name, to_phone, body, prospect_id, prospect_name, sent, twilio_sid, error)
+                    VALUES (${u.code}, ${u.name}, ${phone}, ${text}, ${prospectId}, ${prospectName}, ${!!r.sent}, ${r.sid || null}, ${r.error || null})`;
+          results.push({ id, name: u.name, sent: !!r.sent, error: r.error || null });
+        }
+        return ok({ results, sent: results.filter(r => r.sent).length });
+      }
+      case 'listCoachTexts': {
+        const pu = require('./lib/portal-users');
+        await pu.ensure();
+        const code = pu.cleanCode(body.code) || null;
+        const rows = code
+          ? await sql`SELECT * FROM portal_texts WHERE code = ${code} ORDER BY created_at DESC LIMIT 100`
+          : await sql`SELECT * FROM portal_texts ORDER BY created_at DESC LIMIT 200`;
+        return ok({ texts: rows });
+      }
+
       case 'listProgramBoards': {
         const boards = await sql`
           SELECT pp.program_code,

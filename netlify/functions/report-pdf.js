@@ -114,15 +114,18 @@ exports.handler = async (event) => {
     /* ---- header band with the real logo ---- */
     const BAND = 64;
     page.drawRectangle({ x: 0, y: PH - BAND, width: PW, height: BAND, color: BLACK });
-    /* The icon alone in the band; the full lockup is the watermark now. */
-    const ICON_H = 38, iconSc = ICON_H / 73, iconW = 22 * iconSc;
-    page.drawSvgPath(MARK_PATH, {
-      x: M, y: PH - BAND + (BAND - ICON_H) / 2 + ICON_H,
-      scale: iconSc, color: WHITE, borderWidth: 0
-    });
-    page.drawText('INHOME RECRUITING INTELLIGENCE', {
-      x: M + iconW + 12, y: PH - 38, size: 11, font: H, color: WHITE
-    });
+    /* The real InHome logo (white on black) in the band. The typed
+       fallback only runs if the PNG somehow fails to embed. */
+    let bandLogo = null;
+    try { bandLogo = await pdf.embedPng(Buffer.from(LOGO.LOGO_PNG_BASE64, 'base64')); } catch (e) { bandLogo = null; }
+    if (bandLogo) {
+      const lh = 46, lw = lh * (bandLogo.width / bandLogo.height);
+      page.drawImage(bandLogo, { x: M - 4, y: PH - BAND + (BAND - lh) / 2, width: lw, height: lh });
+    } else {
+      const ICON_H = 38, iconSc = ICON_H / 73, iconW = 22 * iconSc;
+      page.drawSvgPath(MARK_PATH, { x: M, y: PH - BAND + (BAND - ICON_H) / 2 + ICON_H, scale: iconSc, color: WHITE, borderWidth: 0 });
+      page.drawText('INHOME RECRUITING INTELLIGENCE', { x: M + iconW + 12, y: PH - 38, size: 11, font: H, color: WHITE });
+    }
     const hdrR = 'EIS SCOUTING REPORT';
     page.drawText(hdrR, { x: PW - M - H.widthOfTextAtSize(hdrR, 8.5), y: PH - 28, size: 8.5, font: H, color: rgb(0.75, 0.75, 0.75) });
     const rid = 'Report #' + r.id;

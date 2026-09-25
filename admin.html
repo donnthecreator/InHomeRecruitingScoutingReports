@@ -126,6 +126,13 @@
   .rc-right{flex:0 0 auto; text-align:right;}
   .rc-score{font-family:'Anton',sans-serif; font-size:19px; color:var(--red);}
   .rc-sub{font-size:9.5px; color:var(--dim); margin-top:2px;}
+  /* Read-report overlay */
+  #rrWrap{position:fixed; inset:0; z-index:9000;}
+  #rrBg{position:absolute; inset:0; background:rgba(0,0,0,.72);}
+  #rrPanel{position:absolute; top:0; right:0; bottom:0; width:min(980px, 100vw); background:#0E0E0E; border-left:1px solid var(--line); display:flex; flex-direction:column;}
+  #rrBar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; border-bottom:1px solid var(--line);}
+  #rrTitle{font-family:'Anton',sans-serif; font-size:18px; letter-spacing:.04em; color:var(--ink);}
+  #rrFrame{flex:1; width:100%; border:0; background:#fff;}
   .pill{display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
     padding:3px 8px; border-radius:10px; margin-top:5px; margin-right:5px;}
   .pill.high{background:var(--red-deep); color:var(--red);}
@@ -2611,6 +2618,7 @@ function renderReports(){
       ${railHTML(r.prospect, '')}
       <div class="rail" style="border-top:none; padding-top:2px;">
         <span class="rail-lbl">Manage</span>
+        <button type="button" class="mini-btn go" onclick="readReport(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">Read report</button>
         <button type="button" class="mini-btn" onclick="shareReport(${r.id})">Share link</button>
         <button type="button" class="mini-btn" onclick="sharePdf(${r.id}, '${esc(r.prospect).replace(/'/g,"\\'")}')">PDF</button>
         ${r.prospect_id ? `<button type="button" class="mini-btn" onclick="openProfile(${r.prospect_id})">Profile</button>` : ''}
@@ -3903,6 +3911,35 @@ async function renderMarket(){
 
 /* ---------------- REPORT ADMIN ACTIONS ---------------- */
 function repStatus(id, msg){ const el = document.getElementById('repStatus-' + id); if(el) el.textContent = msg || ''; }
+
+/* Read the full report the way a coach sees it, without leaving admin. */
+async function readReport(id, name){
+  if(demoMode){ toast('Demo mode: no report to open'); return; }
+  let wrap = document.getElementById('rrWrap');
+  if(!wrap){
+    wrap = document.createElement('div'); wrap.id = 'rrWrap';
+    wrap.innerHTML = `<div id="rrBg" onclick="closeReadReport()"></div>
+      <div id="rrPanel">
+        <div id="rrBar"><div id="rrTitle"></div><div style="display:flex;gap:8px;">
+          <a id="rrEdit" class="mini-btn" href="#" target="_blank" rel="noopener">Open / Edit</a>
+          <button type="button" class="mini-btn" onclick="closeReadReport()">Close</button></div></div>
+        <iframe id="rrFrame" title="Report"></iframe></div>`;
+    document.body.appendChild(wrap);
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') closeReadReport(); });
+  }
+  document.getElementById('rrTitle').textContent = name || 'Report';
+  document.getElementById('rrEdit').href = 'report.html?reportId=' + id;
+  document.getElementById('rrFrame').src = 'about:blank';
+  wrap.style.display = ''; document.body.style.overflow = 'hidden';
+  try{
+    const data = await api('shareLink', { id });
+    document.getElementById('rrFrame').src = data.url;
+  }catch(err){ toast(err.message); closeReadReport(); }
+}
+function closeReadReport(){
+  const wrap = document.getElementById('rrWrap'); if(!wrap) return;
+  wrap.style.display = 'none'; document.getElementById('rrFrame').src = 'about:blank'; document.body.style.overflow = '';
+}
 
 async function shareReport(id){
   if(demoMode){ toast('Demo mode: nothing to share'); return; }

@@ -193,7 +193,12 @@ const AUTO_MERGES = [
   /* Two spellings of the surname, Pogue on the Miss State board and Pouge
      on the record Damien filed the report against. Keep the board record;
      the misspelled one merges into it and its report comes along. */
-  { label: 'Latrell Pogue',   match: `lower(p.name) LIKE '%latrell%' AND (p.name_key LIKE '%pogue%' OR p.name_key LIKE '%pouge%')`, prefer: 'board' }
+  { label: 'Latrell Pogue',   match: `lower(p.name) LIKE '%latrell%' AND (p.name_key LIKE '%pogue%' OR p.name_key LIKE '%pouge%')`, prefer: 'board' },
+  /* Kameron Roberts is on the Miss State board; Kam Roberts is the same
+     player and holds the scouting report. Keep the board record, move the
+     report onto it, and carry the report's printed name over so the portal
+     lists him once. */
+  { label: 'Kameron Roberts', match: `p.name_key IN ('kameronroberts', 'kamroberts')`, prefer: 'board', renameReports: true }
 ];
 
 async function autoMergeOnce(sql) {
@@ -222,6 +227,10 @@ async function autoMergeOnce(sql) {
       if (!keep) { report.skipped = 'Found ' + rows.length + ' records but none is on a board or holds an assessment, so I could not tell which to keep.'; out.push(report); continue; }
       report.keptId = keep.id;
       for (const r of rows) { if (r.id !== keep.id) report.results.push(await mergeProspectRecords(sql, r.id, keep.id)); }
+      if (job.renameReports) {
+        try { await sql`UPDATE reports SET prospect_name = ${keep.name} WHERE prospect_id = ${keep.id} AND prospect_name IS DISTINCT FROM ${keep.name}`; }
+        catch (e) { report.renameError = String(e && e.message || e); }
+      }
     } catch (e) { report.error = String(e && e.message || e); }
     out.push(report);
   }

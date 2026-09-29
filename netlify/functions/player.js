@@ -118,8 +118,9 @@ exports.handler = async (event) => {
        it opens for a program we issued a code to and nobody else, and we
        know which program opened it. */
     let full = false, viewer = null;
-    if (qs.code) {
-      const code = String(qs.code).trim().toUpperCase();
+    const rawCode = qs.code || qs.viewer;
+    if (rawCode) {
+      const code = String(rawCode).trim().toUpperCase();
       /* a program's code, or an InHome scout's own code: both open the full
          profile, and viewer says which so the page can name it */
       try {
@@ -130,6 +131,14 @@ exports.handler = async (event) => {
         try {
           const [sc] = await sql`SELECT name, role FROM scouts WHERE upper(access_code) = ${code} AND COALESCE(active, true) LIMIT 1`;
           if (sc) { full = true; viewer = { kind: 'scout', scout: sc.name, role: sc.role || null }; }
+        } catch (e) {}
+      }
+      if (!full) {
+        /* a personal coach code from the admin Coaches tab: opens the full
+           profile and reports as the coach's school */
+        try {
+          const [cu] = await sql`SELECT name, school FROM portal_users WHERE upper(code) = ${code} AND COALESCE(active, true) LIMIT 1`;
+          if (cu) { full = true; viewer = { kind: 'program', program: cu.school || cu.name, division: null }; }
         } catch (e) {}
       }
     }

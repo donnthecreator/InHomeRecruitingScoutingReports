@@ -28,12 +28,14 @@ exports.handler = async (event) => {
     }
 
     const contentType = (result.metadata && result.metadata.contentType) || 'image/jpeg';
+    const fileName = result.metadata && result.metadata.fileName;
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable'
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        ...(fileName ? { 'Content-Disposition': `inline; filename="${String(fileName).replace(/"/g, '')}"` } : {})
       },
       body: Buffer.from(result.data).toString('base64'),
       isBase64Encoded: true

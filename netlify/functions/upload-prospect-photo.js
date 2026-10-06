@@ -63,8 +63,8 @@ exports.handler = async (event) => {
   catch { return fail(400, 'Bad request'); }
 
   const kind = payload.kind;
-  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto', 'scoutcover', 'coachphoto'].includes(kind)) {
-    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, scoutphoto, scoutcover, or coachphoto');
+  if (!['headshot', 'wingspan', 'measure', 'schoollogo', 'scoutphoto', 'scoutcover', 'coachphoto', 'transcript'].includes(kind)) {
+    return fail(400, 'kind must be headshot, wingspan, measure, schoollogo, scoutphoto, scoutcover, coachphoto, or transcript');
   }
 
   let scout = await resolveScout(payload.accessCode);
@@ -118,6 +118,37 @@ exports.handler = async (event) => {
       if (old.headshot_key) { try { await store.delete(old.headshot_key); } catch (e) {} }
       return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
     } catch (err) { console.error('coach photo error:', err); return fail(500, err.message); }
+  }
+
+  /* ------- transcript (admin only): a PDF or a photo of it ------- */
+  if (kind === 'transcript') {
+    if (scout.scout_id !== 'admin') return fail(403, 'Admin only');
+    const prospectId = parseInt(payload.prospectId, 10);
+    if (!prospectId) return fail(400, 'prospectId required');
+    await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_key TEXT`;
+    await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_name TEXT`;
+    await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_at TIMESTAMPTZ`;
+    const [row] = await sql`SELECT id, transcript_key FROM prospects WHERE id = ${prospectId}`;
+    if (!row) return fail(404, 'Prospect not found');
+    const store = frameStore();
+    if (payload.remove) {
+      if (row.transcript_key) { try { await store.delete(row.transcript_key); } catch (e) {} }
+      await sql`UPDATE prospects SET transcript_key = NULL, transcript_name = NULL, transcript_at = NULL WHERE id = ${prospectId}`;
+      return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, removed: true }) };
+    }
+    const contentType = payload.contentType || 'application/pdf';
+    if (!['application/pdf', ...ALLOWED_TYPES].includes(contentType)) return fail(400, 'Transcript must be a PDF, JPEG, PNG, or WebP');
+    if (!payload.dataBase64) return fail(400, 'dataBase64 required');
+    let buf; try { buf = Buffer.from(payload.dataBase64, 'base64'); } catch { return fail(400, 'Bad file data'); }
+    if (!buf.length || buf.length > 10 * 1024 * 1024) return fail(413, 'Transcript file too large (10MB max)');
+    try {
+      const key = `transcript_${prospectId}_${Date.now()}${contentType === 'application/pdf' ? '.pdf' : ''}`;
+      const name = String(payload.fileName || 'transcript').replace(/[^\w .()-]/g, '').slice(0, 120) || 'transcript';
+      await store.set(key, buf, { metadata: { contentType, fileName: name } });
+      await sql`UPDATE prospects SET transcript_key = ${key}, transcript_name = ${name}, transcript_at = now() WHERE id = ${prospectId}`;
+      if (row.transcript_key) { try { await store.delete(row.transcript_key); } catch (e) {} }
+      return { statusCode: 200, headers: JSON_HEADERS, body: JSON.stringify({ success: true, key, name, url: '/.netlify/functions/frame?key=' + encodeURIComponent(key) }) };
+    } catch (err) { console.error('transcript upload error:', err); return fail(500, err.message); }
   }
 
   /* ------- school logo (admin) ------- */

@@ -72,6 +72,9 @@ exports.handler = async (event) => {
       await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS milesplit_link TEXT`;
       await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS x_link TEXT`;
       await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS ig_link TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_key TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_name TEXT`;
+      await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_at TIMESTAMPTZ`;
     } catch (e) {}
 
     const h = event.headers || {};
@@ -239,6 +242,8 @@ exports.handler = async (event) => {
       verifications: p.verifications || {},
       headshotUrl: p.headshot_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}` : null,
       wingspanUrl: p.wingspan_key ? `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.wingspan_key)}` : null,
+      /* Academic record: only a signed-in program or scout gets the link. */
+      transcript: (full && p.transcript_key) ? { url: `${base}/.netlify/functions/frame?key=${encodeURIComponent(p.transcript_key)}`, name: p.transcript_name || 'Transcript', uploadedAt: p.transcript_at || null, isPdf: /\.pdf$/.test(p.transcript_key) } : null,
       logoUrl: logos[schoolKey(p.school)] || null,
       boards, offers, fullProfile: full,
       commitment: p.commit_status ? { status: p.commit_status,

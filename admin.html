@@ -3424,6 +3424,16 @@ function renderProfile(){
       ${f('x_link','X (Twitter)',p.x_link,'https://x.com/handle')}
       ${f('ig_link','Instagram',p.ig_link,'https://instagram.com/handle')}
     </div>
+    <div style="margin-top:14px;" id="ppTranscript">
+      <div class="rc-meta" style="margin-bottom:6px;">Transcript <span style="color:var(--dim)">— PDF or a photo. Only signed-in programs and scouts can open it; it is never on the public profile.</span></div>
+      ${p.transcript_key
+        ? `<a class="mini-btn" href="/.netlify/functions/frame?key=${encodeURIComponent(p.transcript_key)}" target="_blank" rel="noopener">Open ${esc(p.transcript_name||'transcript')}</a>
+           <button type="button" class="mini-btn" onclick="ppTranscriptPick()">Replace</button>
+           <button type="button" class="mini-btn danger" onclick="ppTranscriptRemove()">Remove</button>
+           <span class="rc-meta" style="margin-left:6px;">uploaded ${fmtWhen(p.transcript_at)}</span>`
+        : `<button type="button" class="mini-btn" onclick="ppTranscriptPick()">Upload transcript</button>`}
+      <input type="file" id="ppTranscriptFile" accept="application/pdf,image/*" style="display:none" onchange="ppTranscriptUpload(this.files[0]); this.value='';">
+    </div>
     <div style="margin-top:14px;">
       <div class="rc-meta" style="margin-bottom:4px;">Verified measurables <span style="color:var(--dim)">— a blue check tells a coach we confirmed it at the source</span></div>
       ${['height','weight','wingspan','track','forty','gpa'].map(f=>{
@@ -3573,6 +3583,41 @@ async function ppUpload(file){
     reports.forEach(r => { if(r.prospect_id === PP.id) r.headshot_key = data.key; });
     renderProfile(); renderReports(); toast('Headshot saved');
   }catch(err){ alert('Photo upload failed: ' + err.message); }
+}
+
+function ppTranscriptPick(){ const i = document.getElementById('ppTranscriptFile'); if(i) i.click(); }
+async function ppTranscriptUpload(file){
+  if(!file || !PP) return;
+  let base64, contentType = file.type || 'application/pdf', fileName = file.name;
+  if(file.type === 'application/pdf' || /\.pdf$/i.test(file.name)){
+    if(file.size > 10*1024*1024){ alert('That PDF is over 10MB. Export a smaller one.'); return; }
+    contentType = 'application/pdf';
+    base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.readAsDataURL(file); });
+  } else {
+    const img = await resizeImage(file, 2200);
+    if(!img){ alert('Could not read that file. Use a PDF or a clear photo.'); return; }
+    base64 = img.base64; contentType = img.contentType;
+  }
+  toast('Uploading transcript...');
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: PP.id, kind:'transcript', dataBase64: base64, contentType, fileName }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    PP.transcript_key = data.key; PP.transcript_name = data.name; PP.transcript_at = new Date().toISOString();
+    renderProfile(); toast('Transcript saved');
+  }catch(err){ alert('Transcript upload failed: ' + err.message); }
+}
+async function ppTranscriptRemove(){
+  if(!PP || !confirm('Remove this transcript from ' + PP.name + '?')) return;
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: PP.id, kind:'transcript', remove: true }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    PP.transcript_key = null; PP.transcript_name = null; PP.transcript_at = null;
+    renderProfile(); toast('Transcript removed');
+  }catch(err){ alert(err.message); }
 }
 
 /* ---------------- SCOUT CONTACT REQUESTS ---------------- */

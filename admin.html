@@ -2210,6 +2210,11 @@ async function createScout(){
   }catch(err){ toast(err.message); }
   btn.disabled = false; btn.textContent = 'Generate & Add Scout';
 }
+/* One-tap link for a coach: opens the portal already signed in. */
+function copyPortalLink(code){
+  const url = 'https://inhomecollegeprospects.com/?c=' + encodeURIComponent(code);
+  navigator.clipboard.writeText(url).then(()=>toast('Sign-in link copied')).catch(()=>prompt('Copy this link:', url));
+}
 function copyCode(code){
   navigator.clipboard.writeText(code).then(()=>toast('Code copied')).catch(()=>toast(code));
 }
@@ -3210,6 +3215,7 @@ async function renderCoaches(keep){
         </div>
       </div>
       <div class="rc-actions">
+        <button type="button" class="mini-btn go" onclick="copyPortalLink('${esc(u.code)}')">Copy sign-in link</button>
         <button type="button" class="mini-btn" onclick="copyCode('${esc(u.code)}')">Copy Code</button>
         <button type="button" class="mini-btn" onclick="toggleCoachActivity(${u.id},'${esc(u.code)}')">Activity</button>
         <button type="button" class="mini-btn" onclick="coachPhotoPick('${esc(u.code)}')">Photo</button>

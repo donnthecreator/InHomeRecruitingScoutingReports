@@ -3440,6 +3440,16 @@ function renderProfile(){
         : `<button type="button" class="mini-btn" onclick="ppTranscriptPick()">Upload transcript</button>`}
       <input type="file" id="ppTranscriptFile" accept="application/pdf,image/*" style="display:none" onchange="ppTranscriptUpload(this.files[0]); this.value='';">
     </div>
+    <div style="margin-top:14px;" id="ppBackground">
+      <div class="rc-meta" style="margin-bottom:6px;">Background report <span style="color:var(--dim)">— confidential character/background notes. Admin only: never on the portal, the public profile, or scout views.</span></div>
+      ${p.has_background
+        ? `<button type="button" class="mini-btn" onclick="ppBackgroundOpen()">Open ${esc(p.background_name||'background report')}</button>
+           <button type="button" class="mini-btn" onclick="ppBackgroundPick()">Replace</button>
+           <button type="button" class="mini-btn danger" onclick="ppBackgroundRemove()">Remove</button>
+           <span class="rc-meta" style="margin-left:6px;">uploaded ${fmtWhen(p.background_at)}</span>`
+        : `<button type="button" class="mini-btn" onclick="ppBackgroundPick()">Upload background report</button>`}
+      <input type="file" id="ppBackgroundFile" accept="application/pdf,image/*" style="display:none" onchange="ppBackgroundUpload(this.files[0]); this.value='';">
+    </div>
     <div style="margin-top:14px;">
       <div class="rc-meta" style="margin-bottom:4px;">Verified measurables <span style="color:var(--dim)">— a blue check tells a coach we confirmed it at the source</span></div>
       ${['height','weight','wingspan','track','forty','gpa'].map(f=>{
@@ -3623,6 +3633,55 @@ async function ppTranscriptRemove(){
     if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
     PP.transcript_key = null; PP.transcript_name = null; PP.transcript_at = null;
     renderProfile(); toast('Transcript removed');
+  }catch(err){ alert(err.message); }
+}
+
+function ppBackgroundPick(){ const i = document.getElementById('ppBackgroundFile'); if(i) i.click(); }
+async function ppBackgroundUpload(file){
+  if(!file || !PP) return;
+  let base64, contentType = file.type || 'application/pdf', fileName = file.name;
+  if(file.type === 'application/pdf' || /\.pdf$/i.test(file.name)){
+    if(file.size > 10*1024*1024){ alert('That PDF is over 10MB. Export a smaller one.'); return; }
+    contentType = 'application/pdf';
+    base64 = await new Promise(res => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.readAsDataURL(file); });
+  } else {
+    const img = await resizeImage(file, 2200);
+    if(!img){ alert('Could not read that file. Use a PDF or a clear photo.'); return; }
+    base64 = img.base64; contentType = img.contentType;
+  }
+  toast('Uploading background report...');
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: PP.id, kind:'background', dataBase64: base64, contentType, fileName }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    PP.has_background = true; PP.background_name = data.name; PP.background_at = new Date().toISOString();
+    const kp = (typeof KNOWN_PROSPECTS !== 'undefined') && KNOWN_PROSPECTS.find(x => String(x.id) === String(PP.id));
+    if(kp){ kp.has_background = true; kp.background_name = data.name; kp.background_at = PP.background_at; }
+    renderProfile(); toast('Background report saved');
+  }catch(err){ alert('Background report upload failed: ' + err.message); }
+}
+async function ppBackgroundOpen(){
+  if(!PP) return;
+  const w = window.open('', '_blank');
+  try{
+    const res = await fetch('/.netlify/functions/background-file?prospectId=' + encodeURIComponent(PP.id), { headers:{'Authorization':'Bearer '+TOKEN} });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const url = URL.createObjectURL(await res.blob());
+    if(w) w.location = url; else window.location = url;
+  }catch(err){ if(w) w.close(); alert('Could not open background report: ' + err.message); }
+}
+async function ppBackgroundRemove(){
+  if(!PP || !confirm('Remove the background report from ' + PP.name + '?')) return;
+  try{
+    const res = await fetch('/.netlify/functions/upload-prospect-photo', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body: JSON.stringify({ prospectId: PP.id, kind:'background', remove: true }) });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    PP.has_background = false; PP.background_name = null; PP.background_at = null;
+    const kp = (typeof KNOWN_PROSPECTS !== 'undefined') && KNOWN_PROSPECTS.find(x => String(x.id) === String(PP.id));
+    if(kp){ kp.has_background = false; kp.background_name = null; kp.background_at = null; }
+    renderProfile(); toast('Background report removed');
   }catch(err){ alert(err.message); }
 }
 

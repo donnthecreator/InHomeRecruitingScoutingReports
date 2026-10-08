@@ -56,6 +56,8 @@ async function loadProspect(prospectId) {
     LEFT JOIN programs prog ON prog.school_key = p.committed_to
     WHERE p.id = ${prospectId}`;
   if (!prospect) return null;
+  /* confidential background report is admin-only; never hand it to scouts */
+  delete prospect.background_key; delete prospect.background_name; delete prospect.background_at;
 
   const offers = await sql`
     SELECT o.id, o.school_key, o.school_other, o.offer_date, o.status,

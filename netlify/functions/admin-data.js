@@ -955,10 +955,14 @@ exports.handler = async (event) => {
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_key TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_name TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS transcript_at TIMESTAMPTZ`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_key TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_name TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_at TIMESTAMPTZ`;
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
                  p.home_city, p.height, p.weight, p.wingspan, p.film_link, p.hudl_link, p.milesplit_link, p.x_link, p.ig_link,
                  p.headshot_key, p.wingspan_key, p.transcript_key, p.transcript_name, p.transcript_at,
+                 p.background_key IS NOT NULL AS has_background, p.background_name, p.background_at,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
                  (SELECT r.inhome_score FROM reports r WHERE r.prospect_id = p.id ORDER BY r.created_at DESC LIMIT 1) AS latest_score,
                  (SELECT string_agg(DISTINCT upper(pp.program_code), ', ') FROM program_prospects pp WHERE pp.prospect_id = p.id) AS boards

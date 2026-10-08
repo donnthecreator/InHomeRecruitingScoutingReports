@@ -18,6 +18,10 @@ exports.handler = async (event) => {
   if (!key) {
     return { statusCode: 400, body: 'key required' };
   }
+  /* Confidential background reports are admin-only (background-file.js). */
+  if (/^bg_/i.test(key)) {
+    return { statusCode: 404, body: 'Not found' };
+  }
 
   try {
     const store = frameStore();

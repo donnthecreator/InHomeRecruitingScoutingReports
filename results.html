@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>InHome Assessment Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#FF0000; --paper:#000; --card:#141414; --card2:#1C1C1C; --line:#2E2E2E; --ink:#F5F5F5; --mute:#A0A0A0; --dim:#6A6A6A; --good:#35C759; --bad:#FF4D4D; --warn:#E0A419; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:'Inter',system-ui,sans-serif; line-height:1.55; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:720px; margin:0 auto; padding:0 16px 70px;}
+  .top{display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line);}
+  .top img{height:32px; width:auto;}
+  .top .tag{font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim); font-weight:800;}
+
+  .hero{display:flex; gap:16px; align-items:center; padding:22px 0 10px;}
+  .face{width:96px; height:96px; border-radius:16px; background:var(--card2); border:1px solid var(--line); overflow:hidden;
+        display:grid; place-items:center; font-family:'Anton',sans-serif; font-size:32px; color:var(--dim); flex:0 0 auto;}
+  .face img{width:100%; height:100%; object-fit:cover;}
+  h1{font-family:'Anton',sans-serif; font-weight:400; font-size:32px; line-height:1.05; margin:0 0 5px;}
+  .sub{color:var(--mute); font-size:13px;}
+  .intro{font-size:14px; line-height:1.6; color:#DADADA; margin:10px 0 0;}
+
+  h2{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); font-weight:800; margin:28px 0 10px; display:flex; align-items:baseline; gap:10px;}
+  h2 .cnt{margin-left:auto; letter-spacing:.04em; text-transform:none; font-weight:600;}
+  .card{border:1px solid var(--line); border-radius:12px; padding:14px; background:var(--card);}
+
+  .score{display:flex; gap:16px; align-items:center;}
+  .score .big{font-family:'Anton',sans-serif; font-size:52px; line-height:.9;}
+  .track{flex:1; height:8px; background:#2A2A2A; border-radius:5px; overflow:hidden;}
+  .fill{height:100%; background:var(--ink);}
+  .band{font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; margin-top:4px;}
+  .cats{display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 4px;}
+  .cat{border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:12px; display:flex; gap:8px; align-items:baseline;}
+  .cat b{font-weight:600;} .cat span{color:var(--dim); font-weight:700;}
+  .cat.hi{border-color:var(--good);} .cat.lo{border-color:var(--bad);}
+  .p{font-size:13.5px; line-height:1.6; color:#DADADA; margin:10px 0 0;}
+
+  .filters{display:flex; gap:6px; margin:0 0 12px; flex-wrap:wrap;}
+  .filters button{border:1px solid var(--line); background:var(--card); color:var(--mute); border-radius:999px; padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .filters button.on{background:var(--ink); color:#000; border-color:var(--ink);}
+
+  .q{border:1px solid var(--line); border-left-width:3px; border-radius:12px; padding:14px; margin-bottom:12px; background:var(--card); break-inside:avoid;}
+  .q.ok{border-left-color:var(--good);} .q.no{border-left-color:var(--bad);}
+  .q-top{display:flex; gap:10px; align-items:flex-start;}
+  .q-n{font-family:'Anton',sans-serif; font-size:15px; color:var(--dim); min-width:22px;}
+  .q-kind{font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); font-weight:800;}
+  .q-text{font-size:15px; font-weight:600; line-height:1.45; margin-top:2px;}
+  .q-mark{margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.06em; white-space:nowrap; padding-top:2px;}
+  .q.ok .q-mark{color:var(--good);} .q.no .q-mark{color:var(--bad);}
+  .media{margin:12px 0 4px;}
+  .vid{position:relative; padding-top:56.25%; border-radius:10px; overflow:hidden; background:#111; border:1px solid var(--line);}
+  .vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0;}
+  .field{border:1px solid #2A2A2A; border-radius:10px; overflow:hidden; background:#0B1F12;}
+  .field svg{display:block; width:100%; height:auto;}
+  .field .ring,.field .tri{fill:#1C1C1C; stroke:#E9E9E9; stroke-width:2.2;}
+  .field .d-right .ring,.field .d-right .tri{stroke:var(--good); stroke-width:3.5;}
+  .field .d-his .ring,.field .d-his .tri{fill:var(--bad); stroke:var(--bad);}
+  .field .d-his.d-right .ring,.field .d-his.d-right .tri{fill:var(--good); stroke:var(--good);}
+  .field .ball{fill:#FFF;} .field text{font:700 12px Inter,sans-serif; fill:#000; text-anchor:middle; dominant-baseline:central;}
+  .snapbar{display:flex; gap:8px; align-items:center; margin-top:8px;}
+  .snapbtn{border:1px solid var(--ink); background:var(--ink); color:#000; border-radius:8px; padding:7px 14px; font-weight:800; font-size:12px; cursor:pointer; font-family:inherit; text-transform:uppercase; letter-spacing:.06em;}
+  .snapbtn.ghost{background:transparent; color:var(--ink); border-color:var(--line);}
+  .snapbtn:disabled{opacity:.4; cursor:default;}
+  .legend{font-size:11.5px; color:var(--mute); margin-top:6px;}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:50%; margin:0 4px 0 10px; vertical-align:-1px;}
+  .legend i:first-child{margin-left:0;}
+
+  .opts{display:flex; flex-direction:column; gap:6px; margin-top:12px;}
+  .opt{display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:9px; padding:10px 12px; font-size:13.5px; background:var(--paper);}
+  .opt .l{font-family:'Anton',sans-serif; font-size:13px; color:var(--dim); min-width:16px;}
+  .opt .t{flex:1;}
+  .opt .tag{font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:800; white-space:nowrap; padding-top:2px;}
+  .opt.right{border-color:var(--good); background:rgba(53,199,89,.08);}
+  .opt.right .tag{color:var(--good);}
+  .opt.wrong{border-color:var(--bad); background:rgba(255,77,77,.08);}
+  .opt.wrong .tag{color:var(--bad);}
+  .opt.pick{border-color:var(--ink); background:var(--card2);}
+  .opt.pick .tag{color:var(--ink);}
+  .opt.faded{color:var(--mute);}
+  .ans-line{font-size:13.5px; margin-top:10px;} .ans-line .k{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); font-weight:800; margin-right:8px;}
+  .why{margin-top:10px; border-left:2px solid var(--ink); padding:8px 12px; font-size:13px; line-height:1.55; color:#DADADA; background:var(--paper); border-radius:0 8px 8px 0;}
+  .why b{font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); display:block; margin-bottom:2px;}
+
+  .sec-h{font-family:'Anton',sans-serif; font-size:14px; letter-spacing:.08em; text-transform:uppercase; margin:20px 0 8px;}
+  .iv{border-top:1px solid var(--line); padding:12px 0;}
+  .iv-q{font-size:13.5px; font-weight:700; line-height:1.45;}
+  .iv-a{font-size:14px; line-height:1.6; color:#EDEDED; margin-top:6px; padding-left:12px; border-left:2px solid var(--line); white-space:pre-wrap;}
+  .iv-none{font-size:12.5px; color:var(--dim); margin-top:5px;}
+  .scale{display:flex; gap:6px; margin-top:8px;}
+  .scale div{flex:1; text-align:center; border:1px solid var(--line); border-radius:8px; padding:8px 0; font-family:'Anton',sans-serif; font-size:15px; color:var(--dim);}
+  .scale div.on{background:var(--ink); color:#000; border-color:var(--ink);}
+  .scale-ends{display:flex; justify-content:space-between; font-size:11px; color:var(--dim); margin-top:4px;}
+
+  .pt-head{display:flex; gap:12px; align-items:center; margin-bottom:10px;}
+  .pt-type{font-family:'Anton',sans-serif; font-size:30px; letter-spacing:.04em; line-height:1;}
+  .pt-k{font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); font-weight:700; margin:10px 0 5px;}
+  .pt ul{margin:0; padding-left:16px;} .pt li{font-size:13px; line-height:1.5; color:#DADADA; margin-bottom:3px;}
+
+  .cta{border:1px solid var(--red); border-radius:14px; padding:18px; background:#120000; margin-top:30px;}
+  .cta h3{font-family:'Anton',sans-serif; font-weight:400; font-size:24px; line-height:1.1; margin:0 0 8px;}
+  .cta p{font-size:14px; line-height:1.6; color:#E6E6E6; margin:0 0 10px;}
+  .cta ul{margin:0 0 14px; padding-left:18px;} .cta li{font-size:13.5px; color:#E6E6E6; margin-bottom:4px;}
+  .cta form{display:grid; gap:8px;}
+  .cta input,.cta select,.cta textarea{width:100%; padding:12px 13px; border-radius:9px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font:inherit; font-size:14.5px;}
+  .cta textarea{min-height:70px; resize:vertical;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  @media(max-width:480px){ .row2{grid-template-columns:1fr;} }
+  .btn{display:block; width:100%; text-align:center; background:var(--red); color:#fff; border:none; border-radius:11px; padding:14px; font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.05em; text-transform:uppercase; cursor:pointer;}
+  .btn.ghost{background:transparent; border:1.5px solid var(--line); color:var(--ink); font-family:'Inter',sans-serif; font-size:13px; font-weight:700; letter-spacing:0; text-transform:none; padding:11px;}
+  .msg{font-size:13px; min-height:18px;}
+  .hp{position:absolute; left:-9999px;}
+  footer{border-top:1px solid var(--line); margin-top:32px; padding:18px 0 40px; font-size:11.5px; color:var(--dim); line-height:1.7;}
+  .empty{text-align:center; padding:70px 0;} .empty .big{font-family:'Anton',sans-serif; font-size:30px; margin-bottom:10px;}
+
+  @media print{
+    :root{ --paper:#fff; --card:#fff; --card2:#f2f2f2; --line:#cfcfcf; --ink:#000; --mute:#444; --dim:#666; }
+    body{background:#fff; color:#000;}
+    .filters,.snapbar,.cta,.noprint,.vid{display:none !important;}
+    .q,.card{break-inside:avoid;}
+    .why,.iv-a,.p,.opt,.pt li{color:#000;}
+    .top img{filter:invert(1);}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <img src="inhome-logo.png" alt="InHome Recruiting Intelligence">
+    <span class="tag">Assessment Results</span>
+  </div>
+  <div id="app"><div class="empty"><div class="big">Loading&hellip;</div></div></div>
+</div>
+
+<script>
+const esc = (s) => String(s==null?'':s).replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const QS = new URLSearchParams(location.search);
+const A = QS.get('a'), S = QS.get('s'), V = QS.get('v') === 'college' ? 'college' : 'parent';
+const LETTERS = 'ABCDEFGHIJ';
+let DATA = null, FILTER = 'all';
+
+const BAND_WORD = { elite:'Elite', strong:'Strong', developing:'Developing', behind:'Behind' };
+const BAND_COLOR = { elite:'var(--good)', strong:'var(--ink)', developing:'var(--warn)', behind:'var(--bad)' };
+const KIND_WORD = { film:'Film clip', read:'Field read', tap:'Field read, tap the defender', written:'Football question' };
+
+/* The same whiteboard he saw. His tap is filled (green if right, red if
+   not); the right defender is ringed green. Snap replays the motion. */
+function fieldSVG(d, n){
+  const f = d.field; if(!f) return '';
+  const W = 600, H = 340, LOS = 195;
+  let g = '';
+  for(let y = 25; y < H; y += 34) g += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#1E3A28" stroke-width="1"/>`;
+  [200, 400].forEach(x => { for(let y = 20; y < H; y += 17) g += `<line x1="${x-4}" y1="${y}" x2="${x+4}" y2="${y}" stroke="#2A5039" stroke-width="1"/>`; });
+  g += `<line x1="0" y1="${LOS}" x2="${W}" y2="${LOS}" stroke="#F5F5F5" stroke-width="1.5" stroke-dasharray="6 5" opacity=".7"/>`;
+  const defs = (f.defense||[]).map(x => {
+    const cls = [d.type==='tap' && String(d.tapped)===x.id ? 'd-his' : '', d.type==='tap' && String(d.answerTap)===x.id ? 'd-right' : ''].filter(Boolean).join(' ');
+    const shape = x.t === 'dl' ? `<polygon class="tri" points="${x.x},${x.y-13} ${x.x+13},${x.y+10} ${x.x-13},${x.y+10}"/>` : `<circle class="ring" cx="${x.x}" cy="${x.y}" r="12"/>`;
+    return `<g class="${cls}" data-def="${esc(x.id)}" data-x="${x.x}" data-y="${x.y}">${shape}</g>`;
+  }).join('');
+  const offs = (f.offense||[]).map(o => `<g data-off="${esc(o.id)}" data-x="${o.x}" data-y="${o.y}"><circle class="ball" cx="${o.x}" cy="${o.y}" r="12"/><text x="${o.x}" y="${o.y}">${esc(o.l)}</text></g>`).join('');
+  const snap = f.motion ? `<div class="snapbar"><button type="button" class="snapbtn" data-snap="${n}">Snap</button><button type="button" class="snapbtn ghost" data-reset="${n}" disabled>Reset</button><span class="sub">Replay the play he watched.</span></div>` : '';
+  const legend = d.type==='tap' ? `<div class="legend"><i style="background:var(--good)"></i>Right defender${!d.correct?'<i style="background:var(--bad)"></i>His tap':''}</div>` : '';
+  return `<div class="field" id="fld_${n}"><svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${g}${defs}${offs}</svg></div>${snap}${legend}`;
+}
+function moveGroup(g, tx, ty, t){
+  const x0 = +g.dataset.x, y0 = +g.dataset.y, x = x0 + (tx - x0) * t, y = y0 + (ty - y0) * t;
+  const tri = g.querySelector('.tri'); if(tri) tri.setAttribute('points', `${x},${y-13} ${x+13},${y+10} ${x-13},${y+10}`);
+  g.querySelectorAll('circle').forEach(c => { c.setAttribute('cx', x); c.setAttribute('cy', y); });
+  const tx2 = g.querySelector('text'); if(tx2){ tx2.setAttribute('x', x); tx2.setAttribute('y', y); }
+}
+function snap(n, reset){
+  const d = DATA.scored[n], fld = document.getElementById('fld_' + n); if(!d || !fld || !d.field.motion) return;
+  const b = document.querySelector(`[data-snap="${n}"]`), r = document.querySelector(`[data-reset="${n}"]`);
+  const targets = Object.entries(d.field.motion).map(([id, to]) => { const g = fld.querySelector(`[data-def="${id}"]`) || fld.querySelector(`[data-off="${id}"]`); return g ? { g, to } : null; }).filter(Boolean);
+  if(reset){ targets.forEach(({g}) => moveGroup(g, +g.dataset.x, +g.dataset.y, 1)); b.disabled = false; r.disabled = true; return; }
+  b.disabled = true;
+  const dur = d.field.duration || 800, t0 = performance.now(), ease = t => t < .5 ? 2*t*t : -1 + (4 - 2*t) * t;
+  const step = now => { const t = Math.min(1, (now - t0) / dur); targets.forEach(({g,to}) => moveGroup(g, to.x, to.y, ease(t))); if(t < 1) requestAnimationFrame(step); else r.disabled = false; };
+  requestAnimationFrame(step);
+}
+
+function optionsHTML(d){
+  if(d.type === 'tap'){
+    return `<div class="ans-line"><span class="k">He tapped</span>${esc(d.tappedWord || 'Nothing')}</div>`
+      + (d.correct ? '' : `<div class="ans-line"><span class="k">Right answer</span>${esc(d.answerWord || '—')}</div>`);
+  }
+  if(!d.options){
+    return `<div class="ans-line"><span class="k">He answered</span>${esc(d.givenText || 'No answer')}</div>`
+      + (d.correct ? '' : `<div class="ans-line"><span class="k">Right answer</span>${esc(d.answerText || '—')}</div>`);
+  }
+  const none = d.given === null ? `<div class="ans-line"><span class="k">He answered</span>Left it blank</div>` : '';
+  return `<div class="opts">${d.options.map((o, i) => {
+    const isAns = i === d.answer, isHis = i === d.given;
+    const cls = isAns ? 'right' : isHis ? 'wrong' : 'faded';
+    const tag = isAns && isHis ? '✓ His answer, right' : isAns ? '✓ Right answer' : isHis ? '✗ His answer' : '';
+    return `<div class="opt ${cls}"><span class="l">${LETTERS[i]||i+1}</span><span class="t">${esc(o)}</span>${tag?`<span class="tag">${tag}</span>`:''}</div>`;
+  }).join('')}</div>${none}`;
+}
+
+function questionHTML(d, n){
+  const media = d.clip ? `<div class="media"><div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(d.clip.youtubeId)}?rel=0${d.clip.start?'&start='+d.clip.start:''}" loading="lazy" allowfullscreen title="Film clip"></iframe></div></div>`
+            : d.field ? `<div class="media">${fieldSVG(d, n)}</div>` : '';
+  return `<div class="q ${d.correct?'ok':'no'}" data-res="${d.correct?'right':'missed'}">
+    <div class="q-top"><span class="q-n">${n+1}</span>
+      <div style="flex:1;min-width:0;"><div class="q-kind">${esc(KIND_WORD[d.type]||'Question')}</div><div class="q-text">${esc(d.q)}</div></div>
+      <span class="q-mark">${d.correct?'✓ Right':'✗ Missed'}</span></div>
+    ${media}
+    ${optionsHTML(d)}
+    ${d.why ? `<div class="why"><b>Coaching point</b>${esc(d.why)}</div>` : ''}
+  </div>`;
+}
+
+function interviewHTML(sections){
+  return sections.map(s => `<div class="sec-h">${esc(s.section)}</div>` + s.items.map(it => {
+    let body = '';
+    if(it.type === 'single'){
+      body = `<div class="opts">${it.options.map((o,i)=>`<div class="opt ${i===it.given?'pick':'faded'}"><span class="l">${LETTERS[i]||i+1}</span><span class="t">${esc(o)}</span>${i===it.given?'<span class="tag">His answer</span>':''}</div>`).join('')}</div>`
+        + (it.given === null ? '<div class="iv-none">No answer</div>' : '');
+    } else if(it.type === 'scale'){
+      body = `<div class="scale">${Array.from({length:it.max},(_,i)=>`<div class="${it.given===i+1?'on':''}">${i+1}</div>`).join('')}</div><div class="scale-ends"><span>${esc(it.low)}</span><span>${esc(it.high)}</span></div>`
+        + (it.given === null ? '<div class="iv-none">No answer</div>' : '');
+    } else {
+      body = it.text ? `<div class="iv-a">${esc(it.text)}</div>` : '<div class="iv-none">No answer</div>';
+    }
+    return `<div class="iv"><div class="iv-q">${esc(it.q)}</div>${body}</div>`;
+  }).join('')).join('');
+}
+
+function render(){
+  const d = DATA, p = d.prospect || {};
+  const name = p.name || d.athlete || 'Athlete';
+  const first = name.split(' ')[0];
+  const dg = d.diagnosis || {};
+  const cats = dg.categories || [];
+  const weak = cats.filter(c => c.pct < 60 && c.key !== 'other').sort((a,b)=>a.pct-b.pct || b.total-a.total).slice(0, 3);
+  const missed = d.scored.filter(x => !x.correct).length;
+  const meta = [p.position || d.position, p.classYear ? 'Class of ' + p.classYear : null, p.school || d.school, p.hometown].filter(Boolean).map(esc).join(' · ');
+
+  let h = `<div class="hero">
+      <div class="face">${p.headshotUrl ? `<img src="${esc(p.headshotUrl)}" alt="">` : esc(name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div>
+      <div style="flex:1;min-width:0;"><h1>${esc(name)}</h1><div class="sub">${meta}</div>
+        <div class="sub" style="margin-top:3px;">Completed ${esc(d.completed||'')}</div></div>
+    </div>
+    <p class="intro">${V === 'college'
+      ? `Every question ${esc(first)} answered on his InHome assessment, with each answer option, what he picked, and the right answer. Film and multiple choice are auto-scored against a key he never saw. Written answers are his own words, unedited.`
+      : `This is everything ${esc(first)} answered on his InHome assessment: every question, every answer option, what he picked, and what the right answer was and why. Use it as a map. The misses are not a verdict, they are the next things to coach.`}</p>
+    <div class="noprint" style="margin-top:12px;"><button type="button" class="btn ghost" onclick="window.print()">Print or save as PDF</button></div>`;
+
+  if(d.scored.length){
+    h += `<h2>Football IQ</h2><div class="card">
+      <div class="score"><div><div class="big">${d.pct!=null?d.pct+'%':'—'}</div>
+        ${dg.band?`<div class="band" style="color:${BAND_COLOR[dg.band]||'var(--ink)'}">${esc(BAND_WORD[dg.band]||dg.band)}</div>`:''}</div>
+        <div style="flex:1;"><div class="track"><div class="fill" style="width:${d.pct||0}%"></div></div>
+        <div class="sub" style="margin-top:6px;">${d.correct} of ${d.total} scored questions right</div></div></div>
+      ${cats.length?`<div class="cats">${cats.map(c=>`<div class="cat ${c.pct>=80?'hi':c.pct<60?'lo':''}"><b>${esc(c.name)}</b><span>${c.correct}/${c.total}</span></div>`).join('')}</div>`:''}
+      ${dg.summary?`<p class="p">${esc(dg.summary)}</p>`:''}
+    </div>`;
+    h += `<h2>Question by question <span class="cnt">${d.correct} right · ${missed} missed</span></h2>
+      <div class="filters noprint">
+        <button type="button" data-f="all" class="on">All ${d.scored.length}</button>
+        <button type="button" data-f="missed">Missed ${missed}</button>
+        <button type="button" data-f="right">Right ${d.correct}</button>
+      </div>
+      <div id="qs">${d.scored.map(questionHTML).join('')}</div>`;
+  }
+
+  if(d.sections.length){
+    h += `<h2>${d.kind==='iq'?'Written football answers':'Interview, in his words'}</h2>
+      <div class="sub" style="margin-bottom:4px;">Not scored. Every question he was asked, with his answer.</div>${interviewHTML(d.sections)}`;
+  }
+
+  const t = d.personality;
+  if(t){
+    h += `<h2>How he is wired</h2><div class="card pt">
+      <div class="pt-head"><span class="pt-type">${esc(t.type)}</span><div><div style="font-weight:700;">${esc(t.name)}</div><div class="sub">${esc(t.line)}</div></div></div>
+      <p class="p" style="margin-top:0;">${esc(t.room)}</p>
+      <div class="pt-k">Strengths</div><ul>${(t.strengths||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="pt-k">Watch for</div><ul>${(t.watch||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="pt-k">How to coach him</div><ul>${(t.coach||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="sub" style="margin-top:10px;color:var(--dim);">From a forced-choice inventory he completed himself. A tendency, not a verdict, and it never touches his score.</div>
+    </div>`;
+  }
+
+  if(V === 'parent'){
+    const focus = weak.length ? weak.map(c => `<li><b>${esc(c.name)}</b>: ${c.correct} of ${c.total}</li>`).join('')
+                : missed ? `<li>The ${missed} question${missed===1?'':'s'} he missed above</li>` : '';
+    h += `<div class="cta" id="train">
+      <h3>Turn the misses into reps</h3>
+      <p>College coaches recruit players who see the game fast. That is a skill, and it is trainable. Our trainers are former college and NFL players who coach the exact reads on this page, on the field and in the film room.</p>
+      ${focus ? `<p style="margin-bottom:6px;">Where we would start with ${esc(first)}:</p><ul>${focus}</ul>` : `<p>He tested well. Training keeps him sharp and puts his film in front of more coaches.</p>`}
+      <form id="trainForm">
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off">
+        <div class="row2"><input name="name" placeholder="Your name" required autocomplete="name">
+          <select name="role"><option value="parent">I am his parent or guardian</option><option value="athlete">I am the athlete</option><option value="coach">I am his coach</option><option value="other">Other</option></select></div>
+        <div class="row2"><input name="phone" type="tel" placeholder="Phone" autocomplete="tel"><input name="email" type="email" placeholder="Email" autocomplete="email"></div>
+        <textarea name="note" placeholder="Anything we should know: schedule, where you live, what he wants to work on."></textarea>
+        <button type="submit" class="btn">Request training</button>
+        <div class="msg" id="trainMsg"></div>
+      </form>
+    </div>`;
+  } else {
+    h += `<div class="card" style="margin-top:26px;font-size:13.5px;line-height:1.6;color:#DADADA;">Want the full InHome profile on ${esc(first)}, with scouting reports and verified measurables? Sign in to the InHome coach portal with your program's access code, or reply to the person who sent you this link.</div>`;
+  }
+
+  h += `<footer>Built by InHome Recruiting Intelligence. Shared with the athlete's consent${V==='college'?' for recruiting evaluation. Please keep it within your staff.':'.'} This page is private and was sent to you directly.</footer>`;
+  document.getElementById('app').innerHTML = h;
+  document.title = name + ' | InHome Assessment Results';
+
+  document.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => {
+    FILTER = b.dataset.f;
+    document.querySelectorAll('[data-f]').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('#qs .q').forEach(q => { q.style.display = FILTER==='all' || q.dataset.res===FILTER ? '' : 'none'; });
+  }));
+  document.querySelectorAll('[data-snap]').forEach(b => b.addEventListener('click', () => snap(+b.dataset.snap)));
+  document.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => snap(+b.dataset.reset, true)));
+  const tf = document.getElementById('trainForm');
+  if(tf) tf.addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(tf).entries());
+    const msg = document.getElementById('trainMsg'), btn = tf.querySelector('button[type=submit]');
+    if(!f.phone && !f.email){ msg.style.color = 'var(--bad)'; msg.textContent = 'Add a phone number or email so we can reach you.'; return; }
+    btn.disabled = true; msg.style.color = 'var(--mute)'; msg.textContent = 'Sending…';
+    try{
+      const res = await fetch('/.netlify/functions/assessment-results', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ a:A, s:S }, f)) });
+      const r = await res.json(); if(!res.ok) throw new Error(r.error || 'Could not send');
+      tf.innerHTML = `<div style="font-size:15px;font-weight:700;color:var(--good);">Got it. We will reach out within a day to set up a first session.</div>`;
+    }catch(err){ btn.disabled = false; msg.style.color = 'var(--bad)'; msg.textContent = err.message; }
+  });
+}
+
+(async function(){
+  if(!A || !S){ document.getElementById('app').innerHTML = '<div class="empty"><div class="big">Link incomplete</div><div class="sub">Ask InHome to resend it.</div></div>'; return; }
+  try{
+    const res = await fetch(`/.netlify/functions/assessment-results?a=${encodeURIComponent(A)}&s=${encodeURIComponent(S)}&v=${V}`, { cache:'no-store' });
+    const d = await res.json(); if(!res.ok) throw new Error(d.error || 'Not available');
+    DATA = d; render();
+  }catch(err){
+    document.getElementById('app').innerHTML = `<div class="empty"><div class="big">Results not available</div><div class="sub">${esc(err.message)}</div></div>`;
+  }
+})();
+</script>
+</body>
+</html>

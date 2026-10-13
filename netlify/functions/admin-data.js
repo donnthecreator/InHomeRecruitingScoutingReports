@@ -799,6 +799,18 @@ exports.handler = async (event) => {
         } catch (e) { if (/does not exist/i.test(e.message)) return ok({ assessments: [] }); throw e; }
       }
 
+      /* Signed link to one athlete's full results, for a parent or a
+         college. assessment-results.js checks the same signature. */
+      case 'assessmentResultsLink': {
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const [row] = await sql`SELECT id, status FROM assessments WHERE id = ${id}`;
+        if (!row) return fail(404, 'Assessment not found');
+        if (row.status !== 'complete') return fail(409, 'He has not finished it yet');
+        const sig = crypto.createHmac('sha256', process.env.ADMIN_SECRET).update('results:' + id).digest('hex').slice(0, 24);
+        const v = body.audience === 'college' ? 'college' : 'parent';
+        return ok({ url: `${siteBase(event)}/results.html?a=${id}&s=${sig}&v=${v}` });
+      }
+
       case 'deleteAssessment': {
         const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
         await sql`DELETE FROM assessments WHERE id = ${id}`;

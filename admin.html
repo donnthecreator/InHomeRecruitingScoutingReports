@@ -2968,13 +2968,49 @@ async function renderAssessments(){
         <div class="rc-right"><div class="rc-sub">${a.completed_day?fmtDate(a.completed_day):''}</div></div>
       </div>
       <div class="rc-actions">
-        ${a.status==='complete' ? `<button type="button" class="mini-btn go" onclick="viewAssessment(${a.id})">Read answers</button>` : `<button type="button" class="mini-btn" onclick="copyAssess('${esc(url)}','${esc(a.athlete_name||'')}')">Send link</button>`}
+        ${a.status==='complete' ? `<button type="button" class="mini-btn go" onclick="openResults(${a.id},'view')">Full results</button>
+          <button type="button" class="mini-btn go" onclick="openResults(${a.id},'parent')">Send to parent</button>
+          <button type="button" class="mini-btn go" onclick="openResults(${a.id},'college')">Send to college</button>
+          <button type="button" class="mini-btn" onclick="viewAssessment(${a.id})">Quick read</button>` : `<button type="button" class="mini-btn" onclick="copyAssess('${esc(url)}','${esc(a.athlete_name||'')}')">Send link</button>`}
         ${a.prospect_id?`<button type="button" class="mini-btn" onclick="openProfile(${a.prospect_id})">Profile</button>`:''}
         <button type="button" class="mini-btn danger" onclick="deleteAssessment(${a.id})">Delete</button>
       </div>
       <div id="asBody-${a.id}" style="display:none; margin-top:10px;"></div>
     </div>`;
   }).join('');
+}
+/* Full results: every question with every option, his pick, the right
+   answer and why. 'view' opens it here; parent and college open the share
+   sheet with a signed link worded for that reader. */
+async function openResults(id, audience){
+  const a = (ASSESS||[]).find(x=>x.id===id);
+  const who = a ? (a.athlete_name||'') : '';
+  const first = (who.split(' ')[0]) || 'his';
+  /* open the tab before the await so phones do not block it as a popup */
+  const tab = audience === 'view' ? window.open('', '_blank') : null;
+  try{
+    const d = await api('assessmentResultsLink', { id, audience: audience==='college' ? 'college' : 'parent' });
+    if(audience === 'view'){ if(tab) tab.location.href = d.url; else location.href = d.url; return; }
+    if(audience === 'college') openShare({ title:'InHome assessment results', who, url:d.url,
+      message:`Full InHome assessment results for ${who}: every question, the answer options, his picks and the right answers.`,
+      note:'Works without an access code. Anyone with the link can open it, so send it to the staff member directly.' });
+    else openShare({ title:`${first}'s InHome assessment results`, who, url:d.url,
+      message:`Here are ${first}'s full InHome assessment results: every question, what he picked, the right answer and why. Our trainers can work on the misses with him.`,
+      note:'Parent version: same results plus a Request training form. Requests land in your Inbox as training leads.' });
+  }catch(err){ if(tab) tab.close(); toast(err.message); }
+}
+async function ppLoadAssess(){
+  const host = document.getElementById('ppAssess'); if(!host || !PP) return;
+  if(ASSESS === null){ try{ const d = await api('listAssessments', {}); ASSESS = d.assessments || []; }catch(err){ host.innerHTML = ''; return; } }
+  const mine = ASSESS.filter(a => String(a.prospect_id) === String(PP.id) && a.status === 'complete');
+  if(!mine.length){ host.innerHTML = ''; return; }
+  host.innerHTML = `<div class="rc-meta" style="margin-bottom:4px;">Assessment results</div>` + mine.map(a => `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 0;border-top:1px solid var(--line);">
+      <span style="flex:1;min-width:140px;font-size:13px;"><b>${a.kind==='iq'?'Football IQ':a.kind==='full'?'Full assessment':'Interview'}</b>${a.score_pct!=null?' \u00b7 '+Number(a.score_pct)+'%':''} <span class="rc-meta">${a.completed_day?fmtDate(a.completed_day):''}</span></span>
+      <button type="button" class="mini-btn go" onclick="openResults(${a.id},'view')">Full results</button>
+      <button type="button" class="mini-btn go" onclick="openResults(${a.id},'parent')">Send to parent</button>
+      <button type="button" class="mini-btn go" onclick="openResults(${a.id},'college')">Send to college</button>
+    </div>`).join('');
 }
 function copyAssess(url, who){ openShare({ title:'InHome assessment', who: who || '', url, message:'Here is your InHome assessment:' }); }
 async function deleteAssessment(id){
@@ -3394,6 +3430,7 @@ function closeProfile(){ document.getElementById('ppOverlay').classList.remove('
 function renderProfile(){
   const p = PP; const card = document.getElementById('ppCard');
   setTimeout(ppLoadOffersNotes, 0);
+  setTimeout(ppLoadAssess, 0);
   const photo = p.headshot_key ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}" alt="">` : initials(p.name);
   const perf = performances.filter(x => nkey(x.name)===nkey(p.name)).sort((a,b)=>dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date)));
   const graded = perf.filter(e=>e.grade!=null && e.grade!=='').map(e=>Number(e.grade));
@@ -3413,6 +3450,7 @@ function renderProfile(){
       <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${Math.max(...graded).toFixed(1)}</div><div class="rc-meta">best</div></div>
       <div><div style="font-family:'Anton',sans-serif;font-size:22px;">${perf.length}</div><div class="rc-meta">games</div></div>
     </div></div>` : ''}
+    <div id="ppAssess" style="margin:10px 0;"></div>
     <div class="pp-grid">
       ${f('name','Name',p.name,'',{full:true})}
       ${f('school','School',p.school,'')}
@@ -3759,6 +3797,7 @@ async function renderIntake(skipFetch){
           <div class="rc-meta">${esc(r.school||'\u2014')}${r.class_year?' \u00b7 Class of '+esc(r.class_year):''}${(r.home_city||r.home_state)?' \u00b7 '+esc([r.home_city,r.home_state].filter(Boolean).join(', ')):''}</div>
           <div class="rc-meta">${[r.height,r.weight,r.gpa?'GPA '+esc(r.gpa):''].filter(Boolean).map(esc).join(' \u00b7 ')}</div>
           <span class="pill" style="border-color:${badge};color:${badge};font-weight:800;">${esc(r.status)}</span>
+          ${r.submitter_type==='training'?`<span class="pill" style="border-color:var(--red);color:var(--red);font-weight:800;">Training lead</span>`:''}
           ${r.level_rec?`<span class="pill">wants ${esc(r.level_rec)}</span>`:''}
           ${r.prospect_id?`<span class="pill">prospect #${r.prospect_id}</span>`:''}
         </div>

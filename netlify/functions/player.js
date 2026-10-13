@@ -148,7 +148,7 @@ exports.handler = async (event) => {
 
     let assessments = [];
     try {
-      const rows = await sql`SELECT kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed FROM assessments WHERE prospect_id = ${p.id} AND status = 'complete' ORDER BY completed_at DESC`;
+      const rows = await sql`SELECT id, kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed FROM assessments WHERE prospect_id = ${p.id} AND status = 'complete' ORDER BY completed_at DESC`;
       const lookup = full ? await optionLookup('full', p.position) : {};
       assessments = rows.map(a => {
         const sd = a.score_detail || {};
@@ -161,9 +161,19 @@ exports.handler = async (event) => {
           out.detail = Array.isArray(sd.detail) ? sd.detail.map(d => {
             const opts = d.options || lookup[d.id] || null;
             const isTap = !!d.dots && !opts;
+            const ix = (v) => { if (v === null || v === undefined || v === '') return null; const n = Number(v); return Number.isInteger(n) ? n : null; };
             return { id: d.id, q: d.q, correct: !!d.correct, why: d.why || null, clip: !!d.clip, dots: !!d.dots,
-                     given: showValue(d.given, opts, isTap), answer: showValue(d.answer, opts, isTap) };
+                     given: showValue(d.given, opts, isTap), answer: showValue(d.answer, opts, isTap),
+                     /* every option, so the page can show the whole question */
+                     options: (!isTap && Array.isArray(opts)) ? opts : null,
+                     givenIndex: (!isTap && Array.isArray(opts)) ? ix(d.given) : null,
+                     answerIndex: (!isTap && Array.isArray(opts)) ? ix(d.answer) : null };
           }) : [];
+          /* signed link to the printable results page (results.html) */
+          if (process.env.ADMIN_SECRET) {
+            const sig = require('crypto').createHmac('sha256', process.env.ADMIN_SECRET).update('results:' + a.id).digest('hex').slice(0, 24);
+            out.resultsUrl = `${base}/results.html?a=${a.id}&s=${sig}&v=college`;
+          }
           out.correct = sd.correct != null ? sd.correct : null;
           out.total = sd.total != null ? sd.total : null;
           /* written answers: anything the athlete typed, keyed by question id */

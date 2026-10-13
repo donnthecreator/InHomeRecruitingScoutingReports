@@ -109,6 +109,12 @@
   .fq.ok .fq-mark{color:var(--good);} .fq.no .fq-mark{color:#FF4D4D;}
   .fq-ans{font-size:12.5px; margin-top:6px; padding-left:27px; color:#DADADA;}
   .fq-ans .k{font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); font-weight:700; margin-right:6px;}
+  .fq-opts{display:flex; flex-direction:column; gap:5px; margin-top:8px; padding-left:27px;}
+  .fq-opt{display:flex; gap:9px; align-items:flex-start; border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:12.5px; color:#9A9A9A; background:var(--paper);}
+  .fq-opt .fq-l{font-family:'Anton',sans-serif; font-size:12px; color:var(--dim); min-width:12px;}
+  .fq-opt b{font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; padding-top:2px;}
+  .fq-opt.r{border-color:var(--good); color:var(--ink);} .fq-opt.r b{color:var(--good);}
+  .fq-opt.w{border-color:#FF4D4D; color:var(--ink);} .fq-opt.w b{color:#FF4D4D;}
   .fq-why{font-size:12px; color:#9A9A9A; line-height:1.45; margin-top:6px; padding-left:27px;}
   .wq{margin-bottom:12px;}
   .wq-q{font-size:12.5px; font-weight:700; color:#C4C4C4; line-height:1.4;}
@@ -400,11 +406,15 @@ function render(p){
               </div>
             </div>`;
           h += `<h2>Question by question <span class="sub" style="text-transform:none;letter-spacing:0;font-weight:400;">${right} of ${scored.length} right</span></h2>`;
+          if(a.resultsUrl) h += `<a class="btn ghost" href="${esc(a.resultsUrl)}" target="_blank" rel="noopener" style="margin:0 0 12px;">Open full results with film and field diagrams</a>`;
           h += scored.map((d,i) => `
             <div class="fq ${d.correct?'ok':'no'}">
               <div class="fq-top"><span class="fq-n">${i+1}</span><span class="fq-q">${esc(d.q)}</span><span class="fq-mark">${d.correct?'\u2713 Right':'\u2717 Missed'}</span></div>
-              <div class="fq-ans"><span class="k">He answered</span> ${esc(String(d.given ?? '\u2014'))}</div>
-              ${d.correct ? '' : `<div class="fq-ans"><span class="k">Right answer</span> ${esc(String(d.answer ?? '\u2014'))}</div>`}
+              ${Array.isArray(d.options) && d.options.length ? `<div class="fq-opts">${d.options.map((o,j) => {
+                  const isA = j === d.answerIndex, isH = j === d.givenIndex;
+                  return `<div class="fq-opt ${isA?'r':isH?'w':''}"><span class="fq-l">${'ABCDEFGHIJ'[j]||j+1}</span><span style="flex:1;">${esc(o)}</span>${isA&&isH?'<b>\u2713 His answer</b>':isA?'<b>\u2713 Right answer</b>':isH?'<b>\u2717 His answer</b>':''}</div>`; }).join('')}</div>`
+                : `<div class="fq-ans"><span class="k">He answered</span> ${esc(String(d.given ?? '\u2014'))}</div>
+              ${d.correct ? '' : `<div class="fq-ans"><span class="k">Right answer</span> ${esc(String(d.answer ?? '\u2014'))}</div>`}`}
               ${d.why ? `<div class="fq-why">${esc(d.why)}</div>` : ''}
             </div>`).join('');
         }

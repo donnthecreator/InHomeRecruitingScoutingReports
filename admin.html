@@ -55,6 +55,19 @@
   /* ---------- TOPBAR ---------- */
   .topbar{background:#000; border-bottom:1px solid var(--line); padding:15px 18px; position:sticky; top:0; z-index:60;}
   .topbar-row{max-width:1080px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .tb-left{display:flex; align-items:center; gap:14px;}
+  .nt-bell{position:relative; background:none; border:1px solid #2A2A2A; border-radius:8px; width:36px; height:34px;
+      display:none; align-items:center; justify-content:center; cursor:pointer; color:#CFCFCF;}
+  .nt-bell.has{display:inline-flex;}
+  .nt-bell:hover{border-color:#555;}
+  .nt-count{position:absolute; top:-7px; right:-7px; min-width:18px; height:18px; padding:0 5px; border-radius:999px;
+      background:#CC0000; color:#fff; font-size:11px; font-weight:700; line-height:18px; text-align:center;}
+  .nt-panel{position:absolute; top:calc(100% + 8px); left:0; width:min(560px, calc(100vw - 32px)); max-height:70vh; overflow:auto;
+      background:#111; border:1px solid #2A2A2A; border-radius:12px; box-shadow:0 18px 40px rgba(0,0,0,.6); z-index:80; display:none;}
+  .nt-panel.open{display:block;}
+  .nt-head{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #222;
+      font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#8A8A8A; font-weight:700;}
+  .nt-head button{background:none; border:1px solid #444; color:#aaa; border-radius:6px; padding:3px 9px; cursor:pointer; font-size:11px; letter-spacing:0; text-transform:none;}
   .logo{display:flex; align-items:center; gap:10px;}
   .logo-mark{width:30px; height:36px; flex:0 0 auto;}
   .logo-mark svg{width:100%; height:100%; display:block;}
@@ -246,8 +259,8 @@
   .xgt-strip::before,.xgt-strip::after{content:''; position:absolute; top:0; bottom:0; width:44px; z-index:2; pointer-events:none;}
   .xgt-strip::before{left:0; background:linear-gradient(90deg,#000,transparent);}
   .xgt-strip::after{right:0; background:linear-gradient(270deg,#000,transparent);}
-  .xgt-track{display:flex; gap:28px; white-space:nowrap; width:max-content; animation:xgtScroll 85s linear infinite;}
-  .xgt-strip:hover .xgt-track{animation-play-state:paused;}
+  .xgt-track{display:flex; gap:28px; white-space:nowrap; width:max-content; animation:xgtScroll var(--xgt-dur,120s) linear infinite;}
+  .xgt-strip:hover .xgt-track,.xgt-strip.xgt-hold .xgt-track{animation-play-state:paused;}
   @keyframes xgtScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
   .xgt-item{display:inline-flex; align-items:baseline; gap:7px; font-family:ui-monospace,Menlo,monospace;
       font-size:12px; color:#EDEFF4; background:none; border:0; padding:0; margin:0; cursor:pointer;
@@ -439,6 +452,7 @@
 
 <div class="topbar">
   <div class="topbar-row">
+    <div class="tb-left" style="position:relative;">
     <div class="logo" role="link" tabindex="0" title="Home" style="cursor:pointer"
          onclick="location.href=location.pathname" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href=location.pathname}">
       <div class="logo-mark">
@@ -446,6 +460,15 @@
       </div>
       
       <span class="admin-tag">Admin</span>
+    </div>
+    <button type="button" class="nt-bell" id="ntBell" aria-label="Notifications" aria-expanded="false" onclick="toggleNotes(event)">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span class="nt-count" id="ntCount">0</span>
+    </button>
+    <div class="nt-panel" id="ntPanel" role="dialog" aria-label="Notifications">
+      <div class="nt-head"><span>Notifications</span><button type="button" onclick="clearNotes()">Clear all</button></div>
+      <div id="amBanner"></div>
+    </div>
     </div>
     <button type="button" class="signout-btn" onclick="signOut()">Sign Out</button>
   </div>
@@ -983,9 +1006,29 @@ let perfLevelFilter = 'All';
 /* ---------------- TOAST ---------------- */
 /* Persistent, top-of-page report of the one-shot merge. Stays until
    dismissed so nothing about it can be missed. */
+/* Notes collect behind the bell next to the logo instead of covering the
+   top of the page on sign-in; the red count shows how many are waiting. */
+function updateNoteCount(){
+  const host = document.getElementById('amBanner');
+  const n = host ? host.children.length : 0;
+  const bell = document.getElementById('ntBell'), c = document.getElementById('ntCount');
+  if(c) c.textContent = n > 99 ? '99+' : String(n);
+  if(bell) bell.classList.toggle('has', n > 0);
+  if(!n){ const p = document.getElementById('ntPanel'); if(p) p.classList.remove('open'); if(bell) bell.setAttribute('aria-expanded','false'); }
+}
+function toggleNotes(e){
+  if(e) e.stopPropagation();
+  const p = document.getElementById('ntPanel'), b = document.getElementById('ntBell');
+  const open = p.classList.toggle('open'); b.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function clearNotes(){ const h = document.getElementById('amBanner'); if(h) h.innerHTML = ''; updateNoteCount(); }
+document.addEventListener('click', e => {
+  const p = document.getElementById('ntPanel');
+  if(p && p.classList.contains('open') && !p.contains(e.target) && !e.target.closest('#ntBell')){ p.classList.remove('open'); document.getElementById('ntBell').setAttribute('aria-expanded','false'); }
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ const p = document.getElementById('ntPanel'); if(p) p.classList.remove('open'); } });
 function showAutoMerge(am){
-  let host = document.getElementById('amBanner');
-  if(!host){ host = document.createElement('div'); host.id = 'amBanner'; document.body.insertBefore(host, document.body.firstChild); }
+  const host = document.getElementById('amBanner'); if(!host) return;
   const slot = document.createElement('div'); host.appendChild(slot);
   const rec = (r) => `<div style="padding:6px 0;border-top:1px solid rgba(255,255,255,.12);">#${r.id} &middot; ${esc(r.name)} &middot; ${esc(r.school||'no school')} &middot; ${r.reports} report${r.reports===1?'':'s'}, ${r.assessments} assessment${r.assessments===1?'':'s'}${r.boardCodes?' &middot; boards: '+esc(r.boardCodes):''}${r.scouts?' &middot; scouted by '+esc(r.scouts):''}${am.keptId===r.id?' &middot; <b>KEPT</b>':''}</div>`;
   let body = '';
@@ -997,12 +1040,13 @@ function showAutoMerge(am){
       ? `<div style="color:#FF7D7D;margin-top:4px;">#${r.fromId}: ${esc(r.error)}</div>`
       : `<div style="margin-top:4px;">#${r.fromId} deleted. Moved: ${esc(Object.keys(r.moved||{}).filter(k=>r.moved[k]&&r.moved[k]!=='skipped').map(k=>r.moved[k]+' '+k).join(', ') || 'nothing was attached')}</div>`).join('');
   }
-  slot.innerHTML = `<div style="background:#111;border-bottom:2px solid #CC0000;padding:14px 18px;font-size:13px;color:#F5F5F5;position:relative;">
-    <button type="button" onclick="this.closest('div').parentElement.remove()" style="position:absolute;top:10px;right:12px;background:none;border:1px solid #444;color:#aaa;border-radius:6px;padding:3px 9px;cursor:pointer;">Close</button>
+  slot.innerHTML = `<div style="background:#111;border-bottom:1px solid #222;border-left:3px solid #CC0000;padding:14px 18px;font-size:13px;color:#F5F5F5;position:relative;">
+    <button type="button" onclick="event.stopPropagation(); this.closest('div').parentElement.remove(); updateNoteCount();" style="position:absolute;top:10px;right:12px;background:none;border:1px solid #444;color:#aaa;border-radius:6px;padding:3px 9px;cursor:pointer;">Close</button>
     <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8A8A8A;font-weight:700;margin-bottom:6px;">Auto-merge: ${esc(am.name)}</div>
     ${body}
     ${(am.found||[]).length ? `<div style="margin-top:10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8A8A8A;font-weight:700;">Records found</div>${am.found.map(rec).join('')}` : ''}
   </div>`;
+  updateNoteCount();
 }
 
 function toast(msg, ms){
@@ -4056,6 +4100,17 @@ async function renderMarket(){
   /* Both copies of the duplicated marquee resolve to the same record. */
   el.querySelectorAll('.xgt-item[data-tk]').forEach(btn =>
     btn.addEventListener('click', () => tickerJump(MK[Number(btn.dataset.tk)])));
+  /* Same pace as the coach portal: about 40px a second whatever the tape
+     length, two-minute loop minimum, and a finger on it holds it still. */
+  el.querySelectorAll('.xgt-strip').forEach(strip => {
+    const track = strip.querySelector('.xgt-track'); if(!track) return;
+    const half = track.scrollWidth / 2;
+    if(half > 0) strip.style.setProperty('--xgt-dur', Math.max(120, Math.round(half / 40)) + 's');
+    let t;
+    strip.addEventListener('touchstart', () => { clearTimeout(t); strip.classList.add('xgt-hold'); }, {passive:true});
+    strip.addEventListener('touchend', () => { t = setTimeout(() => strip.classList.remove('xgt-hold'), 1500); }, {passive:true});
+    strip.addEventListener('touchcancel', () => strip.classList.remove('xgt-hold'), {passive:true});
+  });
 }
 
 /* ---------------- REPORT ADMIN ACTIONS ---------------- */

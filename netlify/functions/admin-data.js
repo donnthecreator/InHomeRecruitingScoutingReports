@@ -1066,7 +1066,7 @@ exports.handler = async (event) => {
            row still gets a board. The name is only for the message. */
         const [prog] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${program} LIMIT 1`;
         const WR = { X: 'X', Z: 'Z', H: 'H', SLOT: 'H' };
-        let created = 0, linked = 0, already = 0, skipped = 0;
+        let created = 0, linked = 0, already = 0, skipped = 0, filled = 0;
         for (const r of rows) {
           const [name, posRaw, school, state, height, weight] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight];
           const nm = String(name || '').trim();
@@ -1090,6 +1090,31 @@ exports.handler = async (event) => {
                       ${String(height || '').trim() || null}, ${String(weight || '').trim() || null})
               RETURNING id`;
             prospectId = c.id; created++;
+          } else {
+            /* Re-uploading a board with details filled in (e.g. the high
+               school) fills only what the existing record is missing.
+               Nothing already on a record is overwritten. */
+            const st = String(state || '').trim() || null;
+            const ht = String(height || '').trim() || null;
+            const wt = String(weight || '').trim() || null;
+            if (sch || position || st || ht || wt) {
+              const upd = await sql`
+                UPDATE prospects SET
+                  school         = COALESCE(NULLIF(school, ''), ${sch}),
+                  position       = COALESCE(position, ${position}),
+                  position_label = COALESCE(position_label, ${positionLabel}),
+                  home_state     = COALESCE(home_state, ${st}),
+                  height         = COALESCE(height, ${ht}),
+                  weight         = COALESCE(weight, ${wt})
+                WHERE id = ${prospectId}
+                  AND ((school IS NULL OR school = '') AND ${sch}::text IS NOT NULL
+                    OR position IS NULL AND ${position}::text IS NOT NULL
+                    OR home_state IS NULL AND ${st}::text IS NOT NULL
+                    OR height IS NULL AND ${ht}::text IS NOT NULL
+                    OR weight IS NULL AND ${wt}::text IS NOT NULL)
+                RETURNING id`;
+              if (upd.length) filled++;
+            }
           }
           const ins = await sql`
             INSERT INTO program_prospects (program_code, prospect_id, source)
@@ -1099,7 +1124,7 @@ exports.handler = async (event) => {
           if (ins.length) linked++; else already++;
         }
         const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;
-        return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, onBoard: c.n });
+        return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, filled, onBoard: c.n });
       }
 
       /* ---------- college coaches (portal users) ---------- */

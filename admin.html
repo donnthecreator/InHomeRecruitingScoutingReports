@@ -1307,7 +1307,7 @@ async function uploadBoardFile(input){
   if(!confirm(`Put ${parsed.length} players on the ${code} portal board?\n\nFirst three: ${parsed.slice(0,3).map(r=>r[0]+' ('+r[1]+', '+r[2]+')').join('; ')}`)) return;
   try{
     const res = await api('importProgramBoard', { program: code, rows: parsed });
-    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
+    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.filled?'\nExisting records filled in (school, position, etc.): '+res.filled:''}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
     await loadProgramBoards();
     const sel = document.getElementById('boardProgram');
     if([...sel.options].some(o=>o.value===code)){ sel.value = code; switchBoard(code); }

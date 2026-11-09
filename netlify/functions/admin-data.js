@@ -695,7 +695,10 @@ exports.handler = async (event) => {
         const name = val('name', 120), school = val('school', 160), position = val('position', 20), position_label = val('position_label', 60),
               class_year = val('class_year', 12), level = val('level', 12), home_city = val('home_city', 80), home_state = val('home_state', 4),
               height = val('height', 12), weight = val('weight', 12), film_link = val('film_link', 500), wingspan = val('wingspan', 20),
-              hudl_link = val('hudl_link', 400), milesplit_link = val('milesplit_link', 400), x_link = val('x_link', 200), ig_link = val('ig_link', 200);
+              hudl_link = val('hudl_link', 400), milesplit_link = val('milesplit_link', 400), x_link = val('x_link', 200), ig_link = val('ig_link', 200),
+              athlete_phone = val('athlete_phone', 40), athlete_email = val('athlete_email', 200);
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hudl_link TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS milesplit_link TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS x_link TEXT`;
@@ -710,7 +713,8 @@ exports.handler = async (event) => {
             height = COALESCE(${height}, height), weight = COALESCE(${weight}, weight), film_link = COALESCE(${film_link}, film_link),
             wingspan = COALESCE(${wingspan}, wingspan),
             hudl_link = COALESCE(${hudl_link}, hudl_link), milesplit_link = COALESCE(${milesplit_link}, milesplit_link),
-            x_link = COALESCE(${x_link}, x_link), ig_link = COALESCE(${ig_link}, ig_link), updated_at = now()
+            x_link = COALESCE(${x_link}, x_link), ig_link = COALESCE(${ig_link}, ig_link),
+            athlete_phone = COALESCE(${athlete_phone}, athlete_phone), athlete_email = COALESCE(${athlete_email}, athlete_email), updated_at = now()
           WHERE id = ${id} RETURNING *`;
         if (!rows.length) return fail(404, 'Prospect not found');
         /* keep the performance log in step when the name or school changed */
@@ -970,9 +974,12 @@ exports.handler = async (event) => {
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_key TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_name TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_at TIMESTAMPTZ`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
                  p.home_city, p.height, p.weight, p.wingspan, p.film_link, p.hudl_link, p.milesplit_link, p.x_link, p.ig_link,
+                 p.athlete_phone, p.athlete_email,
                  p.headshot_key, p.wingspan_key, p.transcript_key, p.transcript_name, p.transcript_at,
                  p.background_key IS NOT NULL AS has_background, p.background_name, p.background_at,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,
@@ -1066,9 +1073,12 @@ exports.handler = async (event) => {
            row still gets a board. The name is only for the message. */
         const [prog] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${program} LIMIT 1`;
         const WR = { X: 'X', Z: 'Z', H: 'H', SLOT: 'H' };
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
+        let contacts = 0;
         let created = 0, linked = 0, already = 0, skipped = 0, filled = 0;
         for (const r of rows) {
-          const [name, posRaw, school, state, height, weight] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight];
+          const [name, posRaw, school, state, height, weight, phoneRaw, emailRaw] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight, r.phone, r.email];
           const nm = String(name || '').trim();
           const nameKey = nm.toLowerCase().replace(/[^a-z]/g, '');
           if (!nameKey) { skipped++; continue; }
@@ -1116,6 +1126,22 @@ exports.handler = async (event) => {
               if (upd.length) filled++;
             }
           }
+          /* Athlete contact (admin-only; never sent to scouts or the portal).
+             Fills only when the record has none, so a typed-in number is kept. */
+          const digits = String(phoneRaw || '').replace(/\D/g, '');
+          const phone = digits.length === 10 ? `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`
+                      : digits.length === 11 && digits[0] === '1' ? `(${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`
+                      : (String(phoneRaw || '').trim() || null);
+          const email = String(emailRaw || '').trim().slice(0, 200) || null;
+          if (phone || email) {
+            const c = await sql`UPDATE prospects SET athlete_phone = COALESCE(NULLIF(athlete_phone,''), ${phone}),
+                                  athlete_email = COALESCE(NULLIF(athlete_email,''), ${email})
+                                WHERE id = ${prospectId}
+                                  AND ((athlete_phone IS NULL OR athlete_phone = '') AND ${phone}::text IS NOT NULL
+                                    OR (athlete_email IS NULL OR athlete_email = '') AND ${email}::text IS NOT NULL)
+                                RETURNING id`;
+            if (c.length) contacts++;
+          }
           const ins = await sql`
             INSERT INTO program_prospects (program_code, prospect_id, source)
             SELECT ${program}, ${prospectId}, ${'admin board import'}
@@ -1124,7 +1150,7 @@ exports.handler = async (event) => {
           if (ins.length) linked++; else already++;
         }
         const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;
-        return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, filled, onBoard: c.n });
+        return ok({ program, school: prog ? prog.name : null, created, linked, already, skipped, filled, contacts, onBoard: c.n });
       }
 
       /* ---------- college coaches (portal users) ---------- */

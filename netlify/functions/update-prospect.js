@@ -58,6 +58,8 @@ async function loadProspect(prospectId) {
   if (!prospect) return null;
   /* confidential background report is admin-only; never hand it to scouts */
   delete prospect.background_key; delete prospect.background_name; delete prospect.background_at;
+  /* athlete phone and email are admin-only too */
+  delete prospect.athlete_phone; delete prospect.athlete_email;
 
   const offers = await sql`
     SELECT o.id, o.school_key, o.school_other, o.offer_date, o.status,

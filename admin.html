@@ -1265,10 +1265,12 @@ function parseBoardSheet(rows){
   const col = (...names) => lower.findIndex(h => names.some(n => h === n || h.startsWith(n)));
   const cName = col('name','player','prospect');
   if(cName >= 0){
-    const cPos = col('pos'), cSch = col('school','high school','hs'), cSt = col('state','st'), cHt = col('ht','height'), cWt = col('wt','weight');
+    const cPos = col('pos'), cSch = col('school','high school','hs'), cSt = col('state','st'), cHt = col('ht','height'), cWt = col('wt','weight'),
+          cPh = col('phone','cell','mobile'), cEm = col('email','e-mail');
     rows.slice(1).forEach(r => {
       const name = str(r[cName]); if(!name) return;
-      out.push([name, cPos>=0?str(r[cPos]):'', cSch>=0?str(r[cSch]):'', cSt>=0?str(r[cSt]).toUpperCase():'', cHt>=0?str(r[cHt]):'', cWt>=0?str(r[cWt]):'']);
+      out.push([name, cPos>=0?str(r[cPos]):'', cSch>=0?str(r[cSch]):'', cSt>=0?str(r[cSt]).toUpperCase():'', cHt>=0?str(r[cHt]):'', cWt>=0?str(r[cWt]):'',
+                cPh>=0?str(r[cPh]):'', cEm>=0?str(r[cEm]):'']);
     });
     return out;
   }
@@ -1307,7 +1309,7 @@ async function uploadBoardFile(input){
   if(!confirm(`Put ${parsed.length} players on the ${code} portal board?\n\nFirst three: ${parsed.slice(0,3).map(r=>r[0]+' ('+r[1]+', '+r[2]+')').join('; ')}`)) return;
   try{
     const res = await api('importProgramBoard', { program: code, rows: parsed });
-    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.filled?'\nExisting records filled in (school, position, etc.): '+res.filled:''}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
+    alert(`${res.school || code} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}${res.filled?'\nExisting records filled in (school, position, etc.): '+res.filled:''}${res.contacts?'\nAthlete phone/email added: '+res.contacts:''}${res.skipped?'\nSkipped (no name): '+res.skipped:''}`);
     await loadProgramBoards();
     const sel = document.getElementById('boardProgram');
     if([...sel.options].some(o=>o.value===code)){ sel.value = code; switchBoard(code); }
@@ -3511,6 +3513,12 @@ function renderProfile(){
       ${f('milesplit_link','MileSplit link',p.milesplit_link,'https://www.milesplit.com/athletes/...',{full:true})}
       ${f('x_link','X (Twitter)',p.x_link,'https://x.com/handle')}
       ${f('ig_link','Instagram',p.ig_link,'https://instagram.com/handle')}
+      ${f('athlete_phone','Athlete phone',p.athlete_phone,'(205) 555-0100')}
+      ${f('athlete_email','Athlete email',p.athlete_email,'name@email.com')}
+      ${(p.athlete_phone||p.athlete_email) ? `<div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;">
+        ${p.athlete_phone ? `<a class="mini-btn" href="tel:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Call</a><a class="mini-btn" href="sms:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Text</a>` : ''}
+        ${p.athlete_email ? `<a class="mini-btn" href="mailto:${esc(String(p.athlete_email).split(/[;,]/)[0].trim())}">Email</a>` : ''}
+        <span class="rc-meta" style="align-self:center;color:var(--dim)">Admin only. Never shown to scouts, programs or on the public profile.</span></div>` : ''}
     </div>
     <div style="margin-top:14px;" id="ppTranscript">
       <div class="rc-meta" style="margin-bottom:6px;">Transcript <span style="color:var(--dim)">— PDF or a photo. Only signed-in programs and scouts can open it; it is never on the public profile.</span></div>
@@ -3585,7 +3593,8 @@ async function saveProfile(){
   const g = (id) => { const el = document.getElementById('pp_'+id); return el ? el.value : undefined; };
   const fields = { name:g('name'), school:g('school'), position:(g('position')||'').toUpperCase(), class_year:g('class_year'), level:g('level'),
                    home_city:g('home_city'), home_state:(g('home_state')||'').toUpperCase(), height:g('height'), weight:g('weight'), wingspan:g('wingspan'),
-                   film_link:g('film_link'), hudl_link:g('hudl_link'), milesplit_link:g('milesplit_link'), x_link:g('x_link'), ig_link:g('ig_link') };
+                   film_link:g('film_link'), hudl_link:g('hudl_link'), milesplit_link:g('milesplit_link'), x_link:g('x_link'), ig_link:g('ig_link'),
+                   athlete_phone:g('athlete_phone'), athlete_email:g('athlete_email') };
   try{
     const d = await api('updateProspect', { id: PP.id, fields, prev: { name: PP.name, school: PP.school || '' } });
     const oldName = PP.name, oldSchool = PP.school || '';

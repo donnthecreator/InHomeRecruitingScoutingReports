@@ -80,4 +80,46 @@ function diagnosis(kind, sc, answers, position, mbti) {
            note: 'Scored questions only. Written answers are read by a scout and are not part of these numbers.' };
 }
 
-module.exports = { diagnosis, categorize };
+/* ---------------------------------------------------------------------
+   glance(): the thirty-second read for a coach. Learning style,
+   how he leans, what drives him. Built only from what the athlete picked;
+   the lean lines are plain-language versions of the forced-choice pairs and
+   are a conversation starter, never a score or a filter. A dimension that
+   split evenly says so instead of picking a side.
+--------------------------------------------------------------------- */
+const LEARN = [
+  { label: 'Visual',        says: 'learns fastest seeing it drawn up',        tip: 'Install with the whiteboard and diagrams first.' },
+  { label: 'Auditory',      says: 'learns fastest hearing it explained',      tip: 'Talk him through it and have him say it back.' },
+  { label: 'Hands-on',      says: 'learns fastest walking it on the field',   tip: 'Get him walk-through reps early.' },
+  { label: 'Watch, then do',says: 'learns fastest watching someone rep first',tip: 'Let him watch a rep before his turn.' }
+];
+const LEAN = {
+  EI: { E: 'Feeds off the room and talks it out', I: 'Prepares quietly and processes alone' },
+  SN: { S: 'Wants concrete reps and specifics',   N: 'Sees the big picture and adapts to scheme' },
+  TF: { T: 'Responds to facts and film',          F: 'Responds to relationship and trust' },
+  JP: { J: 'Structured and routine driven',       P: 'Adaptable and plays off feel' }
+};
+const DRIVE = ['playing time', 'coaching and development', 'winning at the highest level', 'NIL and earnings', 'being near family', 'the degree and what comes after'];
+
+function glance(answers, mbti, overall) {
+  answers = answers || {};
+  const out = { learning: null, leans: [], type: null, drives: [], film: null, iq: overall == null ? null : { pct: overall, band: band(overall) } };
+  const ls = Number(answers.learn_style);
+  if (answers.learn_style !== undefined && answers.learn_style !== '' && LEARN[ls]) out.learning = LEARN[ls];
+  if (mbti && mbti.detail) {
+    Object.keys(LEAN).forEach(k => {
+      const d = mbti.detail[k];
+      if (!d) return;
+      out.leans.push({ dim: k, text: d.clear ? LEAN[k][d.pick] : 'Balanced, no clear lean (' + (k === 'EI' ? 'room vs alone' : k === 'SN' ? 'specifics vs big picture' : k === 'TF' ? 'facts vs relationship' : 'structure vs feel') + ')' });
+    });
+    if (mbti.complete) out.type = mbti.type;
+  }
+  const m1 = Number(answers.motiv_rank), m2 = Number(answers.motiv_second);
+  if (answers.motiv_rank !== undefined && DRIVE[m1]) out.drives.push(DRIVE[m1]);
+  if (answers.motiv_second !== undefined && DRIVE[m2] && m2 !== m1) out.drives.push(DRIVE[m2]);
+  const FILM = ['Rarely watches film alone', 'Watches film alone once in a while', 'Watches film alone weekly', 'Watches film alone several times a week in season'];
+  if (answers.film_habits !== undefined && FILM[Number(answers.film_habits)]) out.film = FILM[Number(answers.film_habits)];
+  return out;
+}
+
+module.exports = { diagnosis, categorize, glance };

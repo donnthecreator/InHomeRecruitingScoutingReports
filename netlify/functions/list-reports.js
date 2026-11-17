@@ -1,5 +1,7 @@
 const { neon } = require('@neondatabase/serverless');
 const { logoMap, schoolKey } = require('./lib/logos');
+const { glance } = require('./lib/diagnosis');
+const { mbtiType } = require('./lib/assessment-banks');
 const sql = neon(process.env.DATABASE_URL);
 
 /* Absolute URL base so the coach portal (different domain, no functions
@@ -159,6 +161,7 @@ exports.handler = async (event) => {
         const rows = await sql`SELECT prospect_id, kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed_day
                                FROM assessments WHERE status = 'complete' AND prospect_id = ANY(string_to_array(${pidCsv}, ',')::int[])`;
         rows.forEach(x => { (assess[x.prospect_id] = assess[x.prospect_id] || []).push({
+          glance: (() => { try { return glance(x.answers || {}, mbtiType(x.answers || {}), x.score_pct != null ? Math.round(Number(x.score_pct)) : null); } catch (e) { return null; } })(),
           kind: x.kind, pct: x.score_pct != null ? Number(x.score_pct) : null,
           correct: x.score_detail ? x.score_detail.correct : null, total: x.score_detail ? x.score_detail.total : null,
           diagnosis: x.score_detail ? (x.score_detail.diagnosis || null) : null, mbti: x.score_detail ? (x.score_detail.mbti || null) : null,
@@ -205,9 +208,52 @@ exports.handler = async (event) => {
       };
     });
 
+    /* Players a program was pointed at (prospect_recs) who have no scouting
+       report yet. Some schools only want the Football IQ and the personality
+       read, so they come through as assessment-only entries (unscouted:true).
+       The portal lists them apart from scored reports. Written answers are
+       left out: a coach gets the score, the categories and the at-a-glance
+       read, not the athlete's own words, until a scout has evaluated him. */
+    let stubs = [];
+    if (!reportId && !scoutId) {
+      try {
+        const sr = await sql`
+          SELECT p.id, p.name, p.position, p.class_year, p.school, p.home_city, p.home_state, p.height, p.weight,
+                 p.film_link, p.headshot_key, p.wingspan_key
+          FROM prospects p
+          WHERE EXISTS (SELECT 1 FROM prospect_recs pr WHERE pr.prospect_id = p.id)
+            AND NOT EXISTS (SELECT 1 FROM reports r WHERE r.prospect_id = p.id)`;
+        if (sr.length) {
+          const ids = sr.map(x => x.id).join(',');
+          const recs = await sql`SELECT prospect_id, program, conference, fit FROM prospect_recs
+                                 WHERE prospect_id = ANY(string_to_array(${ids}, ',')::int[])`;
+          const ass = await sql`SELECT prospect_id, kind, score_pct, score_detail, answers, to_char(completed_at,'YYYY-MM-DD') AS completed_day
+                                FROM assessments WHERE status = 'complete' AND prospect_id = ANY(string_to_array(${ids}, ',')::int[])`;
+          stubs = sr.map(x => ({
+            logoUrl: logos[schoolKey(x.school)] || null,
+            id: 'p' + x.id, unscouted: true, prospectId: x.id, prospect: x.name, position: x.position || null,
+            classYear: x.class_year, school: x.school, homeCity: x.home_city, homeState: x.home_state,
+            height: x.height, weight: x.weight, filmLink: x.film_link,
+            headshotUrl: x.headshot_key ? frameUrl(base, x.headshot_key) : null, wingspanUrl: frameUrl(base, x.wingspan_key),
+            hasHeadshot: !!x.headshot_key, verifications: {}, consensus: { count: 0, evaluations: [] },
+            raw: { traitGrades: {}, athleticGrades: {}, athleticRaw: {}, productionGrades: {}, productionRaw: {}, gates: {}, interview: {}, track: null, prompts: {}, eisReps: [],
+                   recommendedPrograms: recs.filter(r => r.prospect_id === x.id).map(r => ({ program: r.program, conference: r.conference || '', state: '', espnId: null, fit: r.fit || null })) },
+            assessments: ass.filter(a => a.prospect_id === x.id).map(a => {
+              const pct = a.score_pct != null ? Number(a.score_pct) : null;
+              const d = a.score_detail || {};
+              return { kind: a.kind, pct, correct: d.correct != null ? d.correct : null, total: d.total != null ? d.total : null,
+                       diagnosis: d.diagnosis ? { categories: d.diagnosis.categories || [], summary: d.diagnosis.summary || '', profile: '', note: d.diagnosis.note || '' } : null,
+                       mbti: null, completed: a.completed_day, answers: {},
+                       glance: (() => { try { return glance(a.answers || {}, mbtiType(a.answers || {}), pct != null ? Math.round(pct) : null); } catch (e) { return null; } })() };
+            })
+          }));
+        }
+      } catch (e) { /* prospect_recs not created yet */ }
+    }
+
     return {
       statusCode: 200,
-           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },      body: JSON.stringify(reports)
+           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },      body: JSON.stringify(reports.concat(stubs))
     };
   } catch (err) {
     console.error('list-reports error:', err);

@@ -3477,6 +3477,7 @@ function renderProfile(){
   const p = PP; const card = document.getElementById('ppCard');
   setTimeout(ppLoadOffersNotes, 0);
   setTimeout(ppLoadAssess, 0);
+  setTimeout(ppLoadRecs, 0);
   const photo = p.headshot_key ? `<img src="/.netlify/functions/frame?key=${encodeURIComponent(p.headshot_key)}" alt="">` : initials(p.name);
   const perf = performances.filter(x => nkey(x.name)===nkey(p.name)).sort((a,b)=>dateOnly(b.performance_date).localeCompare(dateOnly(a.performance_date)));
   const graded = perf.filter(e=>e.grade!=null && e.grade!=='').map(e=>Number(e.grade));
@@ -3525,6 +3526,16 @@ function renderProfile(){
         ${p.athlete_phone ? `<a class="mini-btn" href="tel:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Call</a><a class="mini-btn" href="sms:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Text</a>` : ''}
         ${p.athlete_email ? `<a class="mini-btn" href="mailto:${esc(String(p.athlete_email).split(/[;,]/)[0].trim())}">Email</a>` : ''}
         <span class="rc-meta" style="align-self:center;color:var(--dim)">Admin only. Never shown to scouts, programs or on the public profile.</span></div>` : ''}
+    </div>
+    <div style="margin-top:14px;" id="ppRecs">
+      <div class="rc-meta" style="margin-bottom:6px;">Recommend to a program <span style="color:var(--dim)">&mdash; shows on that program's Scout Recommended tab once he has a scouting report. It does not add him to the program's own Prospect Board.</span></div>
+      <div id="ppRecList" class="rc-meta"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <input type="text" id="ppRecProg" list="ppRecProgs" placeholder="Program (e.g. Stillman)" style="flex:1;min-width:150px;">
+        <datalist id="ppRecProgs"></datalist>
+        <input type="text" id="ppRecFit" placeholder="Why he fits (one line)" style="flex:2;min-width:200px;">
+        <button type="button" class="mini-btn" onclick="ppRecAdd()">Recommend</button>
+      </div>
     </div>
     <div style="margin-top:14px;" id="ppTranscript">
       <div class="rc-meta" style="margin-bottom:6px;">Transcript <span style="color:var(--dim)">— PDF or a photo. Only signed-in programs and scouts can open it; it is never on the public profile.</span></div>
@@ -3593,6 +3604,34 @@ function renderProfile(){
       ${p.reports ? `<span class="rc-meta">${p.reports} report${p.reports===1?'':'s'} on file</span>` : ''}
     </div>
     ${perf.length ? `<div style="margin-top:14px;"><div class="rc-meta" style="margin-bottom:4px;">Game log</div>${perf.map(e=>`<div style="display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px;"><span style="min-width:58px;color:var(--dim)">${fmtDate(e.performance_date)}</span><span style="min-width:40px;font-family:'Anton',sans-serif;font-size:15px;">${e.grade!=null&&e.grade!==''?Number(e.grade).toFixed(1):'\u2014'}</span><span style="flex:1;color:#D6D6D6">${esc(e.stat_line||'')}</span></div>`).join('')}</div>` : ''}`;
+}
+async function ppLoadRecs(){
+  if(!PP) return;
+  try{
+    const dl = document.getElementById('ppRecProgs');
+    if(dl && !dl.children.length){ const d = await api('listAccessCodes', {}); dl.innerHTML = (d.codes||[]).map(c => `<option value="${esc(c.short_name || c.name)}">`).join(''); }
+    const d = await api('getProspectRecs', { id: PP.id });
+    ppRecDraw(d.recs || [], d.reports);
+  }catch(e){}
+}
+function ppRecDraw(recs, reports){
+  const el = document.getElementById('ppRecList'); if(!el) return;
+  const noRpt = (reports === 0) ? '<div style="color:var(--warn);margin-bottom:4px;">No scouting report on him yet. The recommendation is saved and appears on the program\'s tab as soon as a report is filed.</div>' : '';
+  el.innerHTML = noRpt + (recs.length ? recs.map(r => `<div style="margin:3px 0;"><b>${esc(r.program)}</b>${r.fit?' &mdash; '+esc(r.fit):''} <a href="#" onclick="ppRecRemove('${esc(r.program).replace(/'/g,"\\'")}');return false;" style="color:var(--dim);">remove</a></div>`).join('') : '');
+}
+async function ppRecAdd(){
+  if(!PP) return;
+  const program = (document.getElementById('ppRecProg').value||'').trim();
+  if(!program){ alert('Pick a program first.'); return; }
+  try{
+    const d = await api('setProspectRec', { id: PP.id, program, fit: document.getElementById('ppRecFit').value });
+    document.getElementById('ppRecProg').value = ''; document.getElementById('ppRecFit').value = '';
+    ppLoadRecs();
+  }catch(e){ alert(e.message); }
+}
+async function ppRecRemove(program){
+  if(!PP || !confirm('Remove the recommendation to ' + program + '?')) return;
+  try{ await api('setProspectRec', { id: PP.id, program, remove: true }); ppLoadRecs(); }catch(e){ alert(e.message); }
 }
 async function saveProfile(){
   if(!PP) return;

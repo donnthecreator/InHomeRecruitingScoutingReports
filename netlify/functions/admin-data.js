@@ -89,6 +89,12 @@ function siteBase(event) {
   return `${proto}://${host}`;
 }
 
+async function ensureProspectRecs() {
+  await sql`CREATE TABLE IF NOT EXISTS prospect_recs (
+    id SERIAL PRIMARY KEY, prospect_id INTEGER NOT NULL REFERENCES prospects(id) ON DELETE CASCADE,
+    program TEXT NOT NULL, program_key TEXT NOT NULL, conference TEXT, fit TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), UNIQUE (prospect_id, program_key))`;
+}
 const ok   = (body) => ({ statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 const fail = (code, error) => ({ statusCode: code, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) });
 
@@ -686,6 +692,43 @@ exports.handler = async (event) => {
       }
 
       /* Edit a prospect's card fields. Only whitelisted columns. */
+      /* ---------- scout recommendations (player -> program) ----------
+         A scout or admin points a player at a program. It lands on that
+         program's "Scout Recommended" tab (merged into the report's
+         recommendedPrograms by list-reports). It never touches the
+         program's own Prospect Board (program_prospects), which is the list
+         the university hands InHome. */
+      case 'getProspectRecs': {
+        await ensureProspectRecs();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const rows = await sql`SELECT program, conference, fit, created_at FROM prospect_recs WHERE prospect_id = ${id} ORDER BY created_at`;
+        const [rc] = await sql`SELECT count(*)::int AS n FROM reports WHERE prospect_id = ${id}`;
+        return ok({ recs: rows, reports: rc ? rc.n : 0 });
+      }
+      case 'setProspectRec': {
+        await ensureProspectRecs();
+        const id = parseInt(body.id, 10); if (!id) return fail(400, 'id required');
+        const program = String(body.program || '').trim().slice(0, 120);
+        if (!program) return fail(400, 'Pick a program');
+        const key = program.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (body.remove) {
+          await sql`DELETE FROM prospect_recs WHERE prospect_id = ${id} AND program_key = ${key}`;
+        } else {
+          const fit = String(body.fit || '').trim().slice(0, 600) || null;
+          let conference = null;
+          try {
+            const [pg] = await sql`SELECT conference, division FROM programs
+              WHERE lower(regexp_replace(COALESCE(short_name,name),'[^A-Za-z0-9]','','g')) = ${key} LIMIT 1`;
+            if (pg) conference = pg.division || pg.conference || null;
+          } catch (e) {}
+          await sql`INSERT INTO prospect_recs (prospect_id, program, program_key, conference, fit)
+                    VALUES (${id}, ${program}, ${key}, ${conference}, ${fit})
+                    ON CONFLICT (prospect_id, program_key) DO UPDATE SET fit = COALESCE(EXCLUDED.fit, prospect_recs.fit), program = EXCLUDED.program`;
+        }
+        const rows = await sql`SELECT program, conference, fit, created_at FROM prospect_recs WHERE prospect_id = ${id} ORDER BY created_at`;
+        return ok({ recs: rows });
+      }
+
       case 'updateProspect': {
         const id = parseInt(body.id, 10);
         if (!id) return fail(400, 'id required');

@@ -167,6 +167,24 @@ exports.handler = async (event) => {
     }
     reports.forEach(rep2 => { rep2.assessments = rep2.prospectId ? (assess[rep2.prospectId] || []) : []; });
 
+    /* Programs an admin pointed a player at (prospect_recs) ride along with
+       every report on that player, so they show on that program's Scout
+       Recommended tab exactly like a recommendation made on the report form. */
+    try {
+      const rpids = [...new Set(reports.map(r => r.prospectId).filter(Boolean))];
+      if (rpids.length) {
+        const recRows = await sql`SELECT prospect_id, program, conference, fit FROM prospect_recs
+                                  WHERE prospect_id = ANY(string_to_array(${rpids.join(',')}, ',')::int[])`;
+        const norm = (x) => String(x || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        reports.forEach(rep => {
+          const have = new Set((rep.raw.recommendedPrograms || []).map(x => norm(x && x.program)));
+          recRows.filter(x => x.prospect_id === rep.prospectId && !have.has(norm(x.program))).forEach(x => {
+            rep.raw.recommendedPrograms.push({ program: x.program, conference: x.conference || '', state: '', espnId: null, fit: x.fit || null });
+          });
+        });
+      }
+    } catch (e) { /* table not created yet: nothing recommended by hand */ }
+
     const byProspect = {};
     siblings.forEach(x => { if (x.prospectId) (byProspect[x.prospectId] = byProspect[x.prospectId] || []).push(x); });
     reports.forEach(rep => {

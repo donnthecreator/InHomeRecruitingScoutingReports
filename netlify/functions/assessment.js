@@ -66,6 +66,14 @@ async function ensure() {
   )`;
 }
 
+/* HS head coach contact. Stored on the prospect, admin only, same as the
+   athlete's own phone and email. */
+async function ensureCoachCols() {
+  await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_name TEXT`;
+  await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_phone TEXT`;
+  await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_email TEXT`;
+}
+
 async function activeClips(positionGroup) {
   try {
     const rows = await sql`SELECT * FROM iq_clips WHERE active = true ORDER BY sort_order, id`;
@@ -153,11 +161,23 @@ exports.handler = async (event) => {
       } catch (e) { profile = null; }
     }
 
+    /* Ask for the HS head coach once, on HS (or unlabelled level) prospects,
+       unless we already have a name or the athlete already answered/skipped. */
+    let needsCoach = false;
+    if (a.prospect_id && !(a.answers && a.answers._hsCoach)) {
+      try {
+        await ensureCoachCols();
+        const [pc] = await sql`SELECT level, hs_coach_name FROM prospects WHERE id = ${a.prospect_id}`;
+        needsCoach = !!pc && (!pc.level || pc.level === 'HS') && !String(pc.hs_coach_name || '').trim();
+      } catch (e) { needsCoach = false; }
+    }
+
     if (event.httpMethod === 'GET') {
       if (a.status === 'sent') await sql`UPDATE assessments SET status = 'started', started_at = now() WHERE id = ${a.id}`;
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({
         kind: a.kind, athlete: a.athlete_name, school: a.school, position: a.position, positionGroup: groupFor(a.position),
         needsPosition: usesClips(a.kind) && !groupFor(a.position),
+        needsCoach,
         status: a.status === 'complete' ? 'complete' : 'open',
         profile,
         sections: forAthlete(bank(a.kind, a.position)),
@@ -186,6 +206,23 @@ exports.handler = async (event) => {
         clips: clips2.map(c => ({ id: c.id, youtubeId: c.youtube_id, start: c.start_seconds || 0, question: c.question,
                                   options: (c.options && c.options.length) ? c.options : CLIP_OPTIONS_DEFAULT }))
       }) };
+    }
+    /* athlete gives (or skips) his high school head coach */
+    if (body.setCoach) {
+      const c = body.setCoach === true ? {} : body.setCoach;
+      const clip = (v, n) => { const t = String(v == null ? '' : v).trim().slice(0, n); return t || null; };
+      const name = clip(c.name, 120), phone = clip(c.phone, 40), email = clip(c.email, 200);
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail(400, 'That coach email does not look right');
+      if (!c.skip && !name) return fail(400, "Enter your head coach's name");
+      if (!c.skip && !phone && !email) return fail(400, 'Add a phone number or an email so we can reach him');
+      if (!c.skip && a.prospect_id) {
+        await ensureCoachCols();
+        await sql`UPDATE prospects SET hs_coach_name = COALESCE(NULLIF(hs_coach_name,''), ${name}),
+                    hs_coach_phone = COALESCE(NULLIF(hs_coach_phone,''), ${phone}),
+                    hs_coach_email = COALESCE(NULLIF(hs_coach_email,''), ${email}), updated_at = now()
+                  WHERE id = ${a.prospect_id}`;
+      }
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, skipped: !!c.skip, coach: c.skip ? null : { name, phone, email } }) };
     }
     const answers = (body.answers && typeof body.answers === 'object') ? body.answers : {};
     /* cap any single answer so a paste bomb can't fill the row */

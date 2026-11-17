@@ -696,7 +696,11 @@ exports.handler = async (event) => {
               class_year = val('class_year', 12), level = val('level', 12), home_city = val('home_city', 80), home_state = val('home_state', 4),
               height = val('height', 12), weight = val('weight', 12), film_link = val('film_link', 500), wingspan = val('wingspan', 20),
               hudl_link = val('hudl_link', 400), milesplit_link = val('milesplit_link', 400), x_link = val('x_link', 200), ig_link = val('ig_link', 200),
-              athlete_phone = val('athlete_phone', 40), athlete_email = val('athlete_email', 200);
+              athlete_phone = val('athlete_phone', 40), athlete_email = val('athlete_email', 200),
+              hs_coach_name = val('hs_coach_name', 120), hs_coach_phone = val('hs_coach_phone', 40), hs_coach_email = val('hs_coach_email', 200);
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_name TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_phone TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_email TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hudl_link TEXT`;
@@ -714,7 +718,9 @@ exports.handler = async (event) => {
             wingspan = COALESCE(${wingspan}, wingspan),
             hudl_link = COALESCE(${hudl_link}, hudl_link), milesplit_link = COALESCE(${milesplit_link}, milesplit_link),
             x_link = COALESCE(${x_link}, x_link), ig_link = COALESCE(${ig_link}, ig_link),
-            athlete_phone = COALESCE(${athlete_phone}, athlete_phone), athlete_email = COALESCE(${athlete_email}, athlete_email), updated_at = now()
+            athlete_phone = COALESCE(${athlete_phone}, athlete_phone), athlete_email = COALESCE(${athlete_email}, athlete_email),
+            hs_coach_name = COALESCE(${hs_coach_name}, hs_coach_name), hs_coach_phone = COALESCE(${hs_coach_phone}, hs_coach_phone),
+            hs_coach_email = COALESCE(${hs_coach_email}, hs_coach_email), updated_at = now()
           WHERE id = ${id} RETURNING *`;
         if (!rows.length) return fail(404, 'Prospect not found');
         /* keep the performance log in step when the name or school changed */
@@ -976,10 +982,13 @@ exports.handler = async (event) => {
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS background_at TIMESTAMPTZ`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_name TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_phone TEXT`;
+        await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS hs_coach_email TEXT`;
         const rows = await sql`
           SELECT p.id, p.name, p.school, p.position, p.class_year, p.level, p.home_state,
                  p.home_city, p.height, p.weight, p.wingspan, p.film_link, p.hudl_link, p.milesplit_link, p.x_link, p.ig_link,
-                 p.athlete_phone, p.athlete_email,
+                 p.athlete_phone, p.athlete_email, p.hs_coach_name, p.hs_coach_phone, p.hs_coach_email,
                  p.headshot_key, p.wingspan_key, p.transcript_key, p.transcript_name, p.transcript_at,
                  p.background_key IS NOT NULL AS has_background, p.background_name, p.background_at,
                  (SELECT count(*)::int FROM reports r WHERE r.prospect_id = p.id) AS reports,

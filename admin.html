@@ -3515,6 +3515,12 @@ function renderProfile(){
       ${f('ig_link','Instagram',p.ig_link,'https://instagram.com/handle')}
       ${f('athlete_phone','Athlete phone',p.athlete_phone,'(205) 555-0100')}
       ${f('athlete_email','Athlete email',p.athlete_email,'name@email.com')}
+      ${f('hs_coach_name','HS head coach',p.hs_coach_name,'Coach name')}
+      ${f('hs_coach_phone','HS coach phone',p.hs_coach_phone,'(205) 555-0100')}
+      ${f('hs_coach_email','HS coach email',p.hs_coach_email,'coach@school.edu')}
+      ${(p.hs_coach_phone||p.hs_coach_email) ? `<div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;">
+        ${p.hs_coach_phone ? `<a class="mini-btn" href="tel:${esc(String(p.hs_coach_phone).replace(/[^0-9+]/g,''))}">Call coach</a><a class="mini-btn" href="sms:${esc(String(p.hs_coach_phone).replace(/[^0-9+]/g,''))}">Text coach</a>` : ''}
+        ${p.hs_coach_email ? `<a class="mini-btn" href="mailto:${esc(String(p.hs_coach_email).split(/[;,]/)[0].trim())}">Email coach</a>` : ''}</div>` : ''}
       ${(p.athlete_phone||p.athlete_email) ? `<div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;">
         ${p.athlete_phone ? `<a class="mini-btn" href="tel:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Call</a><a class="mini-btn" href="sms:${esc(String(p.athlete_phone).replace(/[^0-9+]/g,''))}">Text</a>` : ''}
         ${p.athlete_email ? `<a class="mini-btn" href="mailto:${esc(String(p.athlete_email).split(/[;,]/)[0].trim())}">Email</a>` : ''}
@@ -3594,7 +3600,8 @@ async function saveProfile(){
   const fields = { name:g('name'), school:g('school'), position:(g('position')||'').toUpperCase(), class_year:g('class_year'), level:g('level'),
                    home_city:g('home_city'), home_state:(g('home_state')||'').toUpperCase(), height:g('height'), weight:g('weight'), wingspan:g('wingspan'),
                    film_link:g('film_link'), hudl_link:g('hudl_link'), milesplit_link:g('milesplit_link'), x_link:g('x_link'), ig_link:g('ig_link'),
-                   athlete_phone:g('athlete_phone'), athlete_email:g('athlete_email') };
+                   athlete_phone:g('athlete_phone'), athlete_email:g('athlete_email'),
+                   hs_coach_name:g('hs_coach_name'), hs_coach_phone:g('hs_coach_phone'), hs_coach_email:g('hs_coach_email') };
   try{
     const d = await api('updateProspect', { id: PP.id, fields, prev: { name: PP.name, school: PP.school || '' } });
     const oldName = PP.name, oldSchool = PP.school || '';

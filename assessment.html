@@ -358,9 +358,40 @@ function renderPositionPick(){
     }catch(err){ $('posStatus').textContent = err.message; }
   }));
 }
+function renderCoachStep(){
+  $('who').innerHTML = `<b>${esc(DATA.athlete||'')}</b>${esc(DATA.school||'')}`;
+  const fld = (id, label, type, ph, mode) => `<label class="fl" style="display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A8A; font-weight:700; margin:12px 0 5px;">${label}</label>
+    <input type="${type}" id="${id}" ${mode?`inputmode="${mode}"`:''} autocomplete="off" placeholder="${ph}" style="width:100%; padding:12px 13px; border-radius:9px; border:1px solid #2A2A2A; background:#141414; color:#F5F5F5; font-size:15px;">`;
+  $('app').innerHTML = `
+    <div class="card" style="line-height:1.6">
+      <h1 style="margin-top:0">Who is your head coach?</h1>
+      <p class="lede">Colleges check with your high school head coach. Give us his contact so we can reach him for you.</p>
+      ${fld('coName','Head coach name','text','Coach Smith')}
+      ${fld('coPhone','Coach phone','tel','(205) 555-0100','tel')}
+      ${fld('coEmail','Coach email (optional if you gave a phone)','email','coach@school.edu','email')}
+      <div id="coErr" style="color:#FF7D7D; font-size:13px; min-height:18px; margin-top:10px;"></div>
+      <button type="button" class="btn" id="coGo" style="width:100%; margin-top:4px;">Continue</button>
+      <div style="text-align:center; margin-top:12px;"><a href="#" id="coSkip" style="color:#8A8A8A; font-size:13px;">I do not have it handy</a></div>
+    </div>`;
+  const send = async (payload) => {
+    const res = await fetch('/.netlify/functions/assessment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ t: TOKEN, setCoach: payload }) });
+    const d = await res.json();
+    if(!res.ok) throw new Error(d.error || 'Could not save');
+    ANSWERS._hsCoach = payload.skip ? { skipped:true } : d.coach;   // saves with his answers so we never ask twice
+    DIRTY = true; DATA.needsCoach = false;
+    render(); window.scrollTo({top:0});
+  };
+  $('coGo').addEventListener('click', async () => {
+    $('coErr').textContent = '';
+    try{ await send({ name:$('coName').value, phone:$('coPhone').value, email:$('coEmail').value }); }
+    catch(err){ $('coErr').textContent = err.message; }
+  });
+  $('coSkip').addEventListener('click', async (e) => { e.preventDefault(); try{ await send({ skip:true }); }catch(err){ $('coErr').textContent = err.message; } });
+}
 function render(){
   if(!WELCOMED && !DATA.preview){ renderWelcome(); return; }
   if(!CONSENTED && !DATA.preview){ renderConsent(); return; }
+  if(DATA.needsCoach && !DATA.preview){ renderCoachStep(); return; }
   if(DATA.needsPosition){ renderPositionPick(); return; }
   const isIQ = DATA.kind === 'iq';
   const isFull = DATA.kind === 'full';

@@ -60,6 +60,7 @@ async function loadProspect(prospectId) {
   delete prospect.background_key; delete prospect.background_name; delete prospect.background_at;
   /* athlete phone and email are admin-only too */
   delete prospect.athlete_phone; delete prospect.athlete_email;
+  delete prospect.hs_coach_name; delete prospect.hs_coach_phone; delete prospect.hs_coach_email;
 
   const offers = await sql`
     SELECT o.id, o.school_key, o.school_other, o.offer_date, o.status,

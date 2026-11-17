@@ -16,6 +16,8 @@
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
 const { logoMap, schoolKey } = require('./lib/logos');
+const { glance } = require('./lib/diagnosis');
+const { mbtiType } = require('./lib/assessment-banks');
 const sql = neon(process.env.DATABASE_URL);
 
 const HEADERS = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
@@ -54,6 +56,25 @@ exports.handler = async (event) => {
       WHERE upper(pp.program_code) = ${program}
       ORDER BY p.position, p.name`;
 
+    /* Completed assessments, so the card can show Football IQ and how he learns
+       without opening the profile. Score and learning style only: the written
+       answers and the personality read stay on the full profile. */
+    const iq = {};
+    try {
+      const ids = [...new Set(rows.map(x => x.prospect_id))];
+      if (ids.length) {
+        const as = await sql`SELECT prospect_id, score_pct, answers FROM assessments
+                             WHERE status = 'complete' AND prospect_id = ANY(string_to_array(${ids.join(',')}, ',')::int[])
+                             ORDER BY completed_at DESC`;
+        as.forEach(a => {
+          const pct = a.score_pct != null ? Math.round(Number(a.score_pct)) : null;
+          const cur = iq[a.prospect_id] || (iq[a.prospect_id] = { fiq: null, learns: null });
+          if (pct != null && (cur.fiq == null || pct > cur.fiq)) cur.fiq = pct;
+          if (!cur.learns) { try { const g = glance(a.answers || {}, mbtiType(a.answers || {}), pct); cur.learns = g.learning ? g.learning.label : null; } catch (e) {} }
+        });
+      }
+    } catch (e) { /* assessments table not created yet */ }
+
     const logos = await logoMap(sql, base);
     const board = rows.map(x => ({
       logoUrl: logos[schoolKey(x.school)] || null,
@@ -73,6 +94,8 @@ exports.handler = async (event) => {
       priority: x.priority,
       note: x.note,
       addedAt: x.added_at,
+      fiq: (iq[x.prospect_id] || {}).fiq != null ? iq[x.prospect_id].fiq : null,
+      learns: (iq[x.prospect_id] || {}).learns || null,
       status: x.report_id ? 'scouted' : 'pending',
       reportId: x.report_id || null,
       inhomeScore: x.inhome_score,

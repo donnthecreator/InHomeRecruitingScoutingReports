@@ -10,7 +10,8 @@
 ===================================================================== */
 const { neon } = require('@neondatabase/serverless');
 const { explain: explainType } = require('./lib/mbti-locker');
-const { bank, scenariosFor, groupFor, CLIP_OPTIONS_DEFAULT } = require('./lib/assessment-banks');
+const { glance } = require('./lib/diagnosis');
+const { bank, scenariosFor, groupFor, CLIP_OPTIONS_DEFAULT, mbtiType } = require('./lib/assessment-banks');
 const { POSITIONS, GRADE_LABELS } = require('./lib/positions');
 
 /* Same math as the report builder and the coach portal. Kept here so the
@@ -174,6 +175,7 @@ exports.handler = async (event) => {
             const sig = require('crypto').createHmac('sha256', process.env.ADMIN_SECRET).update('results:' + a.id).digest('hex').slice(0, 24);
             out.resultsUrl = `${base}/results.html?a=${a.id}&s=${sig}&v=college`;
           }
+          try { out.glance = glance(a.answers || {}, mbtiType(a.answers || {}), out.pct != null ? Math.round(out.pct) : null); } catch (e) { out.glance = null; }
           out.correct = sd.correct != null ? sd.correct : null;
           out.total = sd.total != null ? sd.total : null;
           /* written answers: anything the athlete typed, keyed by question id */

@@ -1116,9 +1116,18 @@ exports.handler = async (event) => {
          is matched to an existing prospect by name and school, created
          if there is none, then linked in program_prospects under the
          program's portal code. Safe to run twice: nothing is doubled. */
+      case 'listBoardSeeds': {
+        const { SEEDS } = require('./lib/board-seeds');
+        return ok({ seeds: Object.keys(SEEDS).map(k => ({ key: k, label: SEEDS[k].label, program: SEEDS[k].program, source: SEEDS[k].source || null, count: SEEDS[k].rows.length })) });
+      }
       case 'importProgramBoard': {
-        const program = String(body.program || '').trim().toUpperCase();
-        const rows = Array.isArray(body.rows) ? body.rows.slice(0, 1000) : [];
+        /* Rows come either from the Board tab's spreadsheet upload or, when
+           body.seed names one, from a roster committed in lib/board-seeds.js
+           so a school can be put on its portal with one button. */
+        const seed = body.seed ? require('./lib/board-seeds').SEEDS[String(body.seed).trim().toUpperCase()] : null;
+        if (body.seed && !seed) return fail(400, 'no saved roster by that name');
+        const program = String(body.program || (seed && seed.program) || '').trim().toUpperCase();
+        const rows = seed ? seed.rows : (Array.isArray(body.rows) ? body.rows.slice(0, 1000) : []);
         if (!program) return fail(400, 'program code required');
         if (!rows.length) return fail(400, 'no rows');
         /* The portal keys boards by code, so a code without a programs

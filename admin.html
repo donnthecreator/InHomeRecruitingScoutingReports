@@ -813,6 +813,7 @@
         <button type="button" class="mini-btn" id="boardPushPortal" onclick="pushStaticBoardToPortal()">Load this board onto Samford's portal</button>
         <button type="button" class="mini-btn" onclick="document.getElementById('boardXlsx').click()">Upload a program's board (Excel)</button>
         <input type="file" id="boardXlsx" accept=".xlsx,.xls,.csv" style="display:none;" onchange="uploadBoardFile(this)">
+        <span id="boardSeeds" class="chip-row" style="gap:6px;"></span>
       </div>
       <div class="board-progress">
         <div class="bp-row">
@@ -1219,6 +1220,7 @@ function renderAll(){
   renderPerf();
   initBoard();
   loadProgramBoards();
+  loadBoardSeeds();
   buildKnownNames();
   fillBadSchools();
   if(document.getElementById('panePlayers').classList.contains('on')) renderPlayers();
@@ -1293,6 +1295,25 @@ function parseBoardSheet(rows){
     }
   });
   return out;
+}
+/* Rosters saved in the repo (lib/board-seeds.js): one tap puts a school's
+   whole list on its portal board, no spreadsheet to find and upload. */
+async function loadBoardSeeds(){
+  const host = document.getElementById('boardSeeds'); if(!host) return;
+  try{
+    const d = await api('listBoardSeeds', {});
+    host.innerHTML = (d.seeds||[]).map(s => `<button type="button" class="mini-btn" onclick="loadBoardSeed('${esc(s.key)}')">Load ${esc(s.label)} (${s.count})</button>`).join('');
+  }catch(e){ host.innerHTML = ''; }
+}
+async function loadBoardSeed(key){
+  if(!confirm('Put this saved roster on the ' + key + ' portal board?')) return;
+  try{
+    const res = await api('importProgramBoard', { seed: key });
+    alert(`${res.school || res.program} board loaded.\n\nNow on their portal: ${res.onBoard}\nAdded this run: ${res.linked}\nAlready there: ${res.already}\nNew prospect records created: ${res.created}`);
+    await loadProgramBoards();
+    const sel = document.getElementById('boardProgram');
+    if([...sel.options].some(o=>o.value===res.program)){ sel.value = res.program; switchBoard(res.program); }
+  }catch(e){ alert(e.message); }
 }
 async function uploadBoardFile(input){
   const file = input.files && input.files[0]; input.value = '';

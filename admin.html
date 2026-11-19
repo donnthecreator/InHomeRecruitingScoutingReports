@@ -1266,11 +1266,13 @@ function parseBoardSheet(rows){
   const cName = col('name','player','prospect');
   if(cName >= 0){
     const cPos = col('pos'), cSch = col('school','high school','hs'), cSt = col('state','st'), cHt = col('ht','height'), cWt = col('wt','weight'),
-          cPh = col('phone','cell','mobile'), cEm = col('email','e-mail');
+          cPh = col('phone','cell','mobile'), cEm = col('email','e-mail'),
+          cCl = col('class','grad'), cFl = col('film','hudl','video'), cNt = col('note','eval','comment');
     rows.slice(1).forEach(r => {
       const name = str(r[cName]); if(!name) return;
       out.push([name, cPos>=0?str(r[cPos]):'', cSch>=0?str(r[cSch]):'', cSt>=0?str(r[cSt]).toUpperCase():'', cHt>=0?str(r[cHt]):'', cWt>=0?str(r[cWt]):'',
-                cPh>=0?str(r[cPh]):'', cEm>=0?str(r[cEm]):'']);
+                cPh>=0?str(r[cPh]):'', cEm>=0?str(r[cEm]):'',
+                cCl>=0?str(r[cCl]):'', cFl>=0?str(r[cFl]):'', cNt>=0?str(r[cNt]):'']);
     });
     return out;
   }

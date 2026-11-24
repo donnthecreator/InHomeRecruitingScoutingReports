@@ -1134,12 +1134,16 @@ exports.handler = async (event) => {
            row still gets a board. The name is only for the message. */
         const [prog] = await sql`SELECT school_key, name FROM programs WHERE upper(access_code) = ${program} LIMIT 1`;
         const WR = { X: 'X', Z: 'Z', H: 'H', SLOT: 'H' };
+        await sql`ALTER TABLE program_prospects ADD COLUMN IF NOT EXISTS is_prospect BOOLEAN NOT NULL DEFAULT false`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_phone TEXT`;
         await sql`ALTER TABLE prospects ADD COLUMN IF NOT EXISTS athlete_email TEXT`;
         let contacts = 0;
         let created = 0, linked = 0, already = 0, skipped = 0, filled = 0;
         for (const r of rows) {
-          const [name, posRaw, school, state, height, weight, phoneRaw, emailRaw, classRaw, filmRaw, noteRaw] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight, r.phone, r.email, r.classYear, r.film, r.note];
+          const [name, posRaw, school, state, height, weight, phoneRaw, emailRaw, classRaw, filmRaw, noteRaw, prospectRaw] = Array.isArray(r) ? r : [r.name, r.position, r.school, r.state, r.height, r.weight, r.phone, r.email, r.classYear, r.film, r.note, r.isProspect];
+          /* A high school's selected prospects arrive already marked, so
+             they land on the coach's Prospects tab as well as his Roster. */
+          const markProspect = prospectRaw === true || /^(y|yes|true|1|prospect)$/i.test(String(prospectRaw || '').trim());
           const classYear = String(classRaw || '').trim().slice(0, 8) || null;
           const film = String(filmRaw || '').trim().slice(0, 500) || null;
           const note = String(noteRaw || '').trim().slice(0, 400) || null;
@@ -1211,8 +1215,8 @@ exports.handler = async (event) => {
             if (c.length) contacts++;
           }
           const ins = await sql`
-            INSERT INTO program_prospects (program_code, prospect_id, source, note)
-            SELECT ${program}, ${prospectId}, ${'admin board import'}, ${note}
+            INSERT INTO program_prospects (program_code, prospect_id, source, note, is_prospect)
+            SELECT ${program}, ${prospectId}, ${'admin board import'}, ${note}, ${markProspect}
             WHERE NOT EXISTS (SELECT 1 FROM program_prospects x WHERE upper(x.program_code) = ${program} AND x.prospect_id = ${prospectId})
             RETURNING id`;
           if (ins.length) linked++; else {
@@ -1221,6 +1225,10 @@ exports.handler = async (event) => {
                the note to a row that has none; a typed note is never replaced. */
             if (note) await sql`UPDATE program_prospects SET note = ${note}
                                 WHERE upper(program_code) = ${program} AND prospect_id = ${prospectId} AND (note IS NULL OR note = '')`;
+            /* Marking only ever promotes: a re-load never pulls a player the
+               coach added himself back off his Prospects tab. */
+            if (markProspect) await sql`UPDATE program_prospects SET is_prospect = true
+                                WHERE upper(program_code) = ${program} AND prospect_id = ${prospectId}`;
           }
         }
         const [c] = await sql`SELECT count(*)::int AS n FROM program_prospects WHERE upper(program_code) = ${program}`;

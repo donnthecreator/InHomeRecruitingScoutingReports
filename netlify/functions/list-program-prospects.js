@@ -36,9 +36,12 @@ exports.handler = async (event) => {
   const base = siteBase(event);
 
   try {
+    /* A high school's board is its roster; the rows the coach has marked
+       are the players he is actively pushing to colleges. */
+    await sql`ALTER TABLE program_prospects ADD COLUMN IF NOT EXISTS is_prospect BOOLEAN NOT NULL DEFAULT false`;
     /* Latest report per prospect, if any. */
     const rows = await sql`
-      SELECT pp.id AS link_id, pp.priority, pp.note, pp.added_at,
+      SELECT pp.id AS link_id, pp.priority, pp.note, pp.added_at, pp.is_prospect,
              p.id AS prospect_id, p.name, p.school, p.position, p.position_label,
              p.class_year, p.home_city, p.home_state, p.level, p.height, p.weight,
              p.film_link, p.headshot_key,
@@ -94,6 +97,7 @@ exports.handler = async (event) => {
       priority: x.priority,
       note: x.note,
       addedAt: x.added_at,
+      isProspect: !!x.is_prospect,
       fiq: (iq[x.prospect_id] || {}).fiq != null ? iq[x.prospect_id].fiq : null,
       learns: (iq[x.prospect_id] || {}).learns || null,
       status: x.report_id ? 'scouted' : 'pending',

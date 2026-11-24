@@ -39,6 +39,32 @@ exports.handler = async (event) => {
     /* A high school's board is its roster; the rows the coach has marked
        are the players he is actively pushing to colleges. */
     await sql`ALTER TABLE program_prospects ADD COLUMN IF NOT EXISTS is_prospect BOOLEAN NOT NULL DEFAULT false`;
+
+    /* Rosters a school sent us are committed in lib/board-seeds.js. Each one
+       loads itself the first time its program's board is opened, so a
+       roster is live on the coach's portal as soon as it is pushed, with
+       no admin step. Each seed loads once; edits after that are the
+       coach's and the admin's. Only committed data is written here, never
+       anything from the request. */
+    try {
+      const { SEEDS } = require('./lib/board-seeds');
+      const mine = Object.keys(SEEDS).filter(k => String(SEEDS[k].program || '').toUpperCase() === program);
+      if (mine.length) {
+        await sql`CREATE TABLE IF NOT EXISTS board_seed_loads (seed_key TEXT PRIMARY KEY, loaded_at TIMESTAMPTZ NOT NULL DEFAULT now())`;
+        const done = await sql`SELECT seed_key FROM board_seed_loads WHERE seed_key = ANY(string_to_array(${mine.join(',')}, ','))`;
+        const have = new Set(done.map(d => d.seed_key));
+        const { importBoardRows } = require('./lib/board-import');
+        for (const k of mine) {
+          if (have.has(k)) continue;
+          /* Claim it first so two coaches opening the board at once cannot
+             both import. */
+          const claim = await sql`INSERT INTO board_seed_loads (seed_key) VALUES (${k}) ON CONFLICT DO NOTHING RETURNING seed_key`;
+          if (!claim.length) continue;
+          try { await importBoardRows(sql, program, SEEDS[k].rows); }
+          catch (e) { await sql`DELETE FROM board_seed_loads WHERE seed_key = ${k}`; console.error('seed load failed', k, e); }
+        }
+      }
+    } catch (e) { console.error('seed autoload', e); }
     /* Latest report per prospect, if any. */
     const rows = await sql`
       SELECT pp.id AS link_id, pp.priority, pp.note, pp.added_at, pp.is_prospect,

@@ -1,1 +1,2149 @@
-{"state":"CO","retrieved":null,"players":[]}
+{
+ "state": "CO",
+ "retrieved": "2026-11-24",
+ "players": [
+  {
+   "name": "Jackson Coleman",
+   "highSchool": "Valor Christian",
+   "city": "Littleton",
+   "position": "WR",
+   "height": "6-3",
+   "weight": "185",
+   "stars247": 4,
+   "committed": {
+    "school": "Notre Dame",
+    "date": "2026-05-01",
+    "source": "https://www.on3.com/teams/notre-dame-fighting-irish/news/notre-dame-fighting-irish-recruiting-2027-wide-receiver-commitment-jackson-coleman/"
+   },
+   "offers": [
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": "2026-04-16",
+     "source": "https://www.on3.com/teams/notre-dame-fighting-irish/news/notre-dame-fighting-irish-recruiting-2027-wide-receiver-commitment-jackson-coleman/"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Utah",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/oregon-state-beavers/football/2027/offers"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/washington-state-cougars/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/teams/notre-dame-fighting-irish/news/notre-dame-fighting-irish-recruiting-2027-wide-receiver-commitment-jackson-coleman/",
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/college/oregon-state-beavers/football/2027/offers",
+    "https://www.on3.com/college/washington-state-cougars/football/2027/offers",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Troy Mailo",
+   "highSchool": "Mullen",
+   "city": "Denver",
+   "position": "DL",
+   "height": "6-3",
+   "weight": "252",
+   "stars247": 3,
+   "committed": {
+    "school": "Stanford",
+    "date": null,
+    "source": "https://roundtable.io/sports/ncaa/stanford/news/stanford-football-2027-recruiting-cardinal-land-edge-rusher-troy-mailo"
+   },
+   "offers": [
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Arizona",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Utah",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "UCLA",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/stanford/news/stanford-football-2027-recruiting-cardinal-land-edge-rusher-troy-mailo"
+    },
+    {
+     "school": "Iowa State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/stanford/news/stanford-football-2027-recruiting-cardinal-land-edge-rusher-troy-mailo"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/washington-state-cougars/football/2027/offers"
+    },
+    {
+     "school": "Nevada",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/nevada-wolf-pack/football/2027/offers"
+    },
+    {
+     "school": "New Mexico State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/new-mexico-state-aggies/football/2027/offers"
+    },
+    {
+     "school": "Stanford",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/stanford/news/stanford-football-2027-recruiting-cardinal-land-edge-rusher-troy-mailo"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://roundtable.io/sports/ncaa/stanford/news/stanford-football-2027-recruiting-cardinal-land-edge-rusher-troy-mailo",
+    "https://www.on3.com/college/washington-state-cougars/football/2027/offers",
+    "https://www.on3.com/college/nevada-wolf-pack/football/2027/offers",
+    "https://www.on3.com/college/new-mexico-state-aggies/football/2027/offers",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Jackson Roper",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "IOL",
+   "height": "6-5",
+   "weight": "305",
+   "stars247": 3,
+   "committed": {
+    "school": "UCLA",
+    "date": "2026-05-01",
+    "source": "https://www.on3.com/rivals/jackson-roper-259514/"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-roper-259514/"
+    },
+    {
+     "school": "USC",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-roper-259514/"
+    },
+    {
+     "school": "BYU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/byu-cougars/football/2027/offers"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arizona-state-sun-devils/football/2027/offers"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kansas-state-wildcats/football/2027/offers/"
+    },
+    {
+     "school": "Oklahoma State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/oklahoma-state-cowboys/football/2027/offers/"
+    },
+    {
+     "school": "UCLA",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-roper-259514/"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/rivals/jackson-roper-259514/",
+    "https://www.on3.com/college/byu-cougars/football/2027/offers",
+    "https://www.on3.com/college/arizona-state-sun-devils/football/2027/offers",
+    "https://www.on3.com/college/kansas-state-wildcats/football/2027/offers/",
+    "https://www.on3.com/college/oklahoma-state-cowboys/football/2027/offers/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Cristian Mbamarah",
+   "highSchool": "Cherokee Trail",
+   "city": "Aurora",
+   "position": "CB",
+   "height": "6-1",
+   "weight": "175",
+   "stars247": 3,
+   "committed": {
+    "school": "Northwestern",
+    "date": "2026-06-08",
+    "source": "https://www.on3.com/rivals/cristian-mbamarah-259127"
+   },
+   "offers": [
+    {
+     "school": "Arizona",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Duke",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Northwestern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Syracuse",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "UCLA",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Stanford",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/cristian-mbamarah-259127"
+    },
+    {
+     "school": "North Dakota State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/washington-state-cougars/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/rivals/cristian-mbamarah-259127",
+    "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers",
+    "https://www.on3.com/college/washington-state-cougars/football/2027/offers",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Reis Russell",
+   "highSchool": "Valor Christian",
+   "city": "Littleton",
+   "position": "IOL",
+   "height": "6-3.5",
+   "weight": "290",
+   "stars247": 3,
+   "committed": {
+    "school": "Washington",
+    "date": "2026-05-04",
+    "source": "https://www.si.com/college/washington/recruiting/huskies-land-commitment-from-coveted-colorado-lineman-01kqsv630daa"
+   },
+   "offers": [
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Penn State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oklahoma State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/oklahoma-state-cowboys/football/2027/offers/"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/washington-state-cougars/football/2027/offers"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/colorado-state-rams/football/2027/offers/"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/washington/recruiting/huskies-land-commitment-from-coveted-colorado-lineman-01kqsv630daa"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/college/oklahoma-state-cowboys/football/2027/offers/",
+    "https://www.on3.com/college/washington-state-cougars/football/2027/offers",
+    "https://www.on3.com/college/colorado-state-rams/football/2027/offers/",
+    "https://www.si.com/college/washington/recruiting/huskies-land-commitment-from-coveted-colorado-lineman-01kqsv630daa",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Matthew Schimberg",
+   "highSchool": "Grandview",
+   "city": "Aurora",
+   "position": "TE",
+   "height": "6-6",
+   "weight": "235",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Cal",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "San Diego State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/washington-state-cougars/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/college/washington-state-cougars/football/2027/offers",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Quentin Dorsey",
+   "highSchool": "Grandview",
+   "city": "Aurora",
+   "position": "DL",
+   "height": "6-3.5",
+   "weight": "240",
+   "stars247": 3,
+   "committed": {
+    "school": "Kansas",
+    "date": "2026-06-07",
+    "source": "https://www2.kusports.com/sports/college/football/2026/jun/07/ku-football-up-to-5-commitments-on-sunday/"
+   },
+   "offers": [
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": "2026-05-14",
+     "source": "https://www2.kusports.com/sports/college/football/2026/jun/07/ku-football-up-to-5-commitments-on-sunday/"
+    },
+    {
+     "school": "Iowa State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www2.kusports.com/sports/college/football/2026/jun/07/ku-football-up-to-5-commitments-on-sunday/"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www2.kusports.com/sports/college/football/2026/jun/07/ku-football-up-to-5-commitments-on-sunday/"
+    }
+   ],
+   "sources": [
+    "https://www2.kusports.com/sports/college/football/2026/jun/07/ku-football-up-to-5-commitments-on-sunday/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO",
+    "https://www.on3.com/college/oregon-state-beavers/football/2027/offers"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Caleb Camping",
+   "highSchool": "Fossil Ridge",
+   "city": "Fort Collins",
+   "position": "TE",
+   "height": "6-5",
+   "weight": "220",
+   "stars247": 3,
+   "committed": {
+    "school": "Arizona State",
+    "date": null,
+    "source": "https://sports.yahoo.com/articles/fossil-ridge-football-star-caleb-111521055.html"
+   },
+   "offers": [
+    {
+     "school": "Cal",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arizona-state-sun-devils/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://www.on3.com/college/arizona-state-sun-devils/football/2027/offers",
+    "https://sports.yahoo.com/articles/fossil-ridge-football-star-caleb-111521055.html",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Jayden Bradley",
+   "highSchool": "Eaglecrest",
+   "city": "Aurora",
+   "position": "S",
+   "height": "6-1",
+   "weight": "170",
+   "stars247": 3,
+   "committed": {
+    "school": "Boise State",
+    "date": "2026-06-22",
+    "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+   },
+   "offers": [
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+    },
+    {
+     "school": "New Mexico State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+    },
+    {
+     "school": "Sam Houston",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+    },
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+    },
+    {
+     "school": "Boise State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/boise-state/recruiting/rising-colorado-defensive-back-commits-to-boise-state",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO",
+    "https://prepredzone.com/colorado/"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Ryan Pankey",
+   "highSchool": "Montrose",
+   "city": "Montrose",
+   "position": "ATH",
+   "height": "6-6",
+   "weight": "230",
+   "stars247": 3,
+   "committed": {
+    "school": "Michigan State",
+    "date": "2026-06-08",
+    "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+   },
+   "offers": [
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "San Diego State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "Navy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    },
+    {
+     "school": "Michigan State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/michiganstate/football/analysis-2027-te-ryan-pankey-commitment-msu-spartans",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Alijah Landrum-Hamilton",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "WR",
+   "height": "5-8",
+   "weight": "165",
+   "stars247": 3,
+   "committed": {
+    "school": "Wyoming",
+    "date": "2025-12-16",
+    "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+   },
+   "offers": [
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Penn",
+     "level": "FCS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Tulsa",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    },
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://7220sports.com/wyoming-football-2027-recruiting-news/"
+    }
+   ],
+   "sources": [
+    "https://7220sports.com/wyoming-football-2027-recruiting-news/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO",
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Marquise Reese",
+   "highSchool": "Mountain Vista",
+   "city": "Littleton",
+   "position": "QB",
+   "height": "6-1.5",
+   "weight": "195",
+   "stars247": 3,
+   "committed": {
+    "school": "Colorado State",
+    "date": null,
+    "source": "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   },
+   "offers": [
+    {
+     "school": "Fresno State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "North Dakota State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "South Dakota",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "Rhode Island",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    }
+   ],
+   "sources": [
+    "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Todd Nordenson",
+   "highSchool": "Palisade",
+   "city": "Palisade",
+   "position": "OT",
+   "height": "6-7",
+   "weight": "250",
+   "stars247": 3,
+   "committed": {
+    "school": "Colorado State",
+    "date": null,
+    "source": "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   },
+   "offers": [
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/"
+    }
+   ],
+   "sources": [
+    "https://www.arizonasportsfans.com/forum/threads/tracking-commits-in-colorado-state-football-39-s-2027-recruiting-class.1357341/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Brooklyn Bailey",
+   "highSchool": "Mountain Vista",
+   "city": "Littleton",
+   "position": "ATH",
+   "height": "5-11",
+   "weight": "162",
+   "stars247": 3,
+   "committed": {
+    "school": "San Diego State",
+    "date": "2026-05-31",
+    "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+   },
+   "offers": [
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Washington State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Utah",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Iowa State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Arizona",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "New Mexico",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "San Diego State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/san-diego-state/football/san-diego-state-lands-another-2027-commitment-colorado-ath-chooses-aztecs",
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Hudson Modrzewski",
+   "highSchool": "Mountain Vista",
+   "city": "Littleton",
+   "position": "LB",
+   "height": "6-2",
+   "weight": "205",
+   "stars247": 3,
+   "committed": {
+    "school": "South Dakota",
+    "date": null,
+    "source": "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   },
+   "offers": [],
+   "sources": [
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Jackson Post",
+   "highSchool": "Evergreen",
+   "city": "Evergreen",
+   "position": "TE",
+   "height": "6-4",
+   "weight": "225",
+   "stars247": 3,
+   "committed": {
+    "school": "UNLV",
+    "date": "2026-06-02",
+    "source": "https://www.on3.com/rivals/jackson-post-287384/"
+   },
+   "offers": [
+    {
+     "school": "New Mexico",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-post-287384/"
+    },
+    {
+     "school": "Air Force",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-post-287384/"
+    },
+    {
+     "school": "North Dakota State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-post-287384/"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/jackson-post-287384/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/jackson-post-287384/",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Tucker Ingersoll",
+   "highSchool": "Pomona",
+   "city": "Arvada",
+   "position": "QB",
+   "height": "6-1",
+   "weight": "205",
+   "stars247": 3,
+   "committed": {
+    "school": "Wyoming",
+    "date": null,
+    "source": "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   },
+   "offers": [],
+   "sources": [
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO",
+    "https://www.si.com/high-school/colorado/colorado-high-school-football-preseason-top-25-is-cherry-creek-the-team-to-beat-once-again-01m0ewk7hakt",
+    "https://7220sports.com/wyoming-cowboys-recruiting-2027-football/"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Karson McKenzie",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "WR",
+   "height": "5-11",
+   "weight": "175",
+   "stars247": 3,
+   "committed": {
+    "school": "Wyoming",
+    "date": "2026-04-06",
+    "source": "https://www.on3.com/rivals/karson-mckenzie-185771/"
+   },
+   "offers": [
+    {
+     "school": "Wyoming",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/karson-mckenzie-185771/"
+    },
+    {
+     "school": "Portland State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/karson-mckenzie-185771/"
+    },
+    {
+     "school": "New Mexico",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Toledo",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/karson-mckenzie-185771/",
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Liam Chang",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "OT",
+   "height": "6-6",
+   "weight": "295",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Syracuse",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Nevada",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html",
+    "https://247sports.com/Season/2027-football/RecruitRankings/?InstitutionGroup=HighSchool&State=CO"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Phoenix Jenkins",
+   "highSchool": "Pine Creek",
+   "city": "Colorado Springs",
+   "position": "OT",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Oklahoma State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Central Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Toledo",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    },
+    {
+     "school": "Northern Colorado",
+     "level": "FCS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/meet-colorado-footballs-next-top-000942638.html"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Kingston Chatman",
+   "highSchool": "Pine Creek",
+   "city": "Colorado Springs",
+   "position": "S",
+   "height": "6-1",
+   "weight": "200",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/colorado-state-rams/football/2027/offers/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/colorado-state-rams/football/2027/offers/"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Levi Rillos",
+   "highSchool": "Ralston Valley",
+   "city": "Arvada",
+   "position": "WR",
+   "height": "6-2",
+   "weight": "190",
+   "stars247": null,
+   "committed": {
+    "school": "Wyoming",
+    "date": null,
+    "source": "https://www.si.com/high-school/colorado/colorado-high-school-football-preseason-top-25-is-cherry-creek-the-team-to-beat-once-again-01m0ewk7hakt"
+   },
+   "offers": [
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/cornell-big-red/football/2027/offers"
+    },
+    {
+     "school": "North Dakota State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/cornell-big-red/football/2027/offers",
+    "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers",
+    "https://www.si.com/high-school/colorado/colorado-high-school-football-preseason-top-25-is-cherry-creek-the-team-to-beat-once-again-01m0ewk7hakt",
+    "https://www.on3.com/rivals/levi-rillos-286241",
+    "https://7220sports.com/wyoming-cowboys-recruiting-2027-football/"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Freddie Burke",
+   "highSchool": "Legend",
+   "city": "Parker",
+   "position": "CB",
+   "height": "6-0",
+   "weight": "170",
+   "stars247": null,
+   "committed": {
+    "school": "Wyoming",
+    "date": "2026-06-27",
+    "source": "https://prepredzone.com/colorado/"
+   },
+   "offers": [
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/cornell-big-red/football/2027/offers"
+    },
+    {
+     "school": "North Dakota State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers"
+    },
+    {
+     "school": "Harvard",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/harvard-crimson/football/2027/offers"
+    },
+    {
+     "school": "Yale",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/yale-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/cornell-big-red/football/2027/offers",
+    "https://www.on3.com/college/north-dakota-state-bison/football/2027/offers",
+    "https://www.on3.com/college/harvard-crimson/football/2027/offers",
+    "https://www.on3.com/college/yale-bulldogs/football/2027/offers",
+    "https://prepredzone.com/colorado/",
+    "https://7220sports.com/wyoming-cowboys-recruiting-2027-football/"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Everett Capehart",
+   "highSchool": "Ponderosa",
+   "city": "Parker",
+   "position": "IOL",
+   "height": "6-4",
+   "weight": "290",
+   "stars247": null,
+   "committed": {
+    "school": "Army",
+    "date": "2026-06-01",
+    "source": "https://www.on3.com/rivals/everett-capehart-285980"
+   },
+   "offers": [
+    {
+     "school": "Army",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/everett-capehart-285980"
+    },
+    {
+     "school": "Air Force",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/everett-capehart-285980"
+    },
+    {
+     "school": "South Dakota",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/everett-capehart-285980"
+    },
+    {
+     "school": "Navy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/everett-capehart-285980"
+    },
+    {
+     "school": "Columbia",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/everett-capehart-285980"
+    },
+    {
+     "school": "Princeton",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/princeton-tigers/football/2027/offers"
+    },
+    {
+     "school": "Yale",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/yale-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/cornell-big-red/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/everett-capehart-285980",
+    "https://www.on3.com/college/princeton-tigers/football/2027/offers",
+    "https://www.on3.com/college/yale-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/cornell-big-red/football/2027/offers",
+    "https://www.on3.com/college/army-black-knights/football/2027/offers",
+    "https://www.on3.com/college/columbia-lions/football/2027/offers"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Flynn Latta",
+   "highSchool": "Smoky Hill",
+   "city": "Aurora",
+   "position": "IOL",
+   "height": "6-2",
+   "weight": "288",
+   "stars247": null,
+   "committed": {
+    "school": "Air Force",
+    "date": "2026-07-30",
+    "source": "https://www.on3.com/rivals/flynn-latta-286021"
+   },
+   "offers": [
+    {
+     "school": "Air Force",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/flynn-latta-286021"
+    },
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/flynn-latta-286021"
+    },
+    {
+     "school": "Navy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/flynn-latta-286021"
+    },
+    {
+     "school": "Army",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/flynn-latta-286021"
+    },
+    {
+     "school": "Dartmouth",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/flynn-latta-286021"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/flynn-latta-286021",
+    "https://www.on3.com/college/cornell-big-red/football/2027/offers",
+    "https://www.on3.com/college/army-black-knights/football/2027/offers"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Colton Heimlicher",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "EDGE",
+   "height": "6-4",
+   "weight": "230",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Cornell",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/cornell-big-red/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/cornell-big-red/football/2027/offers"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "DaKari Releford Jr.",
+   "highSchool": "Fountain-Fort Carson",
+   "city": "Fountain",
+   "position": "RB",
+   "height": "5-8",
+   "weight": "175",
+   "stars247": null,
+   "committed": {
+    "school": "Montana State",
+    "date": "2026-05-30",
+    "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+   },
+   "offers": [
+    {
+     "school": "Montana State",
+     "level": "FCS",
+     "date": "2026-02-23",
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Harvard",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Yale",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Air Force",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Columbia",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Dartmouth",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    },
+    {
+     "school": "Northern Colorado",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/fcs/big-sky/montana-state-football-lands-colorado-hs-rb-dakari-releford-jr",
+    "https://www.on3.com/college/harvard-crimson/football/2027/offers"
+   ],
+   "classYear": "2027"
+  },
+  {
+   "name": "Titus Huard",
+   "classYear": "2028",
+   "highSchool": "Valor Christian",
+   "city": "Littleton",
+   "position": "QB",
+   "height": "6-5",
+   "weight": "205",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": "2026-01-27",
+     "source": "https://www.si.com/college/washington/recruiting/uw-counters-oregon-offer-to-huard-with-one-of-its-own-01kg0ek67psf"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "SMU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Texas Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/titus-huard-259491"
+    },
+    {
+     "school": "Oklahoma State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://ground.news/article/oklahoma-state-offers-2028-qb-titus-huard-son-of-brock-huard"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/washington/recruiting/uw-counters-oregon-offer-to-huard-with-one-of-its-own-01kg0ek67psf"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/washington/recruiting/uw-counters-oregon-offer-to-huard-with-one-of-its-own-01kg0ek67psf"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/Arizona-State-sun-devils/football/2028/offers"
+    },
+    {
+     "school": "Stetson",
+     "level": "FCS",
+     "date": null,
+     "source": "https://247sports.com/longformarticle/colorado-recruiting-notebook-nebraska-cornhuskers-colorado-buffaloes-utah-utes-washington-state-cougars-kansas-state-wildcats-oklahoma-sooners--238848784/"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/colorado/football/colorado-buffaloes-offer-coveted-in-state-quarterback-recruit-titus-huard-mike-sanford",
+    "https://www.on3.com/rivals/titus-huard-259491",
+    "https://www.si.com/college/washington/recruiting/uw-counters-oregon-offer-to-huard-with-one-of-its-own-01kg0ek67psf",
+    "https://ground.news/article/oklahoma-state-offers-2028-qb-titus-huard-son-of-brock-huard",
+    "https://www.on3.com/college/Arizona-State-sun-devils/football/2028/offers",
+    "https://www.on3.com/college/colorado-buffaloes/football/2028/offers",
+    "https://247sports.com/longformarticle/colorado-recruiting-notebook-nebraska-cornhuskers-colorado-buffaloes-utah-utes-washington-state-cougars-kansas-state-wildcats-oklahoma-sooners--238848784/",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO",
+    "https://www.denvergazette.com/?p=608149"
+   ]
+  },
+  {
+   "name": "Luke Rubley",
+   "classYear": "2028",
+   "highSchool": "Regis Jesuit",
+   "city": "Aurora",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "180",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    },
+    {
+     "school": "Boston College",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    },
+    {
+     "school": "Indiana",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/teams/indiana-hoosiers/news/2028-quarterback-luke-rubley-thrilled-by-indiana-offer"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    },
+    {
+     "school": "Oklahoma State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/arizonastate/sun-devils-offer-talented-2028-quarterback",
+    "https://www.on3.com/teams/indiana-hoosiers/news/2028-quarterback-luke-rubley-thrilled-by-indiana-offer",
+    "https://www.on3.com/college/Arizona-State-sun-devils/football/2028/offers",
+    "https://www.on3.com/rivals/luke-rubley-244175/recruiting",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO",
+    "https://247sports.com/longformarticle/colorado-recruiting-notebook-nebraska-cornhuskers-colorado-buffaloes-utah-utes-washington-state-cougars-kansas-state-wildcats-oklahoma-sooners--238848784/"
+   ]
+  },
+  {
+   "name": "Elijah Cromwell",
+   "classYear": "2028",
+   "highSchool": "Cherry Creek",
+   "city": "Englewood",
+   "position": "RB",
+   "height": "5-11",
+   "weight": "180",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "California",
+     "level": "FBS",
+     "date": "2025-05-05",
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "San Diego State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "New Mexico",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Louisiana Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "UTEP",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Northern Arizona",
+     "level": "FCS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Iowa",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Kansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Kansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "SMU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Iowa State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "UCLA",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html"
+    }
+   ],
+   "sources": [
+    "https://sports.yahoo.com/articles/tennessee-football-offers-2028-colorado-144523567.html",
+    "https://irishsportsdaily.com/s/27117/new-notre-dame-offer-2028-rb-elijah-cromwell",
+    "https://sports.yahoo.com/articles/colorado-football-offers-2028-no-171712677.html",
+    "https://www.on3.com/college/colorado-state-rams/football/2028/offers",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO",
+    "https://prepranks.com/football/recruits/elijah-cromwell-2028"
+   ]
+  },
+  {
+   "name": "Colton Ott",
+   "classYear": "2028",
+   "highSchool": "Fairview",
+   "city": "Boulder",
+   "position": "IOL",
+   "height": "6-4",
+   "weight": "310",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/26392/2028-ol-colton-ott-talks-awesome-notre-dame-visit"
+    },
+    {
+     "school": "Toledo",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/26392/2028-ol-colton-ott-talks-awesome-notre-dame-visit"
+    },
+    {
+     "school": "Purdue",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/key-colorado-buffaloes-recruit-deion-sanders-keep-home-colton-ott-offensive-lineman"
+    }
+   ],
+   "sources": [
+    "https://irishsportsdaily.com/s/26392/2028-ol-colton-ott-talks-awesome-notre-dame-visit",
+    "https://www.si.com/college/colorado/football/key-colorado-buffaloes-recruit-deion-sanders-keep-home-colton-ott-offensive-lineman",
+    "https://www.on3.com/college/colorado-buffaloes/football/2028/offers",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO"
+   ]
+  },
+  {
+   "name": "Kaden Myers",
+   "classYear": "2028",
+   "highSchool": "Windsor",
+   "city": "Windsor",
+   "position": "IOL",
+   "height": "6-4",
+   "weight": "290",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Oregon State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-recruiting-relationship-top-lineman-kaden-myers"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/colorado/football/colorado-buffaloes-recruiting-relationship-top-lineman-kaden-myers"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/colorado/football/colorado-buffaloes-recruiting-relationship-top-lineman-kaden-myers",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO"
+   ]
+  },
+  {
+   "name": "Davis Moon",
+   "classYear": "2028",
+   "highSchool": "Valor Christian",
+   "city": "Littleton",
+   "position": "IOL",
+   "height": "6-3",
+   "weight": "290",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Syracuse",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/davis-moon-286503/"
+    },
+    {
+     "school": "South Dakota",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/davis-moon-286503/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/davis-moon-286503/",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=highschool&State=CO"
+   ]
+  },
+  {
+   "name": "Devaughn Daniels",
+   "classYear": "2028",
+   "highSchool": "Northfield",
+   "city": "Denver",
+   "position": "ATH",
+   "height": "6-0",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://247sports.com/college/colorado/article/colorado-football-recruiting-first-offer-for-denver-northfield-athlete-devaughn-daniels-after-he-shined-at-buffaloes-elite-camp-250779233/"
+    },
+    {
+     "school": "California",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/devaughn-daniels-246703/"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/devaughn-daniels-246703/"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/rivals/devaughn-daniels-246703/"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/college/colorado/article/colorado-football-recruiting-first-offer-for-denver-northfield-athlete-devaughn-daniels-after-he-shined-at-buffaloes-elite-camp-250779233/",
+    "https://www.on3.com/rivals/devaughn-daniels-246703/"
+   ]
+  },
+  {
+   "name": "Jayden Bates",
+   "classYear": "2029",
+   "highSchool": "Cherry Creek",
+   "city": "Greenwood Village",
+   "position": "DL",
+   "height": "6-4",
+   "weight": "225",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Minnesota",
+     "level": "FBS",
+     "date": null,
+     "source": "https://varsity.startribune.com/jayden-bates-pj-fleck-eden-prairie-gophers-football-scholarship-middle-school/601375245"
+    }
+   ],
+   "sources": [
+    "https://varsity.startribune.com/jayden-bates-pj-fleck-eden-prairie-gophers-football-scholarship-middle-school/601375245",
+    "https://prepredzone.com/2026/07/meet-colorados-top-five-2029-prospects/",
+    "https://www.on3.com/rivals/jayden-bates-283246"
+   ]
+  },
+  {
+   "name": "Kashus Clarvoe",
+   "classYear": "2029",
+   "highSchool": "Valor Christian",
+   "city": "Littleton",
+   "position": "RB",
+   "height": "5-9",
+   "weight": "185",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Fresno State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://prepredzone.com/2026/07/meet-colorados-top-five-2029-prospects/"
+    },
+    {
+     "school": "Colorado State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://prepredzone.com/2026/07/meet-colorados-top-five-2029-prospects/"
+    },
+    {
+     "school": "Northern Colorado",
+     "level": "FCS",
+     "date": null,
+     "source": "https://prepredzone.com/2026/07/meet-colorados-top-five-2029-prospects/"
+    }
+   ],
+   "sources": [
+    "https://prepredzone.com/2026/07/meet-colorados-top-five-2029-prospects/"
+   ]
+  }
+ ]
+}

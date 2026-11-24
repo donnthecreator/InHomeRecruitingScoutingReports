@@ -22,6 +22,7 @@
    Add a line here when a new state's file is added. */
 const STATES = {
   CO: require('./lib/state-offers/CO.json'),
+  AL: require('./lib/state-offers/AL.json'),
 };
 
 const { schoolKey, logoMap } = require('./lib/logos');

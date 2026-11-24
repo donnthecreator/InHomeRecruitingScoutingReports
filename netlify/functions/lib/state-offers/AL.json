@@ -1,0 +1,2196 @@
+{
+ "state": "AL",
+ "retrieved": "2026-11-24",
+ "players": [
+  {
+   "name": "Kingston Preyear",
+   "classYear": "2028",
+   "highSchool": "Benjamin Russell",
+   "city": "Alexander City",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "195",
+   "stars247": 4,
+   "committed": {
+    "school": "Alabama",
+    "date": "2026-07-10",
+    "source": "https://www.si.com/college/alabama/recruiting/alabama-football-lands-second-class-of-2028-quarterback"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-01-19",
+     "source": "https://tdalabamamag.com/?p=181001"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181001"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181001"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181001"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181001"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Clemson",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Purdue",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/purdue-boilermakers/football/2028/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2028/offers"
+    },
+    {
+     "school": "Arizona",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "FIU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Houston",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "SMU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    },
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear"
+    }
+   ],
+   "sources": [
+    "https://africa.espn.com/college-football/story/_/id/49326580/alabama-lands-2028-top-state-qb-prospect-kingston-preyear",
+    "https://irishsportsdaily.com/s/27515/new-notre-dame-offer-2028-qb-kingston-preyear",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/?p=181001",
+    "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/",
+    "https://www.on3.com/college/purdue-boilermakers/football/2028/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2028/offers",
+    "https://www.si.com/college/alabama/recruiting/alabama-football-lands-second-class-of-2028-quarterback"
+   ]
+  },
+  {
+   "name": "Ryquan Butler",
+   "classYear": "2028",
+   "highSchool": "Loachapoka",
+   "city": "Notasulga",
+   "position": "LB",
+   "height": "6-3",
+   "weight": "205",
+   "stars247": 3,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-11-17",
+    "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-beats-out-sec-rivals-for-2028-linebacker-from-alabama/"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186406"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186406"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/alabama/recruiting/alabama-football-lands-second-class-of-2028-quarterback",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/09/06/in-state-2028-linebacker-ryquan-butler-de-commits-from-alabama/",
+    "https://tuscaloosathread.com/ixp/531/p/ryquan-butler-commits-alabama-football-2028/",
+    "https://tdalabamamag.com/?p=186406",
+    "https://www.saturdaydownsouth.com/news/college-football/auburn-beats-out-sec-rivals-for-2028-linebacker-from-alabama/"
+   ]
+  },
+  {
+   "name": "Samuel Bailey",
+   "classYear": "2028",
+   "highSchool": "Mae Jemison",
+   "city": "Huntsville",
+   "position": "OL",
+   "height": "6-6",
+   "weight": "285",
+   "stars247": 4,
+   "committed": {
+    "school": "Florida",
+    "date": "2026-09-28",
+    "source": "https://www.saturdaydownsouth.com/news/college-football/florida-gets-commitment-from-4-star-ot-out-of-alabama/"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/"
+    },
+    {
+     "school": "South Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2028/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/16/programs-across-the-country-are-pushing-early-to-land-huntsville-4-star-ol/"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/16/programs-across-the-country-are-pushing-early-to-land-huntsville-4-star-ol/"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/16/programs-across-the-country-are-pushing-early-to-land-huntsville-4-star-ol/"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/16/programs-across-the-country-are-pushing-early-to-land-huntsville-4-star-ol/"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://roundtable.io/sports/ncaa/florida/news/florida-secures-commitment-from-top-25-recruit-samuel-bailey",
+    "https://tdalabamamag.com/2026/04/01/alabama-offers-huntsville-6-foot-6-ol-samuel-bailey/",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2028/offers",
+    "https://tdalabamamag.com/2026/05/16/programs-across-the-country-are-pushing-early-to-land-huntsville-4-star-ol/",
+    "https://www.saturdaydownsouth.com/news/college-football/florida-gets-commitment-from-4-star-ot-out-of-alabama/"
+   ]
+  },
+  {
+   "name": "Zion Coger",
+   "classYear": "2028",
+   "highSchool": "Jasper",
+   "city": "Jasper",
+   "position": "RB",
+   "height": "5-11",
+   "weight": "190",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-06-08",
+     "source": "https://tdalabamamag.com/2026/06/09/alabama-offers-jasper-4-star-running-back-zion-coger/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/09/alabama-offers-jasper-4-star-running-back-zion-coger/"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/09/alabama-offers-jasper-4-star-running-back-zion-coger/"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/09/alabama-offers-jasper-4-star-running-back-zion-coger/"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/06/09/alabama-offers-jasper-4-star-running-back-zion-coger/"
+   ]
+  },
+  {
+   "name": "Kaleb Ballard",
+   "classYear": "2028",
+   "highSchool": "Wetumpka",
+   "city": "Wetumpka",
+   "position": "TE",
+   "height": "6-5",
+   "weight": "221",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-03-27",
+     "source": "https://tdalabamamag.com/2026/03/28/alabama-offers-wetumpka-6-foot-5-ath/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/28/alabama-offers-wetumpka-6-foot-5-ath/"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/28/alabama-offers-wetumpka-6-foot-5-ath/"
+    },
+    {
+     "school": "Virginia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=183883"
+    },
+    {
+     "school": "Purdue",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=183883"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/alabama-crimson-tide/football/2028/offers",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/03/28/alabama-offers-wetumpka-6-foot-5-ath/",
+    "https://tdalabamamag.com/?p=183883"
+   ]
+  },
+  {
+   "name": "Braylon Jackson",
+   "classYear": "2028",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "OL",
+   "height": "6-4",
+   "weight": "292",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/06/18/alabama-offers-prattville-6-foot-4-offensive-lineman/"
+   ]
+  },
+  {
+   "name": "Nehemiah McCary",
+   "classYear": "2028",
+   "highSchool": "Maplesville",
+   "city": "Maplesville",
+   "position": "LB",
+   "height": "6-3",
+   "weight": "220",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/09/maplesville-4-star-lb-visiting-alabama-for-a-day/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/09/maplesville-4-star-lb-visiting-alabama-for-a-day/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/09/maplesville-4-star-lb-visiting-alabama-for-a-day/"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/09/maplesville-4-star-lb-visiting-alabama-for-a-day/"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2028/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2028/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2028/offers"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/florida-gators/football/2028/offers"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/miami-hurricanes/football/2028/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": "2026-05-12",
+     "source": "https://roundtable.io/sports/ncaa/texas-longhorns/news/texas-offers-2028-elite-linebacker"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/texas-longhorns/news/texas-offers-2028-elite-linebacker"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-enters-the-sweepstakes-for-5-star-elite-linebacker-nehemiah-mccary"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-enters-the-sweepstakes-for-5-star-elite-linebacker-nehemiah-mccary"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-enters-the-sweepstakes-for-5-star-elite-linebacker-nehemiah-mccary"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/rankings/industry-player/football/2028/?state=al",
+    "https://prepranks.com/football/recruits/nehemiah-mccary-2028",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/04/09/maplesville-4-star-lb-visiting-alabama-for-a-day/",
+    "https://www.on3.com/college/alabama-state-hornets/football/2028/offers",
+    "https://www.on3.com/college/troy-trojans/football/2028/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2028/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2028/offers",
+    "https://www.on3.com/college/florida-gators/football/2028/offers",
+    "https://www.on3.com/college/miami-hurricanes/football/2028/offers",
+    "https://roundtable.io/sports/ncaa/texas-longhorns/news/texas-offers-2028-elite-linebacker",
+    "https://roundtable.io/sports/ncaa/michigan/news/michigan-enters-the-sweepstakes-for-5-star-elite-linebacker-nehemiah-mccary"
+   ]
+  },
+  {
+   "name": "Dedrick Kimbrough",
+   "classYear": "2028",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "WR",
+   "height": "6-2",
+   "weight": "197",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/09/dedrick-kimbrough-gets-deeper-look-at-alabama-in-spring-practice/"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/09/dedrick-kimbrough-gets-deeper-look-at-alabama-in-spring-practice/"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/09/dedrick-kimbrough-gets-deeper-look-at-alabama-in-spring-practice/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "Penn State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": "2025-09-18",
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638"
+    },
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2028/offers"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/florida-state-seminoles/football/2028/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-razorbacks/football/2028/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2028/offers"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kentucky-wildcats/football/2028/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2028/offers"
+    },
+    {
+     "school": "Appalachian State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Duke",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "FIU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Maryland",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Sacramento State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "South Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Wake Forest",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Washington",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-football-extends-offer-to-elite-2028-four-star-wide-receiver-dedrick-kimbrough"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-football-extends-offer-to-elite-2028-four-star-wide-receiver-dedrick-kimbrough"
+    },
+    {
+     "school": "West Virginia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-football-extends-offer-to-elite-2028-four-star-wide-receiver-dedrick-kimbrough"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/michigan/news/michigan-football-extends-offer-to-elite-2028-four-star-wide-receiver-dedrick-kimbrough"
+    }
+   ],
+   "sources": [
+    "https://irishsportsdaily.com/s/27124/new-notre-dame-offer-2028-wr-dedrick-kimbrough",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/03/09/dedrick-kimbrough-gets-deeper-look-at-alabama-in-spring-practice/",
+    "https://www.si.com/college/olemiss/recruiting/ole-miss-football-offers-elite-wide-receiver-no-1-overall-prospect-in-alabama-01k5hjhas638",
+    "https://www.on3.com/college/uab-blazers/football/2028/offers",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/florida-state-seminoles/football/2028/offers",
+    "https://www.on3.com/college/arkansas-razorbacks/football/2028/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2028/offers",
+    "https://www.on3.com/college/kentucky-wildcats/football/2028/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2028/offers",
+    "https://roundtable.io/sports/ncaa/michigan/news/michigan-football-extends-offer-to-elite-2028-four-star-wide-receiver-dedrick-kimbrough"
+   ]
+  },
+  {
+   "name": "Lee Steele",
+   "classYear": "2028",
+   "highSchool": "Orange Beach",
+   "city": "Orange Beach",
+   "position": "TE",
+   "height": "6-6",
+   "weight": "210",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/"
+    },
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2028/offers"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/tennessee/recruiting/tennessee-football-extends-offer-to-fast-rising-2028-wr-te-01k1nky30bv4",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2028/offers",
+    "https://prepranks.com/football/recruits/lee-steele-2028",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/04/15/alabama-feels-orange-beach-6-foot-6-tight-end-fits-their-system/",
+    "https://www.on3.com/college/uab-blazers/football/2028/offers",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/liberty-flames/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Keoni Snipes",
+   "classYear": "2028",
+   "highSchool": "Saraland",
+   "city": "Saraland",
+   "position": "EDGE",
+   "height": "6-6",
+   "weight": "250",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/13/alabama-offers-saraland-6-foot-6-edge-its-truly-a-blessing/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/15/saraland-6-foot-6-edge-keoni-snipes-collecting-power-4-offers/"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2028/offers"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2028/offers"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kentucky-wildcats/football/2028/offers"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/17/alabama-football-positioning-itself-to-take-advantage-of-groundbreaking-in-state-2028-recruiting-class"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/17/alabama-football-positioning-itself-to-take-advantage-of-groundbreaking-in-state-2028-recruiting-class"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/17/alabama-football-positioning-itself-to-take-advantage-of-groundbreaking-in-state-2028-recruiting-class"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2028/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/08/saraland-6-foot-6-edge-keoni-snipes-continues-to-add-major-offers/"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/08/saraland-6-foot-6-edge-keoni-snipes-continues-to-add-major-offers/"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/08/saraland-6-foot-6-edge-keoni-snipes-continues-to-add-major-offers/"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/03/08/saraland-6-foot-6-edge-keoni-snipes-continues-to-add-major-offers/"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Florida A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "Texas Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    },
+    {
+     "school": "West Virginia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/04/13/alabama-offers-saraland-6-foot-6-edge-its-truly-a-blessing/",
+    "https://tdalabamamag.com/2026/01/15/saraland-6-foot-6-edge-keoni-snipes-collecting-power-4-offers/",
+    "https://www.on3.com/college/alabama-state-hornets/football/2028/offers",
+    "https://www.on3.com/college/troy-trojans/football/2028/offers",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2028/offers",
+    "https://www.on3.com/college/kentucky-wildcats/football/2028/offers",
+    "https://tdalabamamag.com/2026/07/17/alabama-football-positioning-itself-to-take-advantage-of-groundbreaking-in-state-2028-recruiting-class",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2028/offers",
+    "https://tdalabamamag.com/2026/03/08/saraland-6-foot-6-edge-keoni-snipes-continues-to-add-major-offers/",
+    "https://irishsportsdaily.com/s/27367/new-notre-dame-offer-2028-de-keoni-snipes"
+   ]
+  },
+  {
+   "name": "Joey Fleming",
+   "classYear": "2028",
+   "highSchool": "Huntsville",
+   "city": "Huntsville",
+   "position": "OL",
+   "height": "6-5",
+   "weight": "280",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/06/16/alabama-offers-huntsville-6-foot-5-freshman-ol-joey-fleming/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/06/16/alabama-offers-huntsville-6-foot-5-freshman-ol-joey-fleming/"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/06/16/alabama-offers-huntsville-6-foot-5-freshman-ol-joey-fleming/"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/06/16/alabama-offers-huntsville-6-foot-5-freshman-ol-joey-fleming/"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/joey-fleming-recruiting-update-fall-visits/"
+    },
+    {
+     "school": "Clemson",
+     "level": "FBS",
+     "date": null,
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/joey-fleming-recruiting-update-fall-visits/"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/joey-fleming-recruiting-update-fall-visits/"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/florida-gators/football/2028/offers"
+    },
+    {
+     "school": "Penn State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/penn-state-nittany-lions/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2025/06/16/alabama-offers-huntsville-6-foot-5-freshman-ol-joey-fleming/",
+    "https://heavy.com/sports/college-football/alabama-crimson-tide/joey-fleming-recruiting-update-fall-visits/",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/florida-gators/football/2028/offers",
+    "https://www.on3.com/college/penn-state-nittany-lions/football/2028/offers"
+   ]
+  },
+  {
+   "name": "CJ Craig-James",
+   "classYear": "2028",
+   "highSchool": "Parker",
+   "city": "Birmingham",
+   "position": "S",
+   "height": "6-3",
+   "weight": "185",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/recruiting-cj-craig-james-update-2028/"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2028/offers"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/missouri-tigers/football/2028/offers"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2028/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2028/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/auburn/football/defensive-recruit-tabs-auburn-as-obvious-school-to-explore"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/auburn/football/defensive-recruit-tabs-auburn-as-obvious-school-to-explore"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/auburn/football/defensive-recruit-tabs-auburn-as-obvious-school-to-explore"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/auburn/football/defensive-recruit-tabs-auburn-as-obvious-school-to-explore"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=187187"
+    },
+    {
+     "school": "Indiana",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=187187"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181261"
+    },
+    {
+     "school": "South Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181261"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181261"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181261"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=181261"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://heavy.com/sports/college-football/alabama-crimson-tide/recruiting-cj-craig-james-update-2028/",
+    "https://www.si.com/college/olemiss/recruiting/ole-miss-football-and-oregon-ducks-dish-out-offers-to-fast-rising-alabama-safety-01kjy9sjztgx",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2028/offers",
+    "https://www.on3.com/college/missouri-tigers/football/2028/offers",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2028/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2028/offers",
+    "https://www.si.com/college/auburn/football/defensive-recruit-tabs-auburn-as-obvious-school-to-explore",
+    "https://tdalabamamag.com/?p=187187",
+    "https://tdalabamamag.com/?p=181261"
+   ]
+  },
+  {
+   "name": "Chris Davis III",
+   "classYear": "2028",
+   "highSchool": "Spain Park",
+   "city": "Hoover",
+   "position": "RB",
+   "height": "5-10",
+   "weight": "180",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/news/auburn-offers-chris-davis-iii-son-of-former-tigers-db-kick-six-star-chris-davis"
+    },
+    {
+     "school": "UCF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/news/auburn-offers-chris-davis-iii-son-of-former-tigers-db-kick-six-star-chris-davis"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/news/auburn-offers-chris-davis-iii-son-of-former-tigers-db-kick-six-star-chris-davis"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/news/auburn-offers-chris-davis-iii-son-of-former-tigers-db-kick-six-star-chris-davis"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/ole-miss-rebels/football/2028/offers"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2028/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2028/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/auburn-tigers/football/2028/offers",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/07/17/alabama-football-positioning-itself-to-take-advantage-of-groundbreaking-in-state-2028-recruiting-class",
+    "https://www.on3.com/college/auburn-tigers/news/auburn-offers-chris-davis-iii-son-of-former-tigers-db-kick-six-star-chris-davis",
+    "https://www.on3.com/college/ole-miss-rebels/football/2028/offers",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2028/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2028/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Sam Sollie",
+   "classYear": "2028",
+   "highSchool": "Gadsden City",
+   "city": "Gadsden",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "190",
+   "stars247": 3,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-08-08",
+    "source": "https://roundtable.io/sports/ncaa/auburn/news/auburn-lands-2028-qb-sam-sollie-as-first-commitment-of-recruiting-class"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/13/alabama-football-offers-gadsden-city-sophomore-quarterback/"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/13/alabama-football-offers-gadsden-city-sophomore-quarterback/"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/13/alabama-football-offers-gadsden-city-sophomore-quarterback/"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/13/alabama-football-offers-gadsden-city-sophomore-quarterback/"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/auburn/news/auburn-lands-2028-qb-sam-sollie-as-first-commitment-of-recruiting-class"
+    }
+   ],
+   "sources": [
+    "https://prepranks.com/football/recruits/sam-sollie-2028",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/05/13/alabama-football-offers-gadsden-city-sophomore-quarterback/",
+    "https://roundtable.io/sports/ncaa/auburn/news/auburn-lands-2028-qb-sam-sollie-as-first-commitment-of-recruiting-class"
+   ]
+  },
+  {
+   "name": "Kylen Johnson",
+   "classYear": "2028",
+   "highSchool": "Plainview",
+   "city": "Rainsville",
+   "position": "CB",
+   "height": "5-10",
+   "weight": "175",
+   "stars247": 4,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/28/alabama-offers-dynamic-in-state-athletes-at-wide-receiver/"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/28/alabama-offers-dynamic-in-state-athletes-at-wide-receiver/"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/28/alabama-offers-dynamic-in-state-athletes-at-wide-receiver/"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/28/alabama-offers-dynamic-in-state-athletes-at-wide-receiver/"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.canesinsight.com/articles/2028-cb-kylen-johnson-receives-scholarship-offer-from-miami.11810/"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": "2026-05-15",
+     "source": "https://www.canesinsight.com/articles/2028-cb-kylen-johnson-receives-scholarship-offer-from-miami.11810/"
+    },
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2028/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    }
+   ],
+   "sources": [
+    "https://www.prepranks.com/football/recruits/kylen-johnson-2028",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/04/28/alabama-offers-dynamic-in-state-athletes-at-wide-receiver/",
+    "https://www.canesinsight.com/articles/2028-cb-kylen-johnson-receives-scholarship-offer-from-miami.11810/",
+    "https://www.on3.com/college/uab-blazers/football/2028/offers",
+    "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+   ]
+  },
+  {
+   "name": "Jamari Nicks",
+   "classYear": "2028",
+   "highSchool": "Winterboro",
+   "city": "Alpine",
+   "position": "ATH",
+   "height": "5-10",
+   "weight": "185",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/04/01/lifelong-alabama-fan-picking-up-sec-offers-as-freshman/"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2025/04/01/lifelong-alabama-fan-picking-up-sec-offers-as-freshman/"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/auburn/recruiting/sec-offered-ath-talks-auburn-visit-interest-in-tigers-01kn35apa3pc",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2025/04/01/lifelong-alabama-fan-picking-up-sec-offers-as-freshman/"
+   ]
+  },
+  {
+   "name": "Janzen Currie",
+   "classYear": "2029",
+   "highSchool": "Plainview",
+   "city": "Rainsville",
+   "position": "DB",
+   "height": "6-1",
+   "weight": "195",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-dynamic-rising-in-state-prospect/"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-dynamic-rising-in-state-prospect/"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/06/18/alabama-offers-dynamic-rising-in-state-prospect/"
+    }
+   ],
+   "sources": [
+    "https://tdalabamamag.com/2026/06/18/alabama-offers-dynamic-rising-in-state-prospect/"
+   ]
+  },
+  {
+   "name": "Braylen Averett",
+   "classYear": "2029",
+   "highSchool": "Central-Phenix City",
+   "city": "Phenix City",
+   "position": "WR",
+   "height": "5-10",
+   "weight": "170",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/11/alabama-offers-phenix-city-freshman-braylen-averett/"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/11/alabama-offers-phenix-city-freshman-braylen-averett/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/11/alabama-offers-phenix-city-freshman-braylen-averett/"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/11/alabama-offers-phenix-city-freshman-braylen-averett/"
+    }
+   ],
+   "sources": [
+    "https://prepredzone.com/alabama/rankings/2029-rankings/",
+    "https://tdalabamamag.com/2026/04/11/alabama-offers-phenix-city-freshman-braylen-averett/"
+   ]
+  },
+  {
+   "name": "Demarcus Dale-Brown",
+   "classYear": "2028",
+   "highSchool": "Williamson",
+   "city": "Mobile",
+   "position": "EDGE",
+   "height": "6-0.5",
+   "weight": "241",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2028/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2028/offers"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2028/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2028/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=169420"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=169420"
+    },
+    {
+     "school": "Baylor",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=169420"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=169420"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/rankings/industry-player/football/2028/?state=al",
+    "https://www.prepranks.com/football/recruits/demarcus-dale-brown-2028/",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://www.on3.com/college/uab-blazers/football/2028/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2028/offers",
+    "https://www.on3.com/college/troy-trojans/football/2028/offers",
+    "https://www.on3.com/college/vanderbilt-commodores/football/2028/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2028/offers",
+    "https://www.on3.com/college/liberty-flames/football/2028/offers",
+    "https://tdalabamamag.com/?p=169420"
+   ]
+  },
+  {
+   "name": "Cortez Carr Jr.",
+   "classYear": "2028",
+   "highSchool": "Buckhorn",
+   "city": "New Market",
+   "position": "DL",
+   "height": "6-1",
+   "weight": "235",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Char-Zale Davis",
+   "classYear": "2028",
+   "highSchool": "Benjamin Russell",
+   "city": "Alexander City",
+   "position": "DL",
+   "height": "6-3",
+   "weight": "260",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Cortez Hudson",
+   "classYear": "2028",
+   "highSchool": "Huntsville",
+   "city": "Huntsville",
+   "position": "WR",
+   "height": "6-3",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/ole-miss-rebels/football/2028/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/rivals/rankings/industry-player/football/2028/?state=al",
+    "https://www.on3.com/college/ole-miss-rebels/football/2028/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Devin Alfred",
+   "classYear": "2028",
+   "highSchool": "Saraland",
+   "city": "Saraland",
+   "position": "WR",
+   "height": "5-10",
+   "weight": "165",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/ole-miss-rebels/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/ole-miss-rebels/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Darryl Blackmon",
+   "classYear": "2028",
+   "highSchool": "B.C. Rain",
+   "city": "Mobile",
+   "position": "WR",
+   "height": "6-3",
+   "weight": "212",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/22/alabama-offers-mobile-6-foot-3-wide-receiver/"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/22/alabama-offers-mobile-6-foot-3-wide-receiver/"
+    },
+    {
+     "school": "West Virginia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/04/22/alabama-offers-mobile-6-foot-3-wide-receiver/"
+    },
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2028/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2028/offers"
+    },
+    {
+     "school": "Purdue",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/purdue-boilermakers/football/2028/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/sites/wv-sports/news/2028-wr-darryl-blackmon-talks-west-virginia-offer/",
+    "https://prepranks.com/football/recruits/darryl-blackmon-2028",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/04/22/alabama-offers-mobile-6-foot-3-wide-receiver/",
+    "https://www.on3.com/college/uab-blazers/football/2028/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2028/offers",
+    "https://www.on3.com/college/purdue-boilermakers/football/2028/offers"
+   ]
+  },
+  {
+   "name": "Christian Bennett",
+   "classYear": "2028",
+   "highSchool": "Clay-Chalkville",
+   "city": "Pinson",
+   "position": "OL",
+   "height": "6-3",
+   "weight": "280",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/15/clay-chalkville-sophomore-offensive-lineman-shows-why-he-has-alabama-football-and-others-in-hot-pursuit/"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/15/clay-chalkville-sophomore-offensive-lineman-shows-why-he-has-alabama-football-and-others-in-hot-pursuit/"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/15/clay-chalkville-sophomore-offensive-lineman-shows-why-he-has-alabama-football-and-others-in-hot-pursuit/"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/05/15/clay-chalkville-sophomore-offensive-lineman-shows-why-he-has-alabama-football-and-others-in-hot-pursuit/"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://tdalabamamag.com/2026/05/15/clay-chalkville-sophomore-offensive-lineman-shows-why-he-has-alabama-football-and-others-in-hot-pursuit/"
+   ]
+  },
+  {
+   "name": "Captain Munnerlyn Jr.",
+   "classYear": "2029",
+   "highSchool": "Williamson",
+   "city": "Mobile",
+   "position": "S",
+   "height": "6-1",
+   "weight": "185",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=184191"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2029/offers"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/florida-gators/football/2029/offers"
+    }
+   ],
+   "sources": [
+    "https://prepredzone.com/alabama/rankings/2029-rankings/",
+    "https://tdalabamamag.com/?p=184191",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2029/offers",
+    "https://www.on3.com/college/florida-gators/football/2029/offers"
+   ]
+  },
+  {
+   "name": "Bralen Coleman",
+   "classYear": "2029",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "WR",
+   "height": "6-3",
+   "weight": "197",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186625"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186625"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186625"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186625"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/?p=186625"
+    }
+   ],
+   "sources": [
+    "https://prepredzone.com/alabama/rankings/2029-rankings/",
+    "https://tdalabamamag.com/?p=186625"
+   ]
+  },
+  {
+   "name": "Jahyden White",
+   "classYear": "2028",
+   "highSchool": "Florence",
+   "city": "Florence",
+   "position": "DL",
+   "height": "6-2.5",
+   "weight": "291",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "North Alabama",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    },
+    {
+     "school": "UTSA",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.florencefalconsfb.com/team-members/jahyden/white"
+    }
+   ],
+   "sources": [
+    "https://prepredzone.com/player/jahyden-white/",
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://www.florencefalconsfb.com/team-members/jahyden/white"
+   ]
+  },
+  {
+   "name": "Cavin Bates",
+   "classYear": "2028",
+   "highSchool": "Cleburne County",
+   "city": "Heflin",
+   "position": "DL",
+   "height": "6-3",
+   "weight": "272",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Clemson",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "NC State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.theclemsoninsider.com/?p=671535"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://www.theclemsoninsider.com/?p=671535"
+   ]
+  },
+  {
+   "name": "Barrett Price",
+   "classYear": "2028",
+   "highSchool": "Spain Park",
+   "city": "Hoover",
+   "position": "WR",
+   "height": "6-0",
+   "weight": "175",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": "2026-04-23",
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    },
+    {
+     "school": "Louisville",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+    }
+   ],
+   "sources": [
+    "https://247sports.com/season/2028-football/recruitrankings/?InstitutionGroup=Highschool&State=AL",
+    "https://www.yardbarker.com/college_football/articles/ole_miss_football_enters_race_for_fast_rising_nebraska_cornhuskers_arkansas_target/s1_16904_43766334"
+   ]
+  }
+ ]
+}

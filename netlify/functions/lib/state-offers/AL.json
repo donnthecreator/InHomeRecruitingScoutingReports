@@ -3,6 +3,5204 @@
  "retrieved": "2026-11-24",
  "players": [
   {
+   "name": "JaBarrius Garror",
+   "classYear": "2027",
+   "highSchool": "Vigor",
+   "city": "Mobile",
+   "position": "EDGE",
+   "height": "6-2",
+   "weight": "215",
+   "stars247": 4,
+   "committed": {
+    "school": "Texas",
+    "date": "2026-06-12",
+    "source": "https://www.fox10tv.com/2026/06/13/vigor-star-jabarrius-garror-commits-texas-turns-focus-final-season-with-wolves/"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Ohio State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/texas-beats-alabama-georgia-for-commitment-from-4-star-edge-out-of-alabama/"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/texas-beats-alabama-georgia-for-commitment-from-4-star-edge-out-of-alabama/"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/texas-beats-alabama-georgia-for-commitment-from-4-star-edge-out-of-alabama/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.saturdaydownsouth.com/news/college-football/texas-beats-alabama-georgia-for-commitment-from-4-star-edge-out-of-alabama/",
+    "https://www.fox10tv.com/2026/06/13/vigor-star-jabarrius-garror-commits-texas-turns-focus-final-season-with-wolves/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Karlos May",
+   "classYear": "2027",
+   "highSchool": "Ramsay",
+   "city": "Birmingham",
+   "position": "DL",
+   "height": "6-4",
+   "weight": "305",
+   "stars247": 4,
+   "committed": {
+    "school": "Ohio State",
+    "date": null,
+    "source": "https://www.elevenwarriors.com/ohio-state-football-recruiting/2026/06/162890/four-star-defensive-lineman-karlos-may-commits-to-ohio-state"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Western Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers"
+    },
+    {
+     "school": "Eastern Kentucky",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/eastern-kentucky-colonels/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/austin-peay-governors/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Oklahoma",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/birmingham_rising_junior_dl_piling_up_sec_offers/s1_17086_42427821"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/birmingham_rising_junior_dl_piling_up_sec_offers/s1_17086_42427821"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/birmingham_rising_junior_dl_piling_up_sec_offers/s1_17086_42427821"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers",
+    "https://www.on3.com/college/eastern-kentucky-colonels/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.on3.com/college/austin-peay-governors/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.yardbarker.com/college_football/articles/birmingham_rising_junior_dl_piling_up_sec_offers/s1_17086_42427821",
+    "https://www.elevenwarriors.com/ohio-state-football-recruiting/2026/06/162890/four-star-defensive-lineman-karlos-may-commits-to-ohio-state",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Ellis McGaskin",
+   "classYear": "2027",
+   "highSchool": "Williamson",
+   "city": "Mobile",
+   "position": "LB",
+   "height": "5-11.5",
+   "weight": "210",
+   "stars247": 4,
+   "committed": {
+    "school": "Florida",
+    "date": "2026-06-06",
+    "source": "https://www.si.com/college/florida/recruiting/4-star-lb-ellis-mcgaskin-commits-to-florida-gators-01ktdxvc1qvw"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/usf-bulls/football/2027/offers"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/usf-bulls/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/college/florida/recruiting/4-star-lb-ellis-mcgaskin-commits-to-florida-gators-01ktdxvc1qvw",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Jayden Aparicio-Bailey",
+   "classYear": "2027",
+   "highSchool": "Oak Mountain",
+   "city": "Birmingham",
+   "position": "S",
+   "height": "6-2",
+   "weight": "180",
+   "stars247": 4,
+   "committed": {
+    "school": "Clemson",
+    "date": "2026-06-27",
+    "source": "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/austin-peay-governors/football/2027/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Clemson",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.on3.com/college/austin-peay-governors/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Donivan Moore",
+   "classYear": "2027",
+   "highSchool": "Bessemer City",
+   "city": "Bessemer",
+   "position": "DL",
+   "height": "6-4",
+   "weight": "280",
+   "stars247": 4,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-02-12",
+    "source": "https://www.on3.com/rivals/donivan-moore-249134/industry-comparison/"
+   },
+   "offers": [
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.on3.com/rivals/donivan-moore-249134/industry-comparison/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   ]
+  },
+  {
+   "name": "Jatori Williams",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Phenix City",
+   "position": "IOL",
+   "height": "6-5",
+   "weight": "320",
+   "stars247": 4,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-11-10",
+    "source": "https://clutchpoints.com/ncaa-football/auburn-football-news-tigers-land-4-star-ol-recruit-previously-committed-miami"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/usf-bulls/football/2027/offers"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027"
+    },
+    {
+     "school": "Missouri",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/usf-bulls/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.saturdaydownsouth.com/news/college-football/alabama-lands-commitment-from-blue-chip-in-state-ol-for-2027",
+    "https://clutchpoints.com/ncaa-football/auburn-football-news-tigers-land-4-star-ol-recruit-previously-committed-miami",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Trent Seaborn",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "QB",
+   "height": "6-1",
+   "weight": "194",
+   "stars247": 4,
+   "committed": {
+    "school": "Alabama",
+    "date": "2025-10-20",
+    "source": "https://www.si.com/high-school/alabama/four-star-2027-qb-trent-seaborn-stays-home-commits-to-alabama-01k81nq3x13j"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Clemson",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/high-school/alabama/four-star-2027-qb-trent-seaborn-stays-home-commits-to-alabama-01k81nq3x13j",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Cam Pritchett",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "DL",
+   "height": "6-2.5",
+   "weight": "250",
+   "stars247": 4,
+   "committed": {
+    "school": "Oregon",
+    "date": "2026-06-02",
+    "source": "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Baylor",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Jaylen Scott",
+   "classYear": "2027",
+   "highSchool": "Williamson",
+   "city": "Mobile",
+   "position": "S",
+   "height": "6-0",
+   "weight": "160",
+   "stars247": 4,
+   "committed": {
+    "school": "Oklahoma",
+    "date": "2026-03-07",
+    "source": "https://www.oudaily.com/sports/oklahoma-football-jaylen-scott-commitment/article_16ecaea0-7b9f-4bc1-8c34-811b5db32ac6.html"
+   },
+   "offers": [
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/oklahoma/football/how-oklahoma-s-persistence-paid-off-in-safety-jaylen-scott-s-recruitment-01kyq68tv2ef"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/oklahoma/football/how-oklahoma-s-persistence-paid-off-in-safety-jaylen-scott-s-recruitment-01kyq68tv2ef"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/college/oklahoma/football/how-oklahoma-s-persistence-paid-off-in-safety-jaylen-scott-s-recruitment-01kyq68tv2ef",
+    "https://www.oudaily.com/sports/oklahoma-football-jaylen-scott-commitment/article_16ecaea0-7b9f-4bc1-8c34-811b5db32ac6.html",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Ba'Roc Willis",
+   "classYear": "2027",
+   "highSchool": "Pell City",
+   "city": "Pell City",
+   "position": "EDGE",
+   "height": "6-2",
+   "weight": "235",
+   "stars247": 4,
+   "committed": {
+    "school": "Colorado",
+    "date": "2026-05-19",
+    "source": "https://tdalabamamag.com/2026/05/19/breaking-pell-city-2027-edge-commits-to-colorado/"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://tdalabamamag.com/2026/05/19/breaking-pell-city-2027-edge-commits-to-colorado/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Elijah Brown",
+   "classYear": "2027",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "DL",
+   "height": "6-1.5",
+   "weight": "290",
+   "stars247": 4,
+   "committed": {
+    "school": "Kentucky",
+    "date": "2026-04-10",
+    "source": "https://www.on3.com/teams/kentucky-wildcats/news/elijah-brown-commits-kentucky-football-recruiting/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/tennessee-volunteers/football/2027/offers/",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.on3.com/teams/kentucky-wildcats/news/elijah-brown-commits-kentucky-football-recruiting/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Braden Gordon",
+   "classYear": "2027",
+   "highSchool": "The Montgomery Academy",
+   "city": "Montgomery",
+   "position": "ATH",
+   "height": "6-3",
+   "weight": "190",
+   "stars247": 4,
+   "committed": {
+    "school": "Georgia Tech",
+    "date": null,
+    "source": "https://www.si.com/college/georgiatech/football-recruiting/georgia-tech-adds-another-blue-chip-prospect-after-edge-braden-gordon-announced-his-commitment-01kt50jg59pb"
+   },
+   "offers": [
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/alabama-crimson-tide/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/college/georgiatech/football-recruiting/georgia-tech-adds-another-blue-chip-prospect-after-edge-braden-gordon-announced-his-commitment-01kt50jg59pb",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Gunner Rivers",
+   "classYear": "2027",
+   "highSchool": "St. Michael Catholic",
+   "city": "Fairhope",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "200",
+   "stars247": 4,
+   "committed": {
+    "school": "NC State",
+    "date": null,
+    "source": "https://www.on3.com/teams/nc-state-wolfpack/news/4-star-qb-gunner-rivers-commits-to-nc-state-follows-in-fathers-footsteps/"
+   },
+   "offers": [
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "NC State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers"
+    },
+    {
+     "school": "Boston College",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.on3.com/teams/nc-state-wolfpack/news/4-star-qb-gunner-rivers-commits-to-nc-state-follows-in-fathers-footsteps/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Keith Richmond",
+   "classYear": "2027",
+   "highSchool": "Clay-Chalkville",
+   "city": "Pinson",
+   "position": "EDGE",
+   "height": "6-3",
+   "weight": "227",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Eastern Kentucky",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "East Tennessee State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Western Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Tennessee State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Middle Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Missouri State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "North Alabama",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    },
+    {
+     "school": "Florida A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-alabama-a-m-pushes-for-3-star-dl-texas-southern-offers-pair-of-dbs"
+   ]
+  },
+  {
+   "name": "Marquis Evans",
+   "classYear": "2027",
+   "highSchool": "Spain Park",
+   "city": "Hoover",
+   "position": "EDGE",
+   "height": "6-5",
+   "weight": "235",
+   "stars247": 3,
+   "committed": {
+    "school": "Auburn",
+    "date": null,
+    "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-elite-pass-rusher-in-class-of-2027/"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Western Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Tennessee",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-elite-pass-rusher-in-class-of-2027/"
+    },
+    {
+     "school": "Miami",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-elite-pass-rusher-in-class-of-2027/"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-elite-pass-rusher-in-class-of-2027/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-elite-pass-rusher-in-class-of-2027/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Jamison Roberts",
+   "classYear": "2027",
+   "highSchool": "Saraland",
+   "city": "Saraland",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "190",
+   "stars247": 3,
+   "committed": {
+    "school": "Oklahoma",
+    "date": null,
+    "source": "https://www.si.com/high-school/alabama/15-alabama-high-school-quarterbacks-to-watch-in-2026-01kzxzst89h5"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Charlotte",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/charlotte-49ers/football/2027/offers"
+    },
+    {
+     "school": "FAU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/florida-atlantic-owls/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Baylor",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Duke",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/charlotte-49ers/football/2027/offers",
+    "https://www.on3.com/college/florida-atlantic-owls/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/high-school/alabama/15-alabama-high-school-quarterbacks-to-watch-in-2026-01kzxzst89h5",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Bobby Coleman",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Phenix City",
+   "position": "QB",
+   "height": "5-11",
+   "weight": "170",
+   "stars247": 3,
+   "committed": {
+    "school": "Georgia State",
+    "date": null,
+    "source": "https://www.si.com/fannation/college/cfb-hq/recruiting/35-td-qb-bobby-coleman-jr-commitment-georgia-state-"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/fannation/college/cfb-hq/recruiting/35-td-qb-bobby-coleman-jr-commitment-georgia-state-"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/fannation/college/cfb-hq/recruiting/35-td-qb-bobby-coleman-jr-commitment-georgia-state-",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Junior James",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "S",
+   "height": "6-3",
+   "weight": "195",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-01-14",
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "BYU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/recruiting/alabama-extends-offer-to-impressive-in-state-defender"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/college/alabama/recruiting/alabama-extends-offer-to-impressive-in-state-defender"
+   ]
+  },
+  {
+   "name": "Deshawn Hall",
+   "classYear": "2027",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "WR",
+   "height": "6-6",
+   "weight": "190",
+   "stars247": 3,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-06-23",
+    "source": "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Arkansas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   ]
+  },
+  {
+   "name": "Joshua Douthard",
+   "classYear": "2027",
+   "highSchool": "St. Clair County",
+   "city": "Odenville",
+   "position": "WR",
+   "height": "5-9",
+   "weight": "155",
+   "stars247": 3,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Maryland",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Pittsburgh",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "South Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Notre Dame",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Ricardo Parker",
+   "classYear": "2027",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "DL",
+   "height": "6-3",
+   "weight": "255",
+   "stars247": 3,
+   "committed": {
+    "school": "Troy",
+    "date": null,
+    "source": "https://elmoreautauganews.com/?p=91230"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://elmoreautauganews.com/?p=91230",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al",
+    "https://www.prepranks.com/football/recruits/ricardo-parker-2027"
+   ]
+  },
+  {
+   "name": "Kalib Spivey",
+   "classYear": "2027",
+   "highSchool": "Benjamin Russell",
+   "city": "Alexander City",
+   "position": "EDGE",
+   "height": "6-1",
+   "weight": "235",
+   "stars247": 3,
+   "committed": {
+    "school": "Georgia Tech",
+    "date": null,
+    "source": "https://www.si.com/college/georgiatech/football-recruiting/three-star-edge-kalib-spivey-commits-to-georgia-tech-01ktesvpyw48"
+   },
+   "offers": [
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Colorado",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    },
+    {
+     "school": "Florida State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.aol.com/news/highest-rated-class-2027-football-145343512.html",
+    "https://www.si.com/college/georgiatech/football-recruiting/three-star-edge-kalib-spivey-commits-to-georgia-tech-01ktesvpyw48",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Bryson Sanderson",
+   "classYear": "2027",
+   "highSchool": "Oxford",
+   "city": "Oxford",
+   "position": "IOL",
+   "height": "6-5",
+   "weight": "285",
+   "stars247": 3,
+   "committed": {
+    "school": "Memphis",
+    "date": null,
+    "source": "https://www.prepranks.com/football/recruits/bryson-sanderson-2027/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.prepranks.com/football/recruits/bryson-sanderson-2027/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Sharontae Bailey",
+   "classYear": "2027",
+   "highSchool": "Anniston",
+   "city": "Anniston",
+   "position": "IOL",
+   "height": "6-4",
+   "weight": "290",
+   "stars247": 3,
+   "committed": {
+    "school": "Tulane",
+    "date": null,
+    "source": "https://prepranks.com/football/recruits/sharontae-bailey-2027"
+   },
+   "offers": [
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://prepranks.com/football/recruits/sharontae-bailey-2027",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Preston Williams",
+   "classYear": "2027",
+   "highSchool": "G.W. Long",
+   "city": "Skipperville",
+   "position": "S",
+   "height": null,
+   "weight": null,
+   "stars247": 3,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-06-21",
+    "source": "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-in-state-db-lifelong-auburn-fan/"
+   },
+   "offers": [],
+   "sources": [
+    "https://www.saturdaydownsouth.com/news/college-football/auburn-lands-commitment-from-in-state-db-lifelong-auburn-fan/"
+   ]
+  },
+  {
+   "name": "Marcus Muse",
+   "classYear": "2027",
+   "highSchool": "Hillcrest",
+   "city": "Tuscaloosa",
+   "position": "DL",
+   "height": "6-3",
+   "weight": "280",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Eastern Kentucky",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Miami (OH)",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Sacramento State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "North Alabama",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Chattanooga",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Wake Forest",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+   ]
+  },
+  {
+   "name": "Darion Moseley",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "WR",
+   "height": "6-0",
+   "weight": "185",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Louisville",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/arkansas-adds-commitment-from-3-star-wr-out-of-alabama"
+    },
+    {
+     "school": "Utah",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/arkansas-adds-commitment-from-3-star-wr-out-of-alabama"
+    },
+    {
+     "school": "Arizona State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/arkansas-adds-commitment-from-3-star-wr-out-of-alabama"
+    },
+    {
+     "school": "Nebraska",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/"
+    },
+    {
+     "school": "San Diego State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.saturdaydownsouth.com/news/college-football/arkansas-adds-commitment-from-3-star-wr-out-of-alabama",
+    "https://tdalabamamag.com/2026/01/22/multiple-power-4-schools-making-hard-push-for-thompson-wide-receiver-ahead-of-sec-visit/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al",
+    "https://brobible.com/sports/article/arkansas-football-recruiting-decommit-darion-moseley-comments/"
+   ]
+  },
+  {
+   "name": "Tra'Von Hall",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Tuscaloosa",
+   "position": "ATH",
+   "height": "6-0",
+   "weight": "180",
+   "stars247": null,
+   "committed": {
+    "school": "Oklahoma",
+    "date": "2025-11-30",
+    "source": "https://www.si.com/college/oklahoma/football/oklahoma-s-2027-class-continues-to-build-momentum-with-new-wr-commit-from-alabama-01kbb77qc45f"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/oklahoma/football/oklahoma-s-2027-class-continues-to-build-momentum-with-new-wr-commit-from-alabama-01kbb77qc45f"
+    },
+    {
+     "school": "Vanderbilt",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/oklahoma/football/oklahoma-s-2027-class-continues-to-build-momentum-with-new-wr-commit-from-alabama-01kbb77qc45f"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/oklahoma/football/oklahoma-s-2027-class-continues-to-build-momentum-with-new-wr-commit-from-alabama-01kbb77qc45f"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.si.com/college/oklahoma/football/oklahoma-s-2027-class-continues-to-build-momentum-with-new-wr-commit-from-alabama-01kbb77qc45f"
+   ]
+  },
+  {
+   "name": "Isaac McNeil",
+   "classYear": "2027",
+   "highSchool": "Vigor",
+   "city": "Mobile",
+   "position": "LB",
+   "height": "6-3",
+   "weight": "210",
+   "stars247": null,
+   "committed": {
+    "school": "Auburn",
+    "date": "2026-06-02",
+    "source": "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "NC State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Charlotte",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/charlotte-49ers/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/charlotte-49ers/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   ]
+  },
+  {
+   "name": "CJ Cowley",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "RB",
+   "height": "5-11",
+   "weight": "170",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/austin-peay-governors/football/2027/offers"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/21/hoover-4-star-rb-talks-schools-standing-out-in-his-recruitment/"
+    },
+    {
+     "school": "Penn State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/01/21/hoover-4-star-rb-talks-schools-standing-out-in-his-recruitment/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.on3.com/college/austin-peay-governors/football/2027/offers",
+    "https://tdalabamamag.com/2026/01/21/hoover-4-star-rb-talks-schools-standing-out-in-his-recruitment/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al",
+    "https://www.prepranks.com/football/recruits/cj-cowley-2027/"
+   ]
+  },
+  {
+   "name": "Jordan Shambley",
+   "classYear": "2027",
+   "highSchool": "Hillcrest",
+   "city": "Tuscaloosa",
+   "position": "QB",
+   "height": "6-3",
+   "weight": "190",
+   "stars247": null,
+   "committed": {
+    "school": "UAB",
+    "date": null,
+    "source": "https://www.bhambanner.com/archive-1/lrybf9nsp8hb2g5-t2wlx-kfzmg-c8dtm-w367p-j5wd3-x7rwp-dt3ns-rfy8z-xjgm9-9msm4-lrrkk-3dyhe-pj5el-rzd62-m53nb-w9hjt"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Marshall",
+     "level": "FBS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "UMass",
+     "level": "FBS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "North Alabama",
+     "level": "FCS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "Southern Illinois",
+     "level": "FCS",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    },
+    {
+     "school": "West Alabama",
+     "level": "D2",
+     "date": null,
+     "source": "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.bhambanner.com/archive-1/lrybf9nsp8hb2g5-t2wlx-kfzmg-c8dtm-w367p-j5wd3-x7rwp-dt3ns-rfy8z-xjgm9-9msm4-lrrkk-3dyhe-pj5el-rzd62-m53nb-w9hjt",
+    "https://diehardsportsnetwork.com/g6/recruiting-roundup-june-2026"
+   ]
+  },
+  {
+   "name": "Kameron Scarver",
+   "classYear": "2027",
+   "highSchool": "Parker",
+   "city": "Birmingham",
+   "position": "IOL",
+   "height": "6-5",
+   "weight": "280",
+   "stars247": null,
+   "committed": {
+    "school": "Georgia State",
+    "date": null,
+    "source": "https://prepranks.com/schools/parker"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Western Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/western-kentucky-hilltoppers/football/2027/offers",
+    "https://prepranks.com/schools/parker"
+   ]
+  },
+  {
+   "name": "Will Abrams",
+   "classYear": "2027",
+   "highSchool": "St. Paul's Episcopal",
+   "city": "Mobile",
+   "position": "LB",
+   "height": "5-10",
+   "weight": "205",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Charlotte",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/charlotte-49ers/football/2027/offers"
+    },
+    {
+     "school": "Ole Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/st_pauls_2027_lb_continues_to_garner_interest_from_p4_programs/s1_17086_42503136"
+    },
+    {
+     "school": "Michigan",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/st_pauls_2027_lb_continues_to_garner_interest_from_p4_programs/s1_17086_42503136"
+    },
+    {
+     "school": "Boston College",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.yardbarker.com/college_football/articles/st_pauls_2027_lb_continues_to_garner_interest_from_p4_programs/s1_17086_42503136"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/charlotte-49ers/football/2027/offers",
+    "https://www.yardbarker.com/college_football/articles/st_pauls_2027_lb_continues_to_garner_interest_from_p4_programs/s1_17086_42503136",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Miguel Wilson",
+   "classYear": "2027",
+   "highSchool": "Vigor",
+   "city": "Mobile",
+   "position": "CB",
+   "height": "5-10",
+   "weight": "170",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "NC State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/nc-state-wolfpack/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Cason Myers",
+   "classYear": "2027",
+   "highSchool": "Auburn",
+   "city": "Auburn",
+   "position": "QB",
+   "height": "6-2",
+   "weight": "180",
+   "stars247": null,
+   "committed": {
+    "school": "Arkansas",
+    "date": "2026-06-11",
+    "source": "https://www.si.com/college/arkansas/football/razorbacks-silverfield-quarterback-commit-myers"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/usf-bulls/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/usf-bulls/football/2027/offers",
+    "https://www.si.com/college/arkansas/football/razorbacks-silverfield-quarterback-commit-myers",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Cedrick Simmons",
+   "classYear": "2027",
+   "highSchool": "Selma",
+   "city": "Selma",
+   "position": "WR",
+   "height": "5-8.5",
+   "weight": "197",
+   "stars247": null,
+   "committed": {
+    "school": "Alabama",
+    "date": null,
+    "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": "2026-05-22",
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    },
+    {
+     "school": "Purdue",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    },
+    {
+     "school": "West Virginia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    },
+    {
+     "school": "UNLV",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.si.com/college/alabama/football/alabama-football-flips-2027-wide-receiver-away-from-auburn"
+   ]
+  },
+  {
+   "name": "Micah Fleming",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "CB",
+   "height": "5-10",
+   "weight": "175",
+   "stars247": null,
+   "committed": {
+    "school": "Baylor",
+    "date": "2026-07-13",
+    "source": "https://www.si.com/college/baylor/recruiting/speedy-db-micah-fleming-spurns-offers-from-georgia-and-oregon-commits-to-baylor"
+   },
+   "offers": [
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Indiana",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/baylor/recruiting/speedy-db-micah-fleming-spurns-offers-from-georgia-and-oregon-commits-to-baylor"
+    },
+    {
+     "school": "Oregon",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/baylor/recruiting/speedy-db-micah-fleming-spurns-offers-from-georgia-and-oregon-commits-to-baylor"
+    },
+    {
+     "school": "USC",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/baylor/recruiting/speedy-db-micah-fleming-spurns-offers-from-georgia-and-oregon-commits-to-baylor"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.si.com/college/baylor/recruiting/speedy-db-micah-fleming-spurns-offers-from-georgia-and-oregon-commits-to-baylor"
+   ]
+  },
+  {
+   "name": "Jiyez Fleming",
+   "classYear": "2027",
+   "highSchool": "Oxford",
+   "city": "Oxford",
+   "position": "LB",
+   "height": "6-0",
+   "weight": "218",
+   "stars247": null,
+   "committed": {
+    "school": "Ole Miss",
+    "date": null,
+    "source": "https://www.on3.com/teams/ole-miss-rebels/news/2027-lb-jiyez-fleming-commits-to-ole-miss"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://www.on3.com/teams/ole-miss-rebels/news/2027-lb-jiyez-fleming-commits-to-ole-miss",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Courtney Acoff",
+   "classYear": "2027",
+   "highSchool": "Bessemer City",
+   "city": "Bessemer",
+   "position": "DL",
+   "height": "6-2",
+   "weight": "305",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "North Alabama",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "Toledo",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    },
+    {
+     "school": "Western Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/fcs/big-sky/fcs-football-recruiting-roundup-nau-pushes-for-two-way-playmaker-uni-offers-1-100-yard-in-state-wr"
+   ]
+  },
+  {
+   "name": "DJ Waluyn",
+   "classYear": "2027",
+   "highSchool": "Hoover",
+   "city": "Hoover",
+   "position": "S",
+   "height": "6-0",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Kennesaw State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/kennesaw-state-owls/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Jason Crenshaw",
+   "classYear": "2027",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "LB",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": {
+    "school": "Georgia Tech",
+    "date": null,
+    "source": "https://www.si.com/college/georgiatech/football-recruiting/georgia-tech-receives-commitment-from-three-star-lb-jason-crenshaw-01ktvxyxx1cb"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "North Carolina",
+     "level": "FBS",
+     "date": null,
+     "source": "https://elmoreautauganews.com/2026/06/16/prattville-footballs-jason-crenshaw-commits-to-georgia-tech/"
+    },
+    {
+     "school": "Kentucky",
+     "level": "FBS",
+     "date": null,
+     "source": "https://elmoreautauganews.com/2026/06/16/prattville-footballs-jason-crenshaw-commits-to-georgia-tech/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://elmoreautauganews.com/2026/06/16/prattville-footballs-jason-crenshaw-commits-to-georgia-tech/"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://elmoreautauganews.com/2026/06/16/prattville-footballs-jason-crenshaw-commits-to-georgia-tech/"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://roundtable.io/sports/ncaa/texas-longhorns/news/texas-targets-georgia-tech-commit-for-2027-class"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://elmoreautauganews.com/2026/06/16/prattville-footballs-jason-crenshaw-commits-to-georgia-tech/",
+    "https://roundtable.io/sports/ncaa/texas-longhorns/news/texas-targets-georgia-tech-commit-for-2027-class",
+    "https://www.si.com/college/georgiatech/football-recruiting/georgia-tech-receives-commitment-from-three-star-lb-jason-crenshaw-01ktvxyxx1cb"
+   ]
+  },
+  {
+   "name": "Robert Taylor",
+   "classYear": "2027",
+   "highSchool": "Parker",
+   "city": "Birmingham",
+   "position": "EDGE",
+   "height": "6-0.5",
+   "weight": "240",
+   "stars247": null,
+   "committed": {
+    "school": "Arkansas State",
+    "date": null,
+    "source": "https://prepranks.com/football/recruits/robert-taylor-2027"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "App State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/appalachian-state-mountaineers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://prepranks.com/football/recruits/robert-taylor-2027",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "AJ Pauley",
+   "classYear": "2027",
+   "highSchool": "McGill-Toolen Catholic",
+   "city": "Mobile",
+   "position": "DL",
+   "height": "6-5",
+   "weight": "265",
+   "stars247": null,
+   "committed": {
+    "school": "Alabama",
+    "date": "2026-04-10",
+    "source": "https://tdalabamamag.com/2026/04/11/breaking-mobile-2027-defensive-lineman-commits-to-alabama/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    },
+    {
+     "school": "Eastern Kentucky",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/eastern-kentucky-colonels/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/college/eastern-kentucky-colonels/football/2027/offers",
+    "https://tdalabamamag.com/2026/04/11/breaking-mobile-2027-defensive-lineman-commits-to-alabama/"
+   ]
+  },
+  {
+   "name": "Jalijah Rutledge",
+   "classYear": "2027",
+   "highSchool": "Moody",
+   "city": "Moody",
+   "position": "WR",
+   "height": "5-11",
+   "weight": "185",
+   "stars247": null,
+   "committed": {
+    "school": "App State",
+    "date": null,
+    "source": "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+   },
+   "offers": [
+    {
+     "school": "Georgia Southern",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-07-02",
+     "source": "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/georgia-southern-eagles/football/2027/offers",
+    "https://tdalabamamag.com/2026/07/02/alabama-offers-moody-explosive-2027-wide-receiver/"
+   ]
+  },
+  {
+   "name": "Jeremiah Beverly",
+   "classYear": "2027",
+   "highSchool": "Hillcrest",
+   "city": "Tuscaloosa",
+   "position": "EDGE",
+   "height": "6-2",
+   "weight": "235",
+   "stars247": null,
+   "committed": {
+    "school": "Alabama",
+    "date": "2026-06-26",
+    "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-adds-tuscaloosa-native-to-2027-recruiting-class/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-06-08",
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/next-commitments-jeremiah-beverly-osani-gayles/"
+    },
+    {
+     "school": "Cincinnati",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-adds-tuscaloosa-native-to-2027-recruiting-class/"
+    },
+    {
+     "school": "Wake Forest",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.saturdaydownsouth.com/news/college-football/alabama-adds-tuscaloosa-native-to-2027-recruiting-class/"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://heavy.com/sports/college-football/alabama-crimson-tide/next-commitments-jeremiah-beverly-osani-gayles/",
+    "https://www.saturdaydownsouth.com/news/college-football/alabama-adds-tuscaloosa-native-to-2027-recruiting-class/"
+   ]
+  },
+  {
+   "name": "Kylan Baker",
+   "classYear": "2027",
+   "highSchool": "Moody",
+   "city": "Moody",
+   "position": "CB",
+   "height": "6-1",
+   "weight": "190",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Chattanooga",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/chattanooga-mocs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/chattanooga-mocs/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Matthew McIntyre",
+   "classYear": "2027",
+   "highSchool": "Mars Hill Bible School",
+   "city": "Florence",
+   "position": "TE",
+   "height": "6-3",
+   "weight": "230",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Ai'King Hall",
+   "classYear": "2027",
+   "highSchool": "Dothan",
+   "city": "Dothan",
+   "position": "CB",
+   "height": "6-0",
+   "weight": "190",
+   "stars247": null,
+   "committed": {
+    "school": "Miami",
+    "date": "2026-05-17",
+    "source": "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   },
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Texas A&M",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-am-aggies/football/2027/offers"
+    },
+    {
+     "school": "Texas",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/texas-longhorns/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/texas-am-aggies/football/2027/offers",
+    "https://www.on3.com/college/texas-longhorns/football/2027/offers",
+    "https://tuscaloosathread.com/ixp/531/p/state-alabama-2027-recruits-commited-football/"
+   ]
+  },
+  {
+   "name": "Carter Feagin",
+   "classYear": "2027",
+   "highSchool": "McAdory",
+   "city": "McCalla",
+   "position": "WR",
+   "height": "5-11",
+   "weight": "185",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Georgia State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/georgia-state-panthers/football/2027/offers"
+   ]
+  },
+  {
+   "name": "D'ante Seals",
+   "classYear": "2027",
+   "highSchool": "Hewitt-Trussville",
+   "city": "Trussville",
+   "position": "EDGE",
+   "height": "6-1.5",
+   "weight": "230",
+   "stars247": null,
+   "committed": {
+    "school": "Troy",
+    "date": null,
+    "source": "https://prepranks.com/football/recruits/d-ante-seals-2027"
+   },
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://prepranks.com/football/recruits/d-ante-seals-2027",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "DJ Verges",
+   "classYear": "2027",
+   "highSchool": "Pell City",
+   "city": "Pell City",
+   "position": "LB",
+   "height": "6-3",
+   "weight": "235",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Austin Peay",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/austin-peay-governors/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/austin-peay-governors/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Emmanuel Gales",
+   "classYear": "2027",
+   "highSchool": "Vigor",
+   "city": "Mobile",
+   "position": "LB",
+   "height": "5-11",
+   "weight": "185",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Memphis",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/memphis-tigers/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Georgia Tech",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/memphis-tigers/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/georgia-tech-yellow-jackets/football/2027/offers",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Tanner Ehmen",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "TE",
+   "height": "6-5",
+   "weight": "230",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/usf-bulls/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/usf-bulls/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Kendrick Able Jr.",
+   "classYear": "2027",
+   "highSchool": "Theodore",
+   "city": "Mobile",
+   "position": "RB",
+   "height": "5-10",
+   "weight": "215",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Trenton McCorvey",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "S",
+   "height": "5-10",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Mississippi State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    },
+    {
+     "school": "Jackson State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/jackson-state-tigers/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/mississippi-state-bulldogs/football/2027/offers/",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers",
+    "https://www.on3.com/college/jackson-state-tigers/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Bray'don Davis",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Tuscaloosa",
+   "position": "OT",
+   "height": "6-2",
+   "weight": "290",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Carter Davis",
+   "classYear": "2027",
+   "highSchool": "Gulf Shores",
+   "city": "Gulf Shores",
+   "position": "WR",
+   "height": "5-11",
+   "weight": "165",
+   "stars247": null,
+   "committed": {
+    "school": "West Virginia",
+    "date": null,
+    "source": "https://tdalabamamag.com/2026/06/08/breaking-gulf-shores-explosive-wide-receiver-commits-to-west-virginia/"
+   },
+   "offers": [
+    {
+     "school": "Auburn",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/auburn-tigers/football/2027/offers"
+    },
+    {
+     "school": "LSU",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/lsu-tigers/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/auburn-tigers/football/2027/offers",
+    "https://www.on3.com/college/lsu-tigers/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers",
+    "https://tdalabamamag.com/2026/06/08/breaking-gulf-shores-explosive-wide-receiver-commits-to-west-virginia/",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Cord Pigg",
+   "classYear": "2027",
+   "highSchool": "Mars Hill Bible School",
+   "city": "Florence",
+   "position": "IOL",
+   "height": "6-3",
+   "weight": "275",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Elijah Foreman",
+   "classYear": "2027",
+   "highSchool": "Woodlawn",
+   "city": "Birmingham",
+   "position": "DL",
+   "height": "6-2",
+   "weight": "287",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Alabama A&M",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/alabama-am-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+   ]
+  },
+  {
+   "name": "JJ Joiner",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Phenix City",
+   "position": "WR",
+   "height": "5-11",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Jaxon Elston",
+   "classYear": "2027",
+   "highSchool": "Oxford",
+   "city": "Oxford",
+   "position": "IOL",
+   "height": "6-5",
+   "weight": "310",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "South Alabama",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Georgia",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/georgia-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/south-alabama-jaguars/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/georgia-bulldogs/football/2027/offers",
+    "https://www.on3.com/rivals/rankings/industry-player/football/2027/?state=al"
+   ]
+  },
+  {
+   "name": "Kavarris Duncan",
+   "classYear": "2027",
+   "highSchool": "Winterboro",
+   "city": "Talladega",
+   "position": "DL",
+   "height": "6-1",
+   "weight": "290",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "MJ Gideon",
+   "classYear": "2027",
+   "highSchool": "James Clemens",
+   "city": "Madison",
+   "position": "RB",
+   "height": "5-11",
+   "weight": "200",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    },
+    {
+     "school": "Tulane",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/ut-martin-skyhawks/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers",
+    "https://www.on3.com/college/tulane-green-wave/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Marcus Arnold",
+   "classYear": "2027",
+   "highSchool": "Legacy Gymnastics",
+   "city": "Pelham",
+   "position": "WR",
+   "height": "6-0",
+   "weight": "170",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Mike Bass",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Phenix City",
+   "position": "WR",
+   "height": "6-2",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Aidden White",
+   "classYear": "2027",
+   "highSchool": "Moody",
+   "city": "Moody",
+   "position": "ATH",
+   "height": "5-9",
+   "weight": "160",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Murray State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    },
+    {
+     "school": "UT Martin",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/college/fcs/swac/fcs-football-recruiting-roundup-jackson-state-south-dakota-offer-2027-defensive-standouts-murray-state-lindenwood"
+   ]
+  },
+  {
+   "name": "Anthony Dixon",
+   "classYear": "2027",
+   "highSchool": "Central",
+   "city": "Tuscaloosa",
+   "position": "ATH",
+   "height": "6-0",
+   "weight": "170",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/troy-trojans/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Elijah Scott",
+   "classYear": "2027",
+   "highSchool": "Auburn",
+   "city": "Auburn",
+   "position": "EDGE",
+   "height": "6-2",
+   "weight": "220",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    },
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Rance Brown",
+   "classYear": "2027",
+   "highSchool": "Southside",
+   "city": "Gadsden",
+   "position": "IOL",
+   "height": "6-6",
+   "weight": "275",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Southern Miss",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers"
+    },
+    {
+     "school": "USF",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/usf-bulls/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/southern-miss-golden-eagles/football/2027/offers",
+    "https://www.on3.com/college/usf-bulls/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Roman Hall",
+   "classYear": "2027",
+   "highSchool": "Maplesville",
+   "city": "Maplesville",
+   "position": "ATH",
+   "height": "6-1",
+   "weight": "181",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    },
+    {
+     "school": "Alabama State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers",
+    "https://www.on3.com/college/alabama-state-hornets/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Wesley Gover",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "DL",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    },
+    {
+     "school": "Liberty",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/liberty-flames/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers",
+    "https://www.on3.com/college/liberty-flames/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Colby Key",
+   "classYear": "2027",
+   "highSchool": "Opelika",
+   "city": "Opelika",
+   "position": "QB",
+   "height": "6-1",
+   "weight": "180",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "UAB",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/uab-blazers/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/uab-blazers/football/2027/offers"
+   ]
+  },
+  {
+   "name": "DJ Williams",
+   "classYear": "2027",
+   "highSchool": "Clay-Chalkville",
+   "city": "Pinson",
+   "position": "EDGE",
+   "height": "6-5",
+   "weight": "215",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Jayden Milledge",
+   "classYear": "2027",
+   "highSchool": "Prattville",
+   "city": "Prattville",
+   "position": "DL",
+   "height": "6-1.5",
+   "weight": "270",
+   "stars247": null,
+   "committed": {
+    "school": "Troy",
+    "date": null,
+    "source": "https://elmoreautauganews.com/?p=91489"
+   },
+   "offers": [
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers",
+    "https://elmoreautauganews.com/?p=91489"
+   ]
+  },
+  {
+   "name": "Jaylen Hill",
+   "classYear": "2027",
+   "highSchool": "Lanett",
+   "city": "Lanett",
+   "position": "OT",
+   "height": "6-5",
+   "weight": "295",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Jonah Gee",
+   "classYear": "2027",
+   "highSchool": "Pelham",
+   "city": "Pelham",
+   "position": "OT",
+   "height": "6-4",
+   "weight": "290",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Samford",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/samford-bulldogs/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Kentrell Tolbert",
+   "classYear": "2027",
+   "highSchool": "George Washington Carver",
+   "city": "Birmingham",
+   "position": "RB",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Arkansas State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/arkansas-state-red-wolves/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Landyn Smith",
+   "classYear": "2027",
+   "highSchool": "St. Clair County",
+   "city": "Odenville",
+   "position": "QB",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "East Tennessee State",
+     "level": "FCS",
+     "date": null,
+     "source": "https://www.si.com/high-school/alabama/15-alabama-high-school-quarterbacks-to-watch-in-2026-01kzxzst89h5"
+    }
+   ],
+   "sources": [
+    "https://www.si.com/high-school/alabama/15-alabama-high-school-quarterbacks-to-watch-in-2026-01kzxzst89h5"
+   ]
+  },
+  {
+   "name": "Mason McClure",
+   "classYear": "2027",
+   "highSchool": "Thompson",
+   "city": "Alabaster",
+   "position": "WR",
+   "height": "5-10",
+   "weight": "183",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Jacksonville State",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/jacksonville-state-gamecocks/football/2027/offers"
+   ]
+  },
+  {
+   "name": "Stafford Willis",
+   "classYear": "2027",
+   "highSchool": "Arab",
+   "city": "Arab",
+   "position": "OL",
+   "height": null,
+   "weight": null,
+   "stars247": null,
+   "committed": {
+    "school": "Alabama",
+    "date": null,
+    "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/next-commitments-jeremiah-beverly-osani-gayles/"
+   },
+   "offers": [
+    {
+     "school": "Alabama",
+     "level": "FBS",
+     "date": "2026-06-10",
+     "source": "https://heavy.com/sports/college-football/alabama-crimson-tide/stafford-willis-offer-official-visit/"
+    }
+   ],
+   "sources": [
+    "https://heavy.com/sports/college-football/alabama-crimson-tide/stafford-willis-offer-official-visit/",
+    "https://heavy.com/sports/college-football/alabama-crimson-tide/next-commitments-jeremiah-beverly-osani-gayles/"
+   ]
+  },
+  {
+   "name": "Tre' Stone",
+   "classYear": "2027",
+   "highSchool": "Opelika",
+   "city": "Opelika",
+   "position": "LB",
+   "height": "6-0",
+   "weight": "215",
+   "stars247": null,
+   "committed": null,
+   "offers": [
+    {
+     "school": "Troy",
+     "level": "FBS",
+     "date": null,
+     "source": "https://www.on3.com/college/troy-trojans/football/2027/offers"
+    }
+   ],
+   "sources": [
+    "https://www.on3.com/college/troy-trojans/football/2027/offers"
+   ]
+  },
+  {
    "name": "Kingston Preyear",
    "classYear": "2028",
    "highSchool": "Benjamin Russell",
